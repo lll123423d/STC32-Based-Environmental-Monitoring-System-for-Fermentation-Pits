@@ -1,26 +1,257 @@
-C251 COMPILER V5.60.0,  oled                                                               27/09/25  14:34:00  PAGE 1   
+C251 COMPILER V5.60.0,  OLED                                                               27/09/25  19:28:05  PAGE 1   
 
 
-C251 COMPILER V5.60.0, COMPILATION OF MODULE oled
-OBJECT MODULE PLACED IN .\Objects\oled.obj
-COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE oled.c INTR2 BROWSE DEBUG PRINT(.\Listings\oled.lst) OBJECT(.\Objects\
-                    -oled.obj) 
+C251 COMPILER V5.60.0, COMPILATION OF MODULE OLED
+OBJECT MODULE PLACED IN .\Objects\OLED.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE Hardware\OLED.c XSMALL BROWSE INCDIR(.\sys;.\sys;.\Usr;.\Hardware) DEB
+                    -UG PRINT(.\Listings\OLED.lst) OBJECT(.\Objects\OLED.obj) 
 
 stmt  level    source
 
-*** WARNING C38 IN LINE 1 OF oled.c: empty translation unit
+    1          
+    2           #include "OLED.h"
+    3           #include "oledfont.h" 
+    4           
+    5           void delay_ms(unsigned int ms)
+    6          {                         
+    7   1              unsigned int a;
+    8   1              while(ms)
+    9   1              {
+   10   2                      a=1800;
+   11   2                      while(a--);
+   12   2                      ms--;
+   13   2              }
+   14   1              return;
+   15   1      }
+   16          
+   17          /*œÚSSD1306–¥»Î“ª∏ˆ◊÷Ω⁄
+   18           *dat:“™–¥»Îµƒ ˝æ›/√¸¡Ó
+   19           *cmd: ˝æ›/√¸¡Ó±Í÷æ 0,±Ì æ√¸¡Ó;1,±Ì æ ˝æ›;*/
+   20          void OLED_WR_Byte(unsigned char dat, unsigned char cmd)
+   21          {                                 
+   22   1          // 1. œ»…Ë÷√DC“˝Ω≈£® ˝æ›/√¸¡Ó—°‘Ò£©
+   23   1          if(cmd) {
+   24   2              OLED_DC=1;   // ◊º±∏–¥»Î ˝æ›
+   25   2          } else {
+   26   2              OLED_DC=0;   // ◊º±∏–¥»Î√¸¡Ó
+   27   2          }
+   28   1      
+   29   1          
+   30   1          // 2. ø™ ºSPI¥´ ‰
+   31   1          SS = 0;             // ¿≠µÕSS£¨ø™ º¥´ ‰
+   32   1          SPDAT = dat;        // ∑¢ÀÕ ˝æ›
+   33   1          while (!(SPSTAT & 0x80)); // µ»¥˝¥´ ‰ÕÍ≥…
+   34   1          SPSTAT = 0xC0;      // «Â≥˝±Í÷æŒª
+   35   1          SS = 1;             // ¿≠∏ﬂSS£¨Ω· ¯¥´ ‰
+   36   1         OLED_DC=1;
+   37   1      }
+   38          
+   39          void OLED_Set_Pos(unsigned char x, unsigned char y) 
+   40          { 
+   41   1          OLED_WR_Byte((unsigned int)(0xb0+y), OLED_CMD);           // …Ë÷√“≥µÿ÷∑£®Y◊¯±Í£©x£∫¡–◊¯±Í£®0-127£©£¨±
+             -Ì æÀÆ∆ΩŒª÷√
+   42   1                                                                                                      //y£∫“≥◊¯±Í£®0-7£©£¨±Ì æ¥π÷±Œª÷√£®SSD1306Ω´64––∑÷Œ™8“≥£¨√ø“≥8––£©
+   43   1          OLED_WR_Byte(((x&0xf0)>>4)|0x10, OLED_CMD); // …Ë÷√¡–µÿ÷∑∏ﬂ4Œª
+   44   1          OLED_WR_Byte((x&0x0f)|0x01, OLED_CMD);    // …Ë÷√¡–µÿ÷∑µÕ4Œª
+   45   1      }         
+   46          //ø™∆ÙOLEDœ‘ æ    
+   47          void OLED_Display_On(void)
+   48          {
+   49   1              OLED_WR_Byte(0X8D,OLED_CMD);  //SET DCDC√¸¡Ó
+   50   1              OLED_WR_Byte(0X14,OLED_CMD);  //DCDC ON
+   51   1              OLED_WR_Byte(0XAF,OLED_CMD);  //DISPLAY ON
+   52   1      }
+   53          //πÿ±’OLEDœ‘ æ     
+   54          void OLED_Display_Off(void)
+   55          {
+   56   1              OLED_WR_Byte(0X8D,OLED_CMD);  //SET DCDC√¸¡Ó
+   57   1              OLED_WR_Byte(0X10,OLED_CMD);  //DCDC OFF
+C251 COMPILER V5.60.0,  OLED                                                               27/09/25  19:28:05  PAGE 2   
+
+   58   1              OLED_WR_Byte(0XAE,OLED_CMD);  //DISPLAY OFF
+   59   1      }                                        
+   60          //«Â∆¡∫Ø ˝,«ÂÕÍ∆¡,’˚∏ˆ∆¡ƒª «∫⁄…´µƒ!∫Õ√ªµ„¡¡“ª—˘!!!        
+   61          void OLED_Clear(void)  
+   62          {  
+   63   1              unsigned char i,n;                  
+   64   1              for(i=0;i<8;i++)  
+   65   1              {  
+   66   2                      OLED_WR_Byte ((unsigned int)(0xb0+i),OLED_CMD);    //…Ë÷√“≥µÿ÷∑£®0~7£©
+   67   2                      OLED_WR_Byte (0x00,OLED_CMD);      //…Ë÷√œ‘ æŒª÷√°™¡–µÕµÿ÷∑
+   68   2                      OLED_WR_Byte (0x10,OLED_CMD);      //…Ë÷√œ‘ æŒª÷√°™¡–∏ﬂµÿ÷∑   
+   69   2                      for(n=0;n<128;n++)OLED_WR_Byte(0,OLED_DATA); 
+   70   2              } //∏¸–¬œ‘ æ
+   71   1      }
+   72          
+   73          
+   74          //‘⁄÷∏∂®Œª÷√œ‘ æ“ª∏ˆ◊÷∑˚,∞¸¿®≤ø∑÷◊÷∑˚
+   75          //x:0~127
+   76          //y:0~63
+   77          //mode:0,∑¥∞◊œ‘ æ;1,’˝≥£œ‘ æ                             
+   78          //size:—°‘Ò◊÷ÃÂ 16/12 
+   79          void OLED_ShowChar(unsigned char x,unsigned char y,unsigned char chr)
+   80          {       
+   81   1              unsigned char c=0,i=0;  
+   82   1                      c=chr-' ';//µ√µΩ∆´“∆∫Ûµƒ÷µ                      
+   83   1                      if(x>Max_Column-1){x=0;y=y+2;}
+   84   1                      if(SIZE ==16)
+   85   1                              {
+   86   2                              OLED_Set_Pos(x,y);      
+   87   2                              for(i=0;i<8;i++)
+   88   2                              OLED_WR_Byte((unsigned int)(F8X16[c*16+i]),OLED_DATA);
+   89   2                              OLED_Set_Pos(x,(unsigned int)(y+1));
+   90   2                              for(i=0;i<8;i++)
+   91   2                              OLED_WR_Byte((unsigned int)(F8X16[c*16+i]),OLED_DATA);
+   92   2                              }
+   93   1                              else {  
+   94   2                                      OLED_Set_Pos(x,(unsigned int)(y+1));
+   95   2                                      for(i=0;i<6;i++)
+   96   2                                      OLED_WR_Byte(F6x8[c][i],OLED_DATA);
+   97   2                                      
+   98   2                              }
+   99   1      }
+  100          //m^n∫Ø ˝
+  101          unsigned int oled_pow(unsigned char m,unsigned char n)
+  102          {
+  103   1              unsigned int result=1;   
+  104   1              while(n--)result*=m;    
+  105   1              return result;
+  106   1      }                                 
+  107          //œ‘ æ2∏ˆ ˝◊÷
+  108          //x,y :∆µ„◊¯±Í  
+  109          //len : ˝◊÷µƒŒª ˝
+  110          //size:◊÷ÃÂ¥Û–°
+  111          //mode:ƒ£ Ω     0,ÃÓ≥‰ƒ£ Ω;1,µ˛º”ƒ£ Ω
+  112          //num: ˝÷µ(0~4294967295);                         
+  113          void OLED_ShowNum(unsigned char x,unsigned char y,unsigned int num,unsigned char len,unsigned char size2)
+  114          {               
+  115   1              unsigned char t,temp;
+  116   1              unsigned char enshow=0;                                            
+  117   1              for(t=0;t<len;t++)
+  118   1              {
+  119   2                      temp=(num/oled_pow(10,(unsigned int)(len-t-1)))%10;
+  120   2                      if(enshow==0&&t<(len-1))
+  121   2                      {
+  122   3                              if(temp==0)
+  123   3                              {
+C251 COMPILER V5.60.0,  OLED                                                               27/09/25  19:28:05  PAGE 3   
+
+  124   4                                      OLED_ShowChar((unsigned int)(x+(size2/2)*t),y,' ');
+  125   4                                      continue;
+  126   4                              }else enshow=1; 
+  127   3                               
+  128   3                      }
+  129   2                      OLED_ShowChar((unsigned int)(x+(size2/2)*t),y,(unsigned int)(temp+'0')); 
+  130   2              }
+  131   1      } 
+  132          //œ‘ æ“ª∏ˆ◊÷∑˚∫≈¥Æ
+  133          void OLED_ShowString(unsigned char x,unsigned char y,unsigned char *chr)
+  134          {
+  135   1              unsigned char j=0;
+  136   1              while (chr[j]!='\0')
+  137   1              {               OLED_ShowChar(x,y,chr[j]);
+  138   2                              x+=8;
+  139   2                      if(x>120){x=0;y+=2;}
+  140   2                              j++;
+  141   2              }
+  142   1      }
+  143          //œ‘ æ∫∫◊÷
+  144          void OLED_ShowCHinese(unsigned char x,unsigned char y,unsigned char no)
+  145          {                           
+  146   1              unsigned char t,adder=0;
+  147   1              OLED_Set_Pos(x,y);      
+  148   1          for(t=0;t<16;t++)
+  149   1                      {
+  150   2                                      OLED_WR_Byte(Hzk[2*no][t],OLED_DATA);
+  151   2                                      adder+=1;
+  152   2           }  
+  153   1                      OLED_Set_Pos(x,(unsigned int)(y+1));    
+  154   1          for(t=0;t<16;t++)
+  155   1                              {       
+  156   2                                      OLED_WR_Byte(Hzk[2*no+1][t],OLED_DATA);
+  157   2                                      adder+=1;
+  158   2            }                                 
+  159   1      }
+  160          /***********π¶ƒ‹√Ë ˆ£∫œ‘ æœ‘ æBMPÕº∆¨128°¡64∆ ºµ„◊¯±Í(x,y),xµƒ∑∂Œß0°´127£¨yŒ™“≥µƒ∑∂Œß0°´7***************
+             -**/
+  161          void OLED_DrawBMP(unsigned char x0, unsigned char y0,unsigned char x1, unsigned char y1,unsigned char BMP
+             -[])
+  162          {       
+  163   1       unsigned int j=0;
+  164   1       unsigned char x,y;
+  165   1        
+  166   1        if(y1%8==0) y=y1/8;      
+  167   1        else y=y1/8+1;
+  168   1              for(y=y0;y<y1;y++)
+  169   1              {
+  170   2                      OLED_Set_Pos(x0,y);
+  171   2          for(x=x0;x<x1;x++)
+  172   2                  {      
+  173   3                      OLED_WR_Byte(BMP[j++],OLED_DATA);               
+  174   3                  }
+  175   2              }
+  176   1      } 
+  177          
+  178          
+  179          //≥ı ºªØSSD1306                                     
+  180          void OLED_Init(void)
+  181          {
+  182   1       
+  183   1      
+  184   1       
+  185   1        OLED_RST_Set();
+  186   1              delay_ms(100);
+  187   1              OLED_RST_Clr();
+C251 COMPILER V5.60.0,  OLED                                                               27/09/25  19:28:05  PAGE 4   
+
+  188   1              delay_ms(100);
+  189   1              OLED_RST_Set(); 
+  190   1              
+  191   1              OLED_WR_Byte(0xAE,OLED_CMD);//--turn off oled panel
+  192   1              OLED_WR_Byte(0x00,OLED_CMD);//---set low column address
+  193   1              OLED_WR_Byte(0x10,OLED_CMD);//---set high column address
+  194   1              OLED_WR_Byte(0x40,OLED_CMD);//--set start line address  Set Mapping RAM Display Start Line (0x00~0x3F)
+  195   1              OLED_WR_Byte(0x81,OLED_CMD);//--set contrast control register
+  196   1              OLED_WR_Byte(0xCF,OLED_CMD); // Set SEG Output Current Brightness
+  197   1              OLED_WR_Byte(0xA1,OLED_CMD);//--Set SEG/Column Mapping     0xa0◊Û”“∑¥÷√ 0xa1’˝≥£
+  198   1              OLED_WR_Byte(0xC8,OLED_CMD);//Set COM/Row Scan Direction   0xc0…œœ¬∑¥÷√ 0xc8’˝≥£
+  199   1              OLED_WR_Byte(0xA6,OLED_CMD);//--set normal display
+  200   1              OLED_WR_Byte(0xA8,OLED_CMD);//--set multiplex ratio(1 to 64)
+  201   1              OLED_WR_Byte(0x3f,OLED_CMD);//--1/64 duty
+  202   1              OLED_WR_Byte(0xD3,OLED_CMD);//-set display offset       Shift Mapping RAM Counter (0x00~0x3F)
+  203   1              OLED_WR_Byte(0x00,OLED_CMD);//-not offset
+  204   1              OLED_WR_Byte(0xd5,OLED_CMD);//--set display clock divide ratio/oscillator frequency
+  205   1              OLED_WR_Byte(0x80,OLED_CMD);//--set divide ratio, Set Clock as 100 Frames/Sec
+  206   1              OLED_WR_Byte(0xD9,OLED_CMD);//--set pre-charge period
+  207   1              OLED_WR_Byte(0xF1,OLED_CMD);//Set Pre-Charge as 15 Clocks & Discharge as 1 Clock
+  208   1              OLED_WR_Byte(0xDA,OLED_CMD);//--set com pins hardware configuration
+  209   1              OLED_WR_Byte(0x12,OLED_CMD);
+  210   1              OLED_WR_Byte(0xDB,OLED_CMD);//--set vcomh
+  211   1              OLED_WR_Byte(0x40,OLED_CMD);//Set VCOM Deselect Level
+  212   1              OLED_WR_Byte(0x20,OLED_CMD);//-Set Page Addressing Mode (0x00/0x01/0x02)
+  213   1              OLED_WR_Byte(0x02,OLED_CMD);//
+  214   1              OLED_WR_Byte(0x8D,OLED_CMD);//--set Charge Pump enable/disable
+  215   1              OLED_WR_Byte(0x14,OLED_CMD);//--set(0x10) disable
+  216   1              OLED_WR_Byte(0xA4,OLED_CMD);// Disable Entire Display On (0xa4/0xa5)
+  217   1              OLED_WR_Byte(0xA6,OLED_CMD);// Disable Inverse Display On (0xa6/a7) 
+  218   1              OLED_WR_Byte(0xAF,OLED_CMD);//--turn on oled panel
+  219   1              
+  220   1              OLED_WR_Byte(0xAF,OLED_CMD); /*display ON*/ 
+  221   1              OLED_Clear();
+  222   1              OLED_Set_Pos(0,0);      
+  223   1      }  
 
 
 Module Information          Static   Overlayable
 ------------------------------------------------
-  code size            =    ------     ------
+  code size            =      3679     ------
   ecode size           =    ------     ------
   data size            =    ------     ------
   idata size           =    ------     ------
   pdata size           =    ------     ------
   xdata size           =    ------     ------
   xdata-const size     =    ------     ------
-  edata size           =    ------     ------
+  edata size           =    ------         16
   bit size             =    ------     ------
   ebit size            =    ------     ------
   bitaddressable size  =    ------     ------
@@ -32,4 +263,4 @@ Module Information          Static   Overlayable
 End of Module Information.
 
 
-C251 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

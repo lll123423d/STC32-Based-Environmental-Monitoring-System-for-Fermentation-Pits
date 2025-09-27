@@ -22,20 +22,31 @@ E:\keil-Project\STC32-Based Environmental Monitoring System for Fermentation Pit
 Project File Date:  09/27/2025
 
 <h2>Output:</h2>
-Build target 'Target 1'
+Rebuild target 'Target 1'
 compiling main.c...
-compiling spi.c...
-spi.c(1): warning C38: empty translation unit
-compiling ustar.c...
-ustar.c(1): warning C38: empty translation unit
-compiling oled.c...
-oled.c(1): warning C38: empty translation unit
-compiling dth11.c...
-dth11.c(1): warning C38: empty translation unit
+compiling SPI.c...
+compiling OLED.c...
 linking...
-Program Size: data=8.0 edata+hdata=256 xdata=0 const=0 code=27
-".\Objects\project" - 0 Error(s), 4 Warning(s).
-Build Time Elapsed:  00:00:01
+*** WARNING L57: UNCALLED FUNCTION, IGNORED FOR OVERLAY PROCESS
+    NAME:    SPI_ReadByte/SPI
+*** WARNING L57: UNCALLED FUNCTION, IGNORED FOR OVERLAY PROCESS
+    NAME:    SPI_WriteByte/SPI
+*** WARNING L57: UNCALLED FUNCTION, IGNORED FOR OVERLAY PROCESS
+    NAME:    OLED_Display_On/OLED
+*** WARNING L57: UNCALLED FUNCTION, IGNORED FOR OVERLAY PROCESS
+    NAME:    OLED_ShowString/OLED
+*** WARNING L57: UNCALLED FUNCTION, IGNORED FOR OVERLAY PROCESS
+    NAME:    OLED_ShowCHinese/OLED
+*** WARNING L57: UNCALLED FUNCTION, IGNORED FOR OVERLAY PROCESS
+    NAME:    OLED_ShowNum/OLED
+*** WARNING L57: UNCALLED FUNCTION, IGNORED FOR OVERLAY PROCESS
+    NAME:    OLED_Display_Off/OLED
+*** WARNING L57: UNCALLED FUNCTION, IGNORED FOR OVERLAY PROCESS
+    NAME:    OLED_DrawBMP/OLED
+Program Size: data=8.0 edata+hdata=272 xdata=0 const=0 code=3777
+creating hex file from ".\Objects\project"...
+".\Objects\project" - 0 Error(s), 8 Warning(s).
+Build Time Elapsed:  00:00:00
 </pre>
 </body>
 </html>

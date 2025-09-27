@@ -1,35 +1,13 @@
-C251 COMPILER V5.60.0,  dth11                                                              27/09/25  14:34:00  PAGE 1   
+C251 COMPILER V5.60.0,  dth11                                                              27/09/25  16:23:42  PAGE 1   
 
 
 C251 COMPILER V5.60.0, COMPILATION OF MODULE dth11
 OBJECT MODULE PLACED IN .\Objects\dth11.obj
-COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE dth11.c INTR2 BROWSE DEBUG PRINT(.\Listings\dth11.lst) OBJECT(.\Object
-                    -s\dth11.obj) 
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE dth11.c XSMALL BROWSE INCDIR(.\sys;.\sys;.\Usr;.\Hardware) DEBUG PRINT
+                    -(.\Listings\dth11.lst) OBJECT(.\Objects\dth11.obj) 
 
 stmt  level    source
 
-*** WARNING C38 IN LINE 1 OF dth11.c: empty translation unit
+*** ERROR C318 OF dth11.c: can't open file 'dth11.c'
 
-
-Module Information          Static   Overlayable
-------------------------------------------------
-  code size            =    ------     ------
-  ecode size           =    ------     ------
-  data size            =    ------     ------
-  idata size           =    ------     ------
-  pdata size           =    ------     ------
-  xdata size           =    ------     ------
-  xdata-const size     =    ------     ------
-  edata size           =    ------     ------
-  bit size             =    ------     ------
-  ebit size            =    ------     ------
-  bitaddressable size  =    ------     ------
-  ebitaddressable size =    ------     ------
-  far data size        =    ------     ------
-  huge data size       =    ------     ------
-  const size           =    ------     ------
-  hconst size          =    ------     ------
-End of Module Information.
-
-
-C251 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)
+C251 COMPILATION COMPLETE.  0 WARNING(S),  1 ERROR(S)

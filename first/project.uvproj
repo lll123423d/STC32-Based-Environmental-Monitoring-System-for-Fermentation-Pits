@@ -49,11 +49,11 @@
           <OutputName>project</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
-          <CreateHexFile>0</CreateHexFile>
+          <CreateHexFile>1</CreateHexFile>
           <DebugInformation>1</DebugInformation>
           <BrowseInformation>1</BrowseInformation>
           <ListingPath>.\Listings\</ListingPath>
-          <HexFormatSelection>0</HexFormatSelection>
+          <HexFormatSelection>1</HexFormatSelection>
           <Merge32K>0</Merge32K>
           <CreateBatchFile>0</CreateBatchFile>
           <BeforeCompile>
@@ -118,7 +118,7 @@
         </DllOption>
         <DebugOption>
           <OPTHX>
-            <HexSelection>0</HexSelection>
+            <HexSelection>1</HexSelection>
             <HexRangeLowAddress>0</HexRangeLowAddress>
             <HexRangeHighAddress>0</HexRangeHighAddress>
             <HexOffset>0</HexOffset>
@@ -186,7 +186,7 @@
         </Utilities>
         <Target251>
           <Target251Misc>
-            <MemoryModel>0</MemoryModel>
+            <MemoryModel>3</MemoryModel>
             <RTOS>0</RTOS>
             <RomSize>3</RomSize>
             <NearDataHold>0</NearDataHold>
@@ -195,7 +195,7 @@
             <uocRom>0</uocRom>
             <uocXRAM>0</uocXRAM>
             <uSrcBin>1</uSrcBin>
-            <uFrame4>0</uFrame4>
+            <uFrame4>1</uFrame4>
             <hadIRAM>1</hadIRAM>
             <hadXRAM>1</hadXRAM>
             <hadIROM>1</hadIROM>
@@ -207,7 +207,7 @@
               <RCB>
                 <Type>0</Type>
                 <StartAddress>0x0</StartAddress>
-                <Size>0x0</Size>
+                <Size>0x10000</Size>
               </RCB>
               <IROM>
                 <Type>1</Type>
@@ -272,7 +272,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath></IncludePath>
+              <IncludePath>.\sys;.\sys;.\Usr;.\Hardware</IncludePath>
             </VariousControls>
           </C251>
           <Ax51>
@@ -327,12 +327,7 @@
             <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\main.c</FilePath>
-            </File>
-            <File>
-              <FileName>main.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\main.h</FilePath>
+              <FilePath>.\Usr\main.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -340,24 +335,14 @@
           <GroupName>sys</GroupName>
           <Files>
             <File>
-              <FileName>spi.c</FileName>
+              <FileName>SPI.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\spi.c</FilePath>
+              <FilePath>.\sys\SPI.c</FilePath>
             </File>
             <File>
-              <FileName>spi.h</FileName>
+              <FileName>SPI.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\spi.h</FilePath>
-            </File>
-            <File>
-              <FileName>ustar.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\ustar.c</FilePath>
-            </File>
-            <File>
-              <FileName>ustar.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\ustar.h</FilePath>
+              <FilePath>.\sys\SPI.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -365,24 +350,14 @@
           <GroupName>Hardware</GroupName>
           <Files>
             <File>
-              <FileName>oled.c</FileName>
+              <FileName>OLED.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\oled.c</FilePath>
+              <FilePath>.\Hardware\OLED.c</FilePath>
             </File>
             <File>
               <FileName>oled.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\oled.h</FilePath>
-            </File>
-            <File>
-              <FileName>dth11.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\dth11.c</FilePath>
-            </File>
-            <File>
-              <FileName>dth11.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\dth11.h</FilePath>
+              <FilePath>.\Hardware\oled.h</FilePath>
             </File>
           </Files>
         </Group>

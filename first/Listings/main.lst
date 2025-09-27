@@ -1,27 +1,30 @@
-C251 COMPILER V5.60.0,  main                                                               27/09/25  14:34:00  PAGE 1   
+C251 COMPILER V5.60.0,  main                                                               27/09/25  19:28:05  PAGE 1   
 
 
 C251 COMPILER V5.60.0, COMPILATION OF MODULE main
 OBJECT MODULE PLACED IN .\Objects\main.obj
-COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE main.c INTR2 BROWSE DEBUG PRINT(.\Listings\main.lst) OBJECT(.\Objects\
-                    -main.obj) 
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE Usr\main.c XSMALL BROWSE INCDIR(.\sys;.\sys;.\Usr;.\Hardware) DEBUG PR
+                    -INT(.\Listings\main.lst) OBJECT(.\Objects\main.obj) 
 
 stmt  level    source
 
     1          #include <STC32G.H>
-    2          
-    3          void main()
-    4          {
-    5   1              while(1)
-    6   1              {
-    7   2                      
-    8   2              }
-    9   1      }
+    2          #include "SPI.h"
+    3          #include "OLED.h"
+    4          void main()
+    5          {
+    6   1              SPI_Init();
+    7   1              OLED_Init();                    //≥ı ºªØOLED 
+    8   1              while(1)
+    9   1              {
+   10   2                      
+   11   2              }
+   12   1      }
 
 
 Module Information          Static   Overlayable
 ------------------------------------------------
-  code size            =         2     ------
+  code size            =         8     ------
   ecode size           =    ------     ------
   data size            =    ------     ------
   idata size           =    ------     ------
