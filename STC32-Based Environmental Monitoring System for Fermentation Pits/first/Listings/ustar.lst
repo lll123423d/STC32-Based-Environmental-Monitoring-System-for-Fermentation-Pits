@@ -1,0 +1,35 @@
+C251 COMPILER V5.60.0,  ustar                                                              27/09/25  14:34:00  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE ustar
+OBJECT MODULE PLACED IN .\Objects\ustar.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE ustar.c INTR2 BROWSE DEBUG PRINT(.\Listings\ustar.lst) OBJECT(.\Object
+                    -s\ustar.obj) 
+
+stmt  level    source
+
+*** WARNING C38 IN LINE 1 OF ustar.c: empty translation unit
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =    ------     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------     ------
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =    ------     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)
