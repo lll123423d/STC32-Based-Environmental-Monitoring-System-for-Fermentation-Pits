@@ -1,0 +1,1 @@
+"Resource\alg_caculate.c" XSMALL ROM(HUGE) BROWSE INCDIR(.\Resource;.\ware;.\src;.\middle) DEBUG PRINT(.\obj\alg_caculate.lst) OBJECT(.\obj\alg_caculate.obj)

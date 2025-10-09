@@ -1,0 +1,132 @@
+C251 COMPILER V5.60.0,  main                                                               28/09/25  19:05:27  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE main
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE Usr\main.c XSMALL BROWSE INCDIR(.\sys;.\sys;.\Usr;.\Hardware) DEBUG PR
+                    -INT(.\Listings\main.lst) OBJECT(.\Objects\main.obj) 
+
+stmt  level    source
+
+    1          #include <SYS.H>
+    2          #include "SPI.h"
+    3          #include "OLED.h"
+    4          #include "pic.h"
+*** WARNING C194 IN LINE 1 OF Usr\pic.h: obsolete declaration: use '<type> code  OLED12864_IMG'
+*** ERROR C142 IN LINE 1 OF Usr\pic.h: illegal initialization
+*** WARNING C34 IN LINE 69 OF Usr\pic.h: 'BYTE': missing declaration specifiers
+*** ERROR C42 IN LINE 69 OF Usr\pic.h: 'BYTE': not in formal parameter list
+*** ERROR C25 IN LINE 69 OF Usr\pic.h: syntax error near 'code'
+*** ERROR C142 IN LINE 69 OF Usr\pic.h: illegal initialization
+    5          #define  DELAY_TIME   2000
+    6          void main()
+    7          {
+*** ERROR C42 IN LINE 7 OF Usr\main.c: 'main': not in formal parameter list
+*** ERROR C25 IN LINE 7 OF Usr\main.c: syntax error near '{'
+    8                  unsigned char i;
+    9              float dat= -3.145;
+   10              sysini();
+   11                  Timer0_Init();
+   12          
+   13                  OLED_Init();                    //初始化OLED 
+   14                  EA=1;
+   15                  
+   16           while (1)
+   17              {
+   18          //-----------------------------------------显示图片-----------------------------------------   
+   19                  OLED_BuffClear();                                                       //清除全部缓存
+   20                  OLED_BuffShowBMP(0,0,128,8,OLED12864_IMG);                              //显示LOGO图片
+   21                          OLED_BuffShow();                                                        //将缓存写入显示屏显示
+   22                  delay_ms(DELAY_TIME);                                                   //延时  
+   23          
+   24          //-----------------------------------------显示字符-----------------------------------------   
+   25                          OLED_BuffClear();                                                       //清除全部缓存
+   26                          OLED_BuffShowString(0,0,"HEELO ,WELCOME TO USE STC32&OLED12864!",0);      //显示数据
+   27                          OLED_BuffShow();                                                        //将缓存写入显示屏显示
+   28                  delay_ms(DELAY_TIME);                                                   //延时  
+   29                  
+   30          //-----------------------------------------显示汉字-----------------------------------------   
+   31                          OLED_BuffClear();                                                       //清除全部缓存
+   32                          OLED_BuffShowString(0,0,"你好,欢迎使用STC 驱\xfd动OLED12864的历程",0);      //显示数据
+   33                          OLED_BuffShow();                                                        //将缓存写入显示屏显示
+   34                  delay_ms(DELAY_TIME);                                                   //延时         
+   35                  
+   36          //-----------------------------------------显示点-----------------------------------------   
+   37                          OLED_BuffClear();                                                       //清除全部缓存
+   38                          OLED_BuffShowString(32,0,"画点测试");                                    //显示数据
+   39                          OLED_BuffShow();                                                        //将缓存写入显示屏显示  
+   40                  for( i=0;i<64;i++ )                                                     //循环64次
+   41                  {
+   42                      OLED_BuffShowPoint(i*2,25);                                         //显示一个点
+   43                      OLED_BuffShow();                                                    //刷新显示
+   44                      delay_ms(50);                                                       //延时
+   45                  }
+   46                  
+   47          //-----------------------------------------显示线-----------------------------------------   
+   48                          OLED_BuffClear();                                                       //清除全部缓存
+   49                          OLED_BuffShowString(32,0,"画线测试");                                    //显示数据
+   50                          OLED_BuffShow();                                                        //将缓存写入显示屏显示  
+C251 COMPILER V5.60.0,  main                                                               28/09/25  19:05:27  PAGE 2   
+
+   51                  for( i=0;i<6;i++ )                                                      //循环6次
+   52                  {
+   53                      OLED_BuffShowLine(4,16+8*i,124,16+8*i);                             //显示横着6条线
+*** ERROR C42 IN LINE 53 OF Usr\main.c: 'i': not in formal parameter list
+*** ERROR C25 IN LINE 53 OF Usr\main.c: syntax error near '124'
+*** ERROR C42 IN LINE 53 OF Usr\main.c: 'i': not in formal parameter list
+   54                      OLED_BuffShow();                                                    //刷新显示
+   55                      delay_ms(100);
+   56                  }        
+   57                  for( i=0;i<16;i+=1 )                                                    //循环16次
+   58                  {
+   59                      OLED_BuffShowLine(8*i+4,16,8*i+4,56);                               //显示16条数线
+*** ERROR C42 IN LINE 59 OF Usr\main.c: 'i': not in formal parameter list
+*** ERROR C42 IN LINE 59 OF Usr\main.c: 'i': not in formal parameter list
+   60                      OLED_BuffShow();                                                    //刷新显示
+   61                      delay_ms(100);
+   62                  }  
+   63          
+   64          //-----------------------------------------显示圆-----------------------------------------   
+   65                          OLED_BuffClear();                                                       //清除全部缓存
+   66                          OLED_BuffShowString(32,0,"画圆测试");                                    //显示数据
+   67                          OLED_BuffShow();                                                        //将缓存写入显示屏显示  
+   68                  for( i=0;i<6;i++ )                                                      //循环6次
+   69                  {
+   70                     OLED_BuffShowCircle(64,40,5+i*3);                                    //画一个圆    
+   71                      OLED_BuffShow();                                                    //刷新显示
+   72                      delay_ms(250);
+   73                  }         
+   74          
+   75          //-----------------------------------------显示32大字-----------------------------------------   
+   76                          OLED_BuffClear();                                                       //清除全部缓存
+   77                          OLED_BuffShowString(32,0,"大字测试");                                    //显示数据
+   78                  OLED_BuffShowChar32(24,3,1,0);                                          //显示数字1
+   79                  OLED_BuffShowChar32(40,3,0,0);                                          //显示数字0
+   80                  OLED_BuffShowChar32(56,3,10,0);                                         //显示：
+   81                  OLED_BuffShowChar32(72,3,5,0);                                          //显示数字5
+   82                  OLED_BuffShowChar32(88,3,5,0);                                          //显示数字5
+   83                          OLED_BuffShow();                                                        //将缓存写入显示屏显示  
+   84                  delay_ms(DELAY_TIME);                                                   //延时   
+   85          
+   86          //-----------------------------------------反显测试-----------------------------------------   
+   87                          OLED_BuffClear();                                                       //清除全部缓存
+   88                          OLED_BuffShowString(32,0,"反显测试",0);                                  //显示数据
+   89                  OLED_BuffShowString(16,2,"  这是正\xfd显  ",0);                          //显示数据
+   90                  OLED_BuffShowString(16,4,"  这是反显  ",1);                              //显示数据
+   91                          OLED_BuffShow();                                                        //将缓存写入显示屏显示
+   92                  delay_ms(DELAY_TIME); 
+   93          
+   94          //-----------------------------------------变量显示-----------------------------------------   
+   95                  OLED_BuffClear();                                                       //清除全部缓存
+   96                  OLED_BuffShowString(32,0,"变量显示",0);                                  //显示数据
+   97                  OLED_BuffShowNum(0,2,-25169,0) ;                                        //显示数据
+   98                  OLED_BuffShowNum02F(0,4,3.14159,0);                                     //显示数据
+   99                  OLED_BuffShowNum02F(0,6,dat,1);                                         //显示数据
+  100                  OLED_BuffShow();                                                        //将缓存写入显示屏显示
+  101                  delay_ms(DELAY_TIME);   
+  102                          
+  103              }
+  104          }
+*** ERROR C7 IN LINE 104 OF Usr\main.c: compilation aborted
+
+C251 COMPILATION COMPLETE.  2 WARNING(S),  12 ERROR(S)

@@ -1,0 +1,1 @@
+"ware\eeprom.c" XSMALL INTR2 BROWSE INCDIR(.\Resource;.\ware;.\src;.\middle;.\user) DEBUG PRINT(.\obj\eeprom.lst) OBJECT(.\obj\eeprom.obj)

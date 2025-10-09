@@ -1,0 +1,157 @@
+C251 COMPILER V5.60.0,  key                                                                22/03/23  11:38:00  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE key
+OBJECT MODULE PLACED IN .\obj\key.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE ware\key.c XSMALL INTR2 BROWSE INCDIR(.\Resource;.\ware;.\src;.\middle
+                    -;.\user) DEBUG PRINT(.\obj\key.lst) OBJECT(.\obj\key.obj) 
+
+stmt  level    source
+
+    1          #include "key.h"
+    2          #include "vk.h"
+    3          #include "middle.h"
+    4          #include "spi.h"
+    5          
+    6          unsigned char CDC_KeyRead(unsigned char dat)
+    7          {
+    8   1          unsigned char xdata keyval;
+    9   1          switch( dat )
+   10   1          {
+   11   2              case VK_DIGIT_0 :
+   12   2              case VK_DIGIT_1 :
+   13   2              case VK_DIGIT_2 :
+   14   2              case VK_DIGIT_3 :
+   15   2              case VK_DIGIT_4 :
+   16   2              case VK_DIGIT_5 :
+   17   2              case VK_DIGIT_6 :
+   18   2              case VK_DIGIT_7 :
+   19   2              case VK_DIGIT_8 :
+   20   2              case VK_DIGIT_9 :   keyval = dat; break;
+   21   2              case VK_ADD     :   keyval = '+'; break;    
+   22   2              case VK_SUBTRACT:   keyval = '-'; break;
+   23   2              case VK_MULTIPLY:   keyval = '*'; break;
+   24   2              case VK_DIVIDE  :   keyval = '/'; break; 
+   25   2              case VK_DECIMAL :   keyval = '.'; break;
+   26   2              case VK_EQUALS  :   keyval = '='; break; 
+   27   2              case VK_ALPHA_A :    
+   28   2              case VK_ALPHA_B :
+   29   2              case VK_ALPHA_C :
+   30   2              case VK_ALPHA_D :
+   31   2              case VK_ALPHA_E :
+   32   2              case VK_ALPHA_F :
+   33   2              case VK_ALPHA_G :
+   34   2              case VK_ALPHA_H :
+   35   2              case VK_ALPHA_I :
+   36   2              case VK_ALPHA_J :
+   37   2              case VK_ALPHA_K :
+   38   2              case VK_ALPHA_L :
+   39   2              case VK_ALPHA_M :
+   40   2              case VK_ALPHA_N :
+   41   2              case VK_ALPHA_O :
+   42   2              case VK_ALPHA_P :
+   43   2              case VK_ALPHA_Q :
+   44   2              case VK_ALPHA_R :
+   45   2              case VK_ALPHA_S :
+   46   2              case VK_ALPHA_T : 
+   47   2              case VK_ALPHA_U : 
+   48   2              case VK_ALPHA_V : 
+   49   2              case VK_ALPHA_W : 
+   50   2              case VK_ALPHA_X : keyval = dat+1-'A'; break;
+   51   2              default:  keyval = 0; break;      
+   52   2          }
+   53   1          return keyval;
+   54   1      }
+   55          
+   56          const u8 code  keymap[8][5] = 
+   57          { 
+   58              { 1 , 2 , 3 , 4 ,5} , 
+C251 COMPILER V5.60.0,  key                                                                22/03/23  11:38:00  PAGE 2   
+
+   59              { 6 , 7 , 8 , 9 ,10 }, 
+   60              {11 ,12 , 13,14 ,15 }, 
+   61              {16 ,17 , 18,19 ,20 },
+   62              {'7','8','9',21 ,22 },
+   63              {'4','5','6','*','/'},
+   64              {'1','2','3','+','-'},
+   65              {'0','.',23 ,24 ,'='},    
+   66          };
+   67          
+   68          u8 keyscan(void)
+   69          { 
+   70   1              static u16 xdata keybefore = 0;
+   71   1          static u16 xdata key = 0;
+   72   1          static u16 xdata keycode = 0;
+   73   1          
+   74   1              u8 xdata keyvalue = 0;
+   75   1              u8 xdata keyrow = 0;
+   76   1          u8 xdata keyline = 0; 
+   77   1          u8 xdata i = 0;
+   78   1          u8 xdata     j = 0;
+   79   1      //      
+   80   1          P0 = 0XFF;      //读取按下的行
+   81   1          P3 &= 0x07;
+   82   1          delay();
+   83   1              keyrow = P0 ^ 0xff ;
+   84   1          
+   85   1          P0 = 0X00;      //读取按下的行
+   86   1          P3 |= 0xF8;
+   87   1          delay();
+   88   1          keyline = (P3&(0xf8)); 
+   89   1          keyline ^= 0xF8;
+   90   1          
+   91   1      //    Screen_ShowNum(100,0,keyrow);
+   92   1      //    Screen_ShowNum(100,2,keyline);
+   93   1      //    Screen_ShowFreshen();
+   94   1              //以下为三行代码
+   95   1              keycode = (((u16)keyline<<8) | keyrow);
+   96   1              key = keycode & (keycode ^ keybefore);
+   97   1              keybefore = keycode;
+   98   1              
+   99   1              if(key)
+  100   1              { 
+  101   2                      for(i = 0; i < 8; i++)
+  102   2              {
+  103   3                              for(j = 0; j < 5; j++)
+  104   3                  {
+  105   4                                      if(key == (0x8000 >> j | 0x01 << i))
+  106   4                                      { 
+  107   5                                              keyvalue = keymap[i][j];
+  108   5                                              break;
+  109   5                                      }
+  110   4                  }
+  111   3               }
+  112   2              }
+  113   1              if( keyvalue>0 )
+  114   1              BEEP = 0;
+  115   1          else
+  116   1              BEEP = 1;
+  117   1              return keyvalue;
+  118   1      }
+  119          
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =       478     ------
+  ecode size           =    ------     ------
+C251 COMPILER V5.60.0,  key                                                                22/03/23  11:38:00  PAGE 3   
+
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =         6     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------     ------
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =        21     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

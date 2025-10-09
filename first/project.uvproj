@@ -329,6 +329,26 @@
               <FileType>1</FileType>
               <FilePath>.\Usr\main.c</FilePath>
             </File>
+            <File>
+              <FileName>pic.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Usr\pic.h</FilePath>
+            </File>
+            <File>
+              <FileName>stc.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Usr\stc.h</FilePath>
+            </File>
+            <File>
+              <FileName>stc32g.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Usr\stc32g.h</FilePath>
+            </File>
+            <File>
+              <FileName>vk.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Usr\vk.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -344,20 +364,45 @@
               <FileType>5</FileType>
               <FilePath>.\sys\SPI.h</FilePath>
             </File>
+            <File>
+              <FileName>sys.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\sys\sys.c</FilePath>
+            </File>
+            <File>
+              <FileName>sys.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\sys\sys.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>Hardware</GroupName>
           <Files>
             <File>
-              <FileName>OLED.c</FileName>
+              <FileName>font.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Hardware\font.h</FilePath>
+            </File>
+            <File>
+              <FileName>oled.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Hardware\OLED.c</FilePath>
+              <FilePath>.\Hardware\oled.c</FilePath>
             </File>
             <File>
               <FileName>oled.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Hardware\oled.h</FilePath>
+            </File>
+            <File>
+              <FileName>pic.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Hardware\pic.h</FilePath>
+            </File>
+            <File>
+              <FileName>oledconfig.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\oledconfig.h</FilePath>
             </File>
           </Files>
         </Group>

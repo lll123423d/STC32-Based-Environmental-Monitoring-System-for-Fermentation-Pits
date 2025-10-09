@@ -1,0 +1,455 @@
+C251 COMPILER V5.60.0,  nor_cal                                                            22/03/23  11:38:00  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE nor_cal
+OBJECT MODULE PLACED IN .\obj\nor_cal.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE user\nor_cal.c XSMALL INTR2 BROWSE INCDIR(.\Resource;.\ware;.\src;.\mi
+                    -ddle;.\user) DEBUG PRINT(.\obj\nor_cal.lst) OBJECT(.\obj\nor_cal.obj) 
+
+stmt  level    source
+
+    1          #include "nor_cal.h"
+    2          #include "middle.h"
+    3          #include "string.h"
+    4          #include "keyboard.h"
+    5          #include "fun.h"
+    6          
+    7          #define NULL ((void *) 0)       //空指针
+    8          #define IBlength 26             //输入数据个数的上限
+    9          u8 xdata SaveBuff[512] ;        //历史记录缓存数组
+   10           
+   11          
+   12          void normal_calculate(u8 keynum)        //普通计算
+   13          {
+   14   1          static u8 xdata addr=0;                     //当前光标显示地址
+   15   1          static u8 xdata momory = 0;                 //记忆组数地址
+   16   1          u8 xdata result=0;                          //键盘输入字符串长度结果 0xff表示其它指令 
+   17   1          static u8 xdata shift_flag=0;               //第二功能标志位
+   18   1          double xdata re_result;                     //计算结果
+   19   1              static char xdata input_buf[IBlength+1];    //输入缓存
+   20   1              char xdata output_buf[16];                  //输出缓存   
+   21   1          u16 xdata i=0;
+   22   1          
+   23   1          switch( state )
+   24   1          {
+   25   2              case 0:                                 //初始化
+   26   2                  memset(input_buf,'\0',IBlength);
+   27   2                  memset(output_buf,'\0',16);
+   28   2                  Screen_Clear();
+   29   2       
+   30   2              //-----------------------读取掉电参数--------------------
+   31   2                  for(i=0;i<512;i++)
+   32   2                      SaveBuff[i] = IapRead(0x0200+i); //P1=0x12
+   33   2                  if( SaveBuff[0]!= 0x05 )
+   34   2                  {
+   35   3                      memset(SaveBuff,0,512);
+   36   3                      SaveBuff[0] = 0x05;
+   37   3                  }
+   38   2                  
+   39   2                  addr = 0;
+   40   2                  state++;
+   41   2                  break;
+   42   2           
+   43   2              case 1://等待输入
+   44   2      a:          Cursor_Blink((u8)(addr*8),0,50); 
+   45   2                  if( keynum>0 )
+   46   2                  {
+   47   3                      if( keynum == 8 )
+   48   3                      {
+   49   4                          if(addr>=1)
+   50   4                              addr-=1;
+   51   4                      }
+   52   3                      else if( keynum == 10 )
+   53   3                      {
+   54   4                          if( input_buf[addr]!=0 )
+   55   4                              addr+=1;
+   56   4                      }
+   57   3                      else if( keynum == 4 )  //历史记录上翻
+   58   3                      {
+C251 COMPILER V5.60.0,  nor_cal                                                            22/03/23  11:38:00  PAGE 2   
+
+   59   4                          state = 10;
+   60   4                          momory = 0;
+   61   4                          goto ad;
+   62   4                      }   
+   63   3                      else if( keynum == 9 )  //历史记录下翻
+   64   3                      {
+   65   4                          state = 10;
+   66   4                          momory = 0;
+   67   4                          keynum = 4;     //强制从第一组记忆开始查看
+   68   4                          goto ad;
+   69   4                      }                   
+   70   3                      else if( keynum == 21 )
+   71   3                      {
+   72   4                          Screen_Clear();     //后期换成清楚最后一位的函数
+   73   4                          String_Delete(&input_buf,IBlength,addr);
+*** WARNING C98 IN LINE 73 OF user\nor_cal.c: parameter 1: pointer to different objects
+*** WARNING C91 IN LINE 73 OF user\nor_cal.c: '&': pointer to different objects
+   74   4                          if( addr>0 )
+   75   4                              addr--;
+   76   4                      }                 
+   77   3                      else if( keynum == 22 )
+   78   3                      {
+   79   4                          memset(input_buf,'\0',IBlength);
+   80   4                          memset(output_buf,'\0',16);                    
+   81   4                          Screen_Clear();
+   82   4                          addr=0;
+   83   4                      }   
+   84   3                      else if( keynum == 17 )
+   85   3                      {                  
+   86   4                          Screen_Clear();
+   87   4                          Screen_ShowStr(0,(u8)(0),"1.sinh");
+   88   4                          Screen_ShowStr(0,(u8)(2),"2.cosh");
+   89   4                          Screen_ShowStr(0,(u8)(4),"3.tanh");
+   90   4                          state = 5;
+   91   4                      }                   
+   92   3                      else if( keynum == '=' )        //計算結果
+   93   3                      {
+   94   4                          addr = String_length(input_buf);
+   95   4                          input_buf[addr]='\0';
+   96   4                          state = 2;
+   97   4                      }    
+   98   3                      else if( keynum == 1 )        //其它功能
+   99   3                      {
+  100   4                          shift_flag = !shift_flag;
+  101   4                      }                  
+  102   3                      else
+  103   3                      {
+  104   4                          if( shift_flag )
+  105   4                          {
+  106   5                              keynum += 0x80;
+  107   5                              shift_flag = 0;
+  108   5                          }
+  109   4                          result=String_Insert(&input_buf,IBlength,addr,keynum);
+*** WARNING C98 IN LINE 109 OF user\nor_cal.c: parameter 1: pointer to different objects
+*** WARNING C91 IN LINE 109 OF user\nor_cal.c: '&': pointer to different objects
+  110   4                          if( result!=0xff )
+  111   4                          {
+  112   5                              addr += result;
+  113   5                              if( addr>=IBlength )
+  114   5                              {
+  115   6                                  addr=IBlength;
+  116   6                                  input_buf[IBlength]='\0';
+  117   6                              }
+  118   5                          }                    
+  119   4                      } 
+  120   3                      if( state==1 )
+C251 COMPILER V5.60.0,  nor_cal                                                            22/03/23  11:38:00  PAGE 3   
+
+  121   3                          Screen_ShowStr(0,(u8)(0),&input_buf);
+*** WARNING C98 IN LINE 121 OF user\nor_cal.c: parameter 3: pointer to different objects
+*** WARNING C91 IN LINE 121 OF user\nor_cal.c: '&': pointer to different objects
+  122   3                      Screen_ShowFreshen();
+  123   3                      keynum = 0;
+  124   3                  }
+  125   2                  
+  126   2                  break;
+  127   2              case 2://计算结果
+  128   2                  if( alg_calc_expression(input_buf, &re_result, NULL)==1 )
+  129   2                  {
+  130   3                      sprintf(output_buf,"%g",re_result);
+  131   3                      g_ans = re_result;
+  132   3                      Screen_ShowStr(0,6,output_buf);
+  133   3                      Screen_ShowFreshen();
+  134   3                          
+  135   3      //------------------------------历史参数保存------------------------------
+  136   3                      //这里其实可以用循环队列
+  137   3                      if( SaveBuff[1]>=10 )       //数据大于10组
+  138   3                      {
+  139   4                          for(i=0;i<(26*9);i++)        //
+  140   4                              SaveBuff[4+i] = SaveBuff[4+26+i];
+  141   4                          SaveBuff[1] = 9;
+  142   4                      }
+  143   3                      if( SaveBuff[1]<10 )
+  144   3                      {
+  145   4                          for(i=0;i<26;i++)        //一个公式26个字符
+  146   4                          {
+  147   5                              SaveBuff[4+26*SaveBuff[1]+i] = input_buf[i];
+  148   5                          }
+  149   4                          SaveBuff[1]++;
+  150   4                          IapErase(0x0200);
+  151   4                          for(i=0;i<512;i++)
+  152   4                              IapProgram(0x0200+i, SaveBuff[i]);                    
+  153   4                      } 
+  154   3                              
+  155   3                  }
+  156   2                  else
+  157   2                  {
+  158   3                      Screen_ShowStr(0,6,"INPUT ERROR");
+  159   3                      Screen_ShowFreshen();
+  160   3                  }
+  161   2                  state = 4;
+  162   2                  break;
+  163   2              case 3://显示历史数据
+  164   2                  break;
+  165   2              
+  166   2              case 4://等待下一次输入
+  167   2                  if( keynum>0 )
+  168   2                  {
+  169   3                      state= 1;  
+  170   3                      memset(input_buf,'\0',IBlength);
+  171   3                      memset(output_buf,'\0',16);
+  172   3                      Screen_Clear(); 
+  173   3                      addr = 0;                
+  174   3                      goto a;
+  175   3                  }  
+  176   2                  break;
+  177   2              case 5://特殊功能輸入
+  178   2                  if( keynum>0 )
+  179   2                  {
+  180   3                      if(( keynum=='1' )||( keynum=='2' )||( keynum=='3' ))
+  181   3                      {
+  182   4                          addr +=String_Insert(&input_buf,IBlength,addr,120+keynum-'1'); 
+*** WARNING C98 IN LINE 182 OF user\nor_cal.c: parameter 1: pointer to different objects
+*** WARNING C91 IN LINE 182 OF user\nor_cal.c: '&': pointer to different objects
+C251 COMPILER V5.60.0,  nor_cal                                                            22/03/23  11:38:00  PAGE 4   
+
+*** WARNING C188 IN LINE 182 OF user\nor_cal.c: 'parameter 4': value truncated
+  183   4                          if( addr>=IBlength )
+  184   4                          {
+  185   5                              addr=IBlength;
+  186   5                              input_buf[IBlength]='\0';
+  187   5                          }                    
+  188   4                          state=1;
+  189   4                          Screen_Clear();
+  190   4                          Screen_ShowStr(0,(u8)(0),&input_buf);
+*** WARNING C98 IN LINE 190 OF user\nor_cal.c: parameter 3: pointer to different objects
+*** WARNING C91 IN LINE 190 OF user\nor_cal.c: '&': pointer to different objects
+  191   4                          Screen_ShowFreshen();
+  192   4                      }     
+  193   3                  }                
+  194   2                  break;
+  195   2              case 10://記憶顯示
+  196   2                  if( keynum>0 )
+  197   2                  {
+  198   3                      if(( keynum!=4 )&&( keynum!=9 ))
+  199   3                      {
+  200   4                          Screen_Clear();
+  201   4                          state = 1;
+  202   4                          goto a;
+  203   4                      }
+  204   3                          
+  205   3      ad:             if( SaveBuff[1]==0 )
+  206   3                      {
+  207   4                          Screen_ShowStr(0,(u8)(0),"没有记忆");
+  208   4                          Screen_ShowFreshen();                
+  209   4                      }
+  210   3                      else
+  211   3                      {
+  212   4                          if(( keynum==4 ))  
+  213   4                          {
+  214   5                              if( ( momory>0 ) )
+  215   5                                  momory--;
+  216   5                          }
+  217   4                          else if(( keynum==9  )) 
+  218   4                          {
+  219   5                              if( momory<(SaveBuff[1]-1))
+  220   5                                  momory++;
+  221   5                          }
+  222   4                          for( i=0;i<26;i++ )
+  223   4                              input_buf[i] = SaveBuff[momory*26+4+i];
+  224   4                          
+  225   4                          alg_calc_expression(input_buf, &re_result, NULL);
+  226   4                          sprintf(output_buf,"%g",re_result);  
+  227   4                          
+  228   4                          Screen_Clear();
+  229   4                          Screen_ShowStr(0,(u8)(0),&input_buf);
+*** WARNING C98 IN LINE 229 OF user\nor_cal.c: parameter 3: pointer to different objects
+*** WARNING C91 IN LINE 229 OF user\nor_cal.c: '&': pointer to different objects
+  230   4                          Screen_ShowStr(0,6,output_buf); 
+  231   4                          Screen_ShowFreshen();
+  232   4                      }
+  233   3                  }                
+  234   2                  break;            
+  235   2              
+  236   2          }
+  237   1      }
+  238          
+  239          
+  240          void complex_calculate(u8 keynum)
+  241          {
+  242   1          static u8 addr;
+  243   1          u8 result;
+C251 COMPILER V5.60.0,  nor_cal                                                            22/03/23  11:38:00  PAGE 5   
+
+  244   1          static u8 shift_flag=0;
+  245   1          double re_result,im_result;       //计算结果
+  246   1              char input_buf[IBlength];     //输入缓存
+  247   1              char output_buf[16];    //输出缓存   
+  248   1          P21=!P21;
+  249   1          switch( state )
+  250   1          {
+  251   2              case 0://初始化
+  252   2                  memset(input_buf,'\0',IBlength);
+  253   2                  memset(output_buf,'\0',16);
+  254   2                  Screen_Clear();
+  255   2                  addr = 0;
+  256   2                  state++;
+  257   2                  break;
+  258   2           
+  259   2              case 1://等待输入
+  260   2      a:          Cursor_Blink((u8)(addr*8),0,50); 
+  261   2                  if( keynum>0 )
+  262   2                  {
+  263   3                      if( keynum == 8 )
+  264   3                      {
+  265   4                          //Screen_ShowFreshen();
+  266   4                          if(addr>=1)
+  267   4                              addr-=1;
+  268   4                      }
+  269   3                      else if( keynum == 10 )
+  270   3                      {
+  271   4                          //Screen_ShowFreshen();
+  272   4                          if( input_buf[addr]!=0 )
+  273   4                              addr+=1;
+  274   4                      } 
+  275   3                      else if( keynum == 21 )
+  276   3                      {
+  277   4                          //Screen_ShowFreshen();
+  278   4                          Screen_Clear();     //后期换成清楚最后一位的函数
+  279   4                          String_Delete(&input_buf,IBlength,addr);
+*** WARNING C98 IN LINE 279 OF user\nor_cal.c: parameter 1: pointer to different objects
+*** WARNING C91 IN LINE 279 OF user\nor_cal.c: '&': pointer to different objects
+  280   4                          if( addr>0 )
+  281   4                              addr--;
+  282   4                      }                 
+  283   3                      else if( keynum == 22 )
+  284   3                      {
+  285   4                          memset(input_buf,'\0',IBlength);
+  286   4                          memset(output_buf,'\0',16);                    
+  287   4                          Screen_Clear();
+  288   4                          addr=0;
+  289   4                      }   
+  290   3                      else if( keynum == 17 )
+  291   3                      {                  
+  292   4                          Screen_Clear();
+  293   4                          Screen_ShowStr(0,(u8)(0),"1.sinh");
+  294   4                          Screen_ShowStr(0,(u8)(2),"2.cosh");
+  295   4                          Screen_ShowStr(0,(u8)(4),"3.tanh");
+  296   4                          state = 5;
+  297   4                      }                   
+  298   3                      else if( keynum == '=' )        //計算結果
+  299   3                      {
+  300   4                          addr = String_length(input_buf);
+  301   4                          input_buf[addr]='\0';
+  302   4                          state = 2;
+  303   4                      }  
+  304   3                      else if( keynum == 1 )        //其它功能
+  305   3                      {
+  306   4                          shift_flag = !shift_flag;
+  307   4                      }                     
+C251 COMPILER V5.60.0,  nor_cal                                                            22/03/23  11:38:00  PAGE 6   
+
+  308   3                      else
+  309   3                      {
+  310   4                          if( shift_flag )
+  311   4                          {
+  312   5                              keynum += 0x80;
+  313   5                              shift_flag = 0;
+  314   5                          }                   
+  315   4                          result=String_Insert(&input_buf,IBlength,addr,keynum);
+*** WARNING C98 IN LINE 315 OF user\nor_cal.c: parameter 1: pointer to different objects
+*** WARNING C91 IN LINE 315 OF user\nor_cal.c: '&': pointer to different objects
+  316   4                          if( result!=0xff )
+  317   4                          {
+  318   5                              addr += result;
+  319   5                              if( addr>=IBlength )
+  320   5                              {
+  321   6                                  addr=IBlength;
+  322   6                                  input_buf[IBlength]='\0';
+  323   6                              }                        
+  324   5                          }                    
+  325   4                      } 
+  326   3                      if( state==1 )
+  327   3                          Screen_ShowStr(0,(u8)(0),&input_buf);
+*** WARNING C98 IN LINE 327 OF user\nor_cal.c: parameter 3: pointer to different objects
+*** WARNING C91 IN LINE 327 OF user\nor_cal.c: '&': pointer to different objects
+  328   3                      Screen_ShowFreshen();
+  329   3                      keynum = 0;
+  330   3                  }
+  331   2                  
+  332   2                  break;
+  333   2              case 2://计算结果
+  334   2                  if( alg_calc_expression(input_buf, &re_result, &im_result)==1 )
+  335   2                  {
+  336   3                                      if(im_result <0.0)
+  337   3                                              sprintf(output_buf,"%g%gi",re_result,im_result);
+  338   3                                      else
+  339   3                                              sprintf(output_buf,"%g+%gi",re_result,im_result);
+  340   3                      
+  341   3                      Screen_ShowStr(0,6,output_buf);
+  342   3                      Screen_ShowFreshen();
+  343   3                  }
+  344   2                  else
+  345   2                  {
+  346   3                      Screen_ShowStr(0,6,"INPUT ERROR");
+  347   3                      Screen_ShowFreshen();
+  348   3                  }
+  349   2                  state = 4;
+  350   2                  break;
+  351   2              case 3://显示历史数据
+  352   2                  break;
+  353   2              
+  354   2              case 4://等待下一次输入
+  355   2                  if( keynum>0 )
+  356   2                  {
+  357   3                      state= 1;  
+  358   3                      memset(input_buf,'\0',IBlength);
+  359   3                      memset(output_buf,'\0',16);
+  360   3                      Screen_Clear(); 
+  361   3                      addr = 0;                
+  362   3                      goto a;
+  363   3                  }  
+  364   2                  break;
+  365   2              case 5://特殊功能輸入
+  366   2                  if( keynum>0 )
+  367   2                  {
+  368   3                      if(( keynum=='1' )||( keynum=='2' )||( keynum=='3' ))
+  369   3                      {
+C251 COMPILER V5.60.0,  nor_cal                                                            22/03/23  11:38:00  PAGE 7   
+
+  370   4                          addr +=String_Insert(&input_buf,IBlength,addr,120+keynum-'1');  
+*** WARNING C98 IN LINE 370 OF user\nor_cal.c: parameter 1: pointer to different objects
+*** WARNING C91 IN LINE 370 OF user\nor_cal.c: '&': pointer to different objects
+*** WARNING C188 IN LINE 370 OF user\nor_cal.c: 'parameter 4': value truncated
+  371   4                          state=1;
+  372   4                          if( addr>=IBlength )
+  373   4                          {
+  374   5                              addr=IBlength;
+  375   5                              input_buf[IBlength]='\0';
+  376   5                          }                    
+  377   4                          Screen_Clear();
+  378   4                          Screen_ShowStr(0,(u8)(0),&input_buf);
+*** WARNING C98 IN LINE 378 OF user\nor_cal.c: parameter 3: pointer to different objects
+*** WARNING C91 IN LINE 378 OF user\nor_cal.c: '&': pointer to different objects
+  379   4                          Screen_ShowFreshen();
+  380   4                      }     
+  381   3                  }                
+  382   2                  break;
+  383   2              
+  384   2          }
+  385   1      }
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =      1993     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =       542         20
+  xdata-const size     =    ------     ------
+  edata size           =         2         50
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =        81     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  24 WARNING(S),  0 ERROR(S)

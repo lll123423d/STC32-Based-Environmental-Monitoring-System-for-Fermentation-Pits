@@ -1,0 +1,602 @@
+C251 COMPILER V5.60.0,  main                                                               09/10/25  20:45:15  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE main
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE main.c LARGE INTR2 ROM(HUGE) BROWSE DEBUG PRINT(.\Listings\main.lst) O
+                    -BJECT(.\Objects\main.obj) 
+
+stmt  level    source
+
+    1          #include <STC32G.H>
+    2          #include <CONFIGOLED.H>
+    3          #include <intrins.h>
+    4          #include <stdio.h>   // 用于printf
+    5          
+    6          sbit DHT11 = P1^1;    //dth11数字信号输入脚
+    7          
+    8          sbit    SPI_MISO = P2^4;    //PIN2
+    9          sbit    SPI_MOSI = P2^3;    //PIN5
+   10          sbit    SPI_SCK = P2^5;     //PIN6
+   11          
+   12          sbit    OLED_CS     = P2^2;                                 //???? 
+   13          sbit    OLED_DC     = P2^1;                                 //????/??????
+   14          sbit    OLED_REST   = P2^0;                                 //??λ??
+   15          
+   16          #define OLED_CMD  0                                             //д????
+   17          #define OLED_DATA 1                                             //д????
+   18          #ifndef NULL
+               #define NULL ((void*)0)
+               #endif
+   21          
+   22          extern unsigned char xdata OLED_Buffer[8][128]; // 显示缓冲区
+   23          unsigned char abc[]="hell world";
+   24          
+   25          // 假设OLED宽度为128像素，每个汉字占16像素，英文字符占8像素
+   26          #define OLED_WIDTH 128
+   27          
+   28          // 字符串分解后的元素结构
+   29          typedef struct {
+   30              unsigned char type; // 0:英文, 1:汉字
+   31              unsigned char value; // 英文字符的ASCII或汉字的字库索引
+   32          } CharUnit;
+   33          
+   34          // 将字符串转换为CharUnit数组
+   35          // 字符串："基于STC32G12K128的窖池环境监测系统"
+   36          // 汉字对应的字库索引：基(0), 于(1), 的(14), 窖(2), 池(3), 环(4), 境(5), 监(6), 测(7), 系(8), 统(9)
+   37          // 英文和数字直接使用ASCII码
+   38          const CharUnit message[] = {
+   39              {1, 0},  // 基
+   40              {1, 1},  // 于
+   41              {0, 'S'}, {0, 'T'}, {0, 'C'}, {0, '3'}, {0, '2'}, {0, 'G'}, {0, '1'}, {0, '2'}, {0, 'K'}, {0, '1'}, {
+             -0, '2'}, {0, '8'},
+   42              {1, 14}, // 的
+   43              {1, 2},  // 窖
+   44              {1, 3},  // 池
+   45              {1, 4},  // 环
+   46              {1, 5},  // 境
+   47              {1, 6},  // 监
+   48              {1, 7},  // 测
+   49              {1, 8},  // 系
+   50              {1, 9}   // 统
+   51          };
+   52          
+   53          #define MESSAGE_LENGTH (sizeof(message) / sizeof(message[0]))
+   54          
+   55          // 滚动显示状态变量
+   56          int scroll_x = OLED_WIDTH; // 起始x坐标（从屏幕右侧开始）
+   57          int total_width = 0;       // 消息总宽度
+C251 COMPILER V5.60.0,  main                                                               09/10/25  20:45:15  PAGE 2   
+
+   58          int scroll_delay = 0;      // 滚动延迟计数器
+   59          
+   60          void SPI_Init(void)                             //初始化
+   61          {
+   62   1              P_SW1 = (P_SW1 & ~(3<<2)) | (1<<2);     //IO口切换. 0: P1.2/P5.4 P1.3 P1.4 P1.5, 1: P2.2 P2.3 P2.4 P2.5,
+             - 2: P5.4 P4.0 P4.1 P4.3, 3: P3.5 P3.4 P3.3 P3.2
+   63   1              SPCTL = 0X90;           //模式配置 ssig==1 忽略SS
+   64   1              SPCTL |= 0X40;
+   65   1              SPI_SCK = 0;                    //引脚初始化
+   66   1              SPI_MOSI=1;
+   67   1              SPSTAT = 0xC0;  // 写1清除SPIF和WCOL标志位
+   68   1      }
+   69          
+   70          void SPI_WriteByte(unsigned char dat)           //写入一个字节
+   71                  {
+   72   1                      SPDAT = dat;
+   73   1                      while(SPIF == 0);
+   74   1                      SPSTAT = 0xC0;  // 写1清除SPIF和WCOL标志位
+   75   1              }
+   76          
+   77          // 微秒级延时函数（基于STC32G12K128的IRC频率调整）
+   78          void Delay_us(unsigned int us) {
+   79   1          while (us--) {
+   80   2              _nop_(); _nop_(); _nop_(); // 根据主频调整指令周期
+   81   2          }
+   82   1      }
+   83          
+   84          // 毫秒级延时函数
+   85          void Delay_ms(unsigned int ms) {
+   86   1          while (ms--) {
+   87   2              Delay_us(1000);
+   88   2          }
+   89   1      }
+   90          
+   91          void OLED_WR_Byte(unsigned char dat,unsigned char cmd)
+   92          {
+   93   1          if(cmd)
+   94   1          {
+   95   2              OLED_DC = 1;
+   96   2          }
+   97   1          else
+   98   1          {
+   99   2              OLED_DC = 0;
+  100   2          }
+  101   1          OLED_CS = 0;
+  102   1          SPI_WriteByte(dat);
+  103   1          OLED_CS = 1;
+  104   1      }
+  105          
+  106          void OLED_Set_Pos(unsigned char x, unsigned char y) 
+  107          { 
+  108   1              OLED_WR_Byte((unsigned char)(0xb0+y),OLED_CMD);    //设置其实页的位置（0到7页）
+  109   1              OLED_WR_Byte(((x&0xf0)>>4)|0x10,OLED_CMD);     //设置列（低四位）
+  110   1              OLED_WR_Byte((x&0x0f)|0x01,OLED_CMD);          //高四位
+  111   1      }
+  112          
+  113          //清屏函数,清完屏,整个屏幕是黑色的!和没点亮一样!!!        
+  114          void OLED_Clear(void)  
+  115          {  
+  116   1              unsigned char i,n;                  
+  117   1              for(i=0;i<8;i++)  
+  118   1              {  
+  119   2                      OLED_WR_Byte (0xb0+i,OLED_CMD);    //设置页地址（0~7）
+*** WARNING C188 IN LINE 119 OF main.c: 'parameter 1': value truncated
+  120   2                      OLED_WR_Byte (0x00,OLED_CMD);      //设置显示位置—列低地址
+  121   2                      OLED_WR_Byte (0x10,OLED_CMD);      //设置显示位置—列高地址   
+C251 COMPILER V5.60.0,  main                                                               09/10/25  20:45:15  PAGE 3   
+
+  122   2                      for(n=0;n<128;n++)OLED_WR_Byte(0x00,OLED_DATA); 
+  123   2              } //更新显示
+  124   1      }
+  125          
+  126          /*@显示字符函数
+  127           *@x--横坐标  选择F8X16[]，x占用8个宽度 
+  128           *@y--纵坐标  选择F8X16[]，y占用2个宽度（两行）
+  129           *@char--要显示的字库里的字符
+  130           *@SIZE--选择configoled.h里的字库，16表示选择F8X16[]
+  131           */
+  132          void OLED_ShowChar(unsigned char x,unsigned char y,unsigned char  chr,unsigned char SIZE)
+  133          {       
+  134   1              unsigned char c=0,i=0;  
+  135   1                      c=chr-' ';//根据空格字符得到偏移后的值 chr-32                   
+  136   1                      if(x>128-1){x=0;y=y;}   //如果起点横坐标超过128（屏幕最右侧），则行清零列下移动两行
+*** WARNING C138 IN LINE 136 OF main.c: expression with possibly no effect
+  137   1                      if(SIZE ==16)             //根据字号大小选择字库
+  138   1                              {
+  139   2                              OLED_Set_Pos(x,y);      
+  140   2                              for(i=0;i<8;i++)       //两行高度的上一行
+  141   2                              OLED_WR_Byte( F8X16[c*16+i],OLED_DATA);
+  142   2                              OLED_Set_Pos(x,y+1);
+*** WARNING C188 IN LINE 142 OF main.c: 'parameter 2': value truncated
+  143   2                              for(i=0;i<8;i++)       //下一行
+  144   2                              OLED_WR_Byte( F8X16[c*16+i+8],OLED_DATA);
+  145   2                              }
+  146   1                              else {  
+  147   2                                      OLED_Set_Pos(x,y+1);
+*** WARNING C188 IN LINE 147 OF main.c: 'parameter 2': value truncated
+  148   2                                      for(i=0;i<6;i++)
+  149   2                                      OLED_WR_Byte( F6x8[c][i],OLED_DATA);
+  150   2                                      
+  151   2                              }
+  152   1      }
+  153          
+  154          void OLED_Init(void)
+  155          {
+  156   1              SPI_Init();
+  157   1          Delay_ms(200);          //延时等待单片机稳定
+  158   1      
+  159   1          OLED_WR_Byte(0xAE,OLED_CMD);//关闭显示，准备配置
+  160   1              //开始配置
+  161   1              OLED_WR_Byte(0x20,OLED_CMD);//设置内存地址模式
+  162   1          OLED_WR_Byte(0x02,OLED_CMD);//00 水平   01 垂直  02 页地址模式
+  163   1              
+  164   1          OLED_WR_Byte(0x00,OLED_CMD);//设置列起始地位
+  165   1          OLED_WR_Byte(0x10,OLED_CMD);//设置列起始高位
+  166   1              
+  167   1          OLED_WR_Byte(0x40,OLED_CMD);//设置起始行：显存中的第几行作为屏幕的第一行
+  168   1              OLED_WR_Byte(0xb0,OLED_CMD);//设置起始页：0到7页
+  169   1              
+  170   1          OLED_WR_Byte(0x81,OLED_CMD);//设置对比度
+  171   1          OLED_WR_Byte(0xFf,OLED_CMD);// 0到256个级别  00h-ffh
+  172   1              
+  173   1              OLED_WR_Byte(0xa4,OLED_CMD);// 0xa4显示显存内容 0xa5无视显纯内容点亮全屏
+  174   1              
+  175   1          OLED_WR_Byte(0xA1,OLED_CMD);//设置镜像    0xa0左右反置 0xa1正常
+  176   1          OLED_WR_Byte(0xC8,OLED_CMD);//设置镜像   0xc0上下反置 0xc8正常
+  177   1              
+  178   1          OLED_WR_Byte(0xA6,OLED_CMD);//设置为普通显示
+  179   1              
+  180   1          OLED_WR_Byte(0xA8,OLED_CMD);//设置复用率（0-63）
+  181   1          OLED_WR_Byte(0x3f,OLED_CMD);//1/64 （0x00-0x3f）
+  182   1              
+  183   1          OLED_WR_Byte(0xD3,OLED_CMD);//设置屏幕上下偏移
+  184   1          OLED_WR_Byte(0x00,OLED_CMD);//0x00-0xff 不偏移
+C251 COMPILER V5.60.0,  main                                                               09/10/25  20:45:15  PAGE 4   
+
+  185   1              
+  186   1          OLED_WR_Byte(0xd5,OLED_CMD);//设置时钟显示分频频率 刷新率
+  187   1          OLED_WR_Byte(0x80,OLED_CMD);//0x10-0xf0(越大速度越快)
+  188   1              
+  189   1          OLED_WR_Byte(0xD9,OLED_CMD);//设置预充电时间
+  190   1          OLED_WR_Byte(0xF1,OLED_CMD);//将预充电设置为15个时钟周期，放电设置为1个时钟周期
+  191   1              
+  192   1          OLED_WR_Byte(0xDA,OLED_CMD);//设置列引脚硬件配置
+  193   1          OLED_WR_Byte(0x12,OLED_CMD);//12864--12 12832--02
+  194   1              
+  195   1          OLED_WR_Byte(0xDB,OLED_CMD);//--设置vcomh反压值
+  196   1          OLED_WR_Byte(0x40,OLED_CMD);//设置 VCOM 取消选择电平
+  197   1              
+  198   1          OLED_WR_Byte(0x8D,OLED_CMD);//设置电荷泵开启
+  199   1          OLED_WR_Byte(0x14,OLED_CMD);//禁用
+  200   1              
+  201   1          OLED_WR_Byte(0xAF,OLED_CMD);  //开启显示
+  202   1          OLED_Clear();
+  203   1              OLED_Set_Pos(0,0); 
+  204   1      }
+  205          
+  206          //显示一个字符号串
+  207          void OLED_ShowString(unsigned char x,unsigned char y,unsigned  char  *chr)
+  208          { 
+  209   1              unsigned char j=0;
+  210   1              while (chr[j]!='\0')
+  211   1              {               OLED_ShowChar(x,y,chr[j],16);
+  212   2                              x+=8;
+  213   2                      if(x>120){x=0;y+=2;}
+  214   2                              j++;
+  215   2              }
+  216   1      }
+  217          
+  218          //m的n次方函数，这里用于计算10的n次方
+  219          unsigned int oled_pow(unsigned char m,unsigned char n)
+  220          {
+  221   1              unsigned int result=1;   
+  222   1              while(n--)result*=m;    
+  223   1              return result;
+  224   1      }                                 
+  225          /*显示2个数字
+  226           *x,y :起点坐标  
+  227           *len :数字的位数   最多5位
+  228           *size:字体大小
+  229           *mode:模式     0,填充模式;1,叠加模式
+  230           *num:数值(0~65535);           */                 
+  231          void OLED_ShowNum(unsigned char x,unsigned char y,unsigned int num,unsigned char len,unsigned char size2)
+  232          {               
+  233   1              unsigned char t,temp;
+  234   1              unsigned char enshow=0;                                            
+  235   1              for(t=0;t<len;t++)
+  236   1              {
+  237   2                      temp=(num/oled_pow(10,len-t-1))%10;
+*** WARNING C188 IN LINE 237 OF main.c: 'parameter 2': value truncated
+  238   2                      if(enshow==0&&t<(len-1))
+  239   2                      {
+  240   3                              if(temp==0)
+  241   3                              {
+  242   4                                      OLED_ShowChar(x+(size2/2)*t,y,' ',size2);
+*** WARNING C188 IN LINE 242 OF main.c: 'parameter 1': value truncated
+  243   4                                      continue;
+  244   4                              }else enshow=1; 
+  245   3                               
+  246   3                      }
+  247   2                      OLED_ShowChar(x+(size2/2)*t,y,temp+'0',size2); 
+*** WARNING C188 IN LINE 247 OF main.c: 'parameter 1': value truncated
+C251 COMPILER V5.60.0,  main                                                               09/10/25  20:45:15  PAGE 5   
+
+*** WARNING C188 IN LINE 247 OF main.c: 'parameter 3': value truncated
+  248   2              }
+  249   1      }
+  250          
+  251          //========================================================================
+  252          // 函数名称: OLED_ShowNum_Float
+  253          // 函数功能: OLED显示到小数点后两位
+  254          // 入口参数: @x：x点  @y：y点  @num：小数变量   
+  255          // 函数返回: 无
+  256          //========================================================================
+  257          // 手动实现浮点数到字符串转换（两位小数）
+  258          void OLED_ShowNum_Float(unsigned char x, unsigned char y, float num) {
+  259   1          unsigned char str[12];
+  260   1          unsigned char i = 0, j = 0;
+  261   1          long integer_part;
+  262   1          int fractional_part;
+  263   1          unsigned char neg = 0;
+  264   1          
+  265   1          // 处理负数
+  266   1          if (num < 0) {
+  267   2              neg = 1;
+  268   2              num = -num;
+  269   2          }
+  270   1          
+  271   1          // 分离整数和小数部分
+  272   1          integer_part = (long)num;
+  273   1          fractional_part = (int)((num - integer_part) * 100 + 0.5); // 四舍五入到两位小数
+  274   1          
+  275   1          // 处理小数部分进位
+  276   1          if (fractional_part >= 100) {
+  277   2              fractional_part -= 100;
+  278   2              integer_part++;
+  279   2          }
+  280   1          
+  281   1          // 转换整数部分
+  282   1          if (integer_part == 0) {
+  283   2              str[i++] = '0';
+  284   2          } else {
+  285   2              long temp = integer_part;
+  286   2              unsigned char digits = 0;
+  287   2              
+  288   2              // 计算位数
+  289   2              while (temp > 0) {
+  290   3                  temp /= 10;
+  291   3                  digits++;
+  292   3              }
+  293   2              
+  294   2              // 转换整数部分
+  295   2              temp = integer_part;
+  296   2              for (j = 0; j < digits; j++) {
+  297   3                  str[i + digits - 1 - j] = (temp % 10) + '0';
+  298   3                  temp /= 10;
+  299   3              }
+  300   2              i += digits;
+  301   2          }
+  302   1          
+  303   1          // 添加小数点
+  304   1          str[i++] = '.';
+  305   1          
+  306   1          // 添加小数部分（确保两位）
+  307   1          if (fractional_part < 10) {
+  308   2              str[i++] = '0';
+  309   2              str[i++] = fractional_part + '0';
+  310   2          } else {
+  311   2              str[i++] = (fractional_part / 10) + '0';
+  312   2              str[i++] = (fractional_part % 10) + '0';
+C251 COMPILER V5.60.0,  main                                                               09/10/25  20:45:15  PAGE 6   
+
+  313   2          }
+  314   1          
+  315   1          // 添加负号（如果需要）
+  316   1          if (neg) {
+  317   2              // 将整个字符串向右移动一位，给负号腾出位置
+  318   2              for (j = i; j > 0; j--) {
+  319   3                  str[j] = str[j - 1];
+  320   3              }
+  321   2              str[0] = '-';
+  322   2              i++;
+  323   2          }
+  324   1          
+  325   1          str[i] = '\0'; // 字符串结束符
+  326   1          
+  327   1          OLED_ShowString(x, y, str);
+  328   1      }
+  329          
+  330          /*@x 列号 128****
+  331           *@y 页号 8
+  332           *@no 汉字库索引
+  333           *注意汉字是16x16的字库
+  334           ***************/
+  335          void OLED_ShowCHinese(unsigned char x,unsigned char y,unsigned char no)
+  336          {                           
+  337   1              unsigned char t,adder=0;
+  338   1              OLED_Set_Pos(x,y);      
+  339   1          for(t=0;t<16;t++)
+  340   1                      {
+  341   2                                      OLED_WR_Byte(Hzk[2*no][t],OLED_DATA);
+  342   2                                      adder+=1;
+  343   2           }  
+  344   1                      OLED_Set_Pos(x,y+1);    
+*** WARNING C188 IN LINE 344 OF main.c: 'parameter 2': value truncated
+  345   1          for(t=0;t<16;t++)
+  346   1                              {       
+  347   2                                      OLED_WR_Byte(Hzk[2*no+1][t],OLED_DATA);
+  348   2                                      adder+=1;
+  349   2            }                                 
+  350   1      }
+  351          
+  352          // 清除单行内容的函数
+  353          void OLED_ClearLine(unsigned char line) {
+  354   1          unsigned char x;
+  355   1          OLED_Set_Pos(0, line);
+  356   1          for(x = 0; x < OLED_WIDTH; x++) {
+  357   2              OLED_WR_Byte(0x00, OLED_DATA);
+  358   2          }
+  359   1      }
+  360          
+  361          // 滚动显示步骤函数（非阻塞）
+  362          void OLED_ScrollStep(void) {
+  363   1          int i, char_width, x;
+  364   1          
+  365   1          // 计算整个字符串的总宽度（仅第一次）
+  366   1          if(total_width == 0) {
+  367   2              for(i = 0; i < MESSAGE_LENGTH; i++) {
+  368   3                  if(message[i].type == 1) {
+  369   4                      total_width += 16; // 汉字宽度
+  370   4                  } else {
+  371   4                      total_width += 8;  // 英文字符宽度
+  372   4                  }
+  373   3              }
+  374   2          }
+  375   1          
+  376   1          // 只清除滚动区域（第一页和第二页）
+  377   1          OLED_ClearLine(0);
+C251 COMPILER V5.60.0,  main                                                               09/10/25  20:45:15  PAGE 7   
+
+  378   1          OLED_ClearLine(1);
+  379   1          
+  380   1          x = scroll_x;
+  381   1          for(i = 0; i < MESSAGE_LENGTH; i++) {
+  382   2              char_width = (message[i].type == 1) ? 16 : 8;
+  383   2              
+  384   2              // 只绘制在屏幕可见区域内的字符
+  385   2              if(x < OLED_WIDTH && x + char_width > 0) {
+  386   3                  if(message[i].type == 1) {
+  387   4                      OLED_ShowCHinese((unsigned char)x, 0, message[i].value);
+  388   4                  } else {
+  389   4                      OLED_ShowChar((unsigned char)x, 0, message[i].value, 16);
+  390   4                  }
+  391   3              }
+  392   2              
+  393   2              x += char_width;
+  394   2              
+  395   2              // 如果已经超出屏幕右侧，提前结束循环
+  396   2              if(x >= OLED_WIDTH) {
+  397   3                  break;
+  398   3              }
+  399   2          }
+  400   1          
+  401   1          // 更新起始位置
+  402   1          scroll_x--;
+  403   1          
+  404   1          // 如果整个字符串已经完全滚出屏幕，则重置起始位置
+  405   1          if(scroll_x < -total_width) {
+  406   2              scroll_x = OLED_WIDTH;
+  407   2          }
+  408   1      }
+  409          
+  410          // 读取DHT11数据函数
+  411          // 返回值：0-成功，1-无响应，2-校验错误
+  412          //temp 温度 humi 湿度
+  413          unsigned char DHT11_Read(float *temp, float *humi) {
+  414   1          unsigned char buf[5] = {0};
+  415   1          unsigned char i, j;
+  416   1          unsigned int timeout;
+  417   1          
+  418   1          // 主机启动信号
+  419   1          DHT11 = 0;
+  420   1          Delay_ms(20);    // 拉低至少18ms
+  421   1          DHT11 = 1;
+  422   1          Delay_us(30);    // 拉高等待20-40μs
+  423   1          
+  424   1          // 检测从机响应
+  425   1          timeout = 10000;
+  426   1          while (!DHT11 && timeout--); // 等待低电平响应
+  427   1          if (timeout == 0) return 1; // 无响应
+  428   1          
+  429   1          timeout = 10000;
+  430   1          while (DHT11 && timeout--); // 等待高电平
+  431   1          if (timeout == 0) return 1;
+  432   1          
+  433   1          // 接收40位数据
+  434   1          for (i = 0; i < 5; i++) {
+  435   2              for (j = 0; j < 8; j++) {
+  436   3                  // 等待54μs低电平结束
+  437   3                  timeout = 10000;
+  438   3                  while (!DHT11 && timeout--);
+  439   3                  if (timeout == 0) return 1;
+  440   3                  
+  441   3                  // 延时40μs（判断高电平持续时间）
+  442   3                  Delay_us(40);
+  443   3                  
+C251 COMPILER V5.60.0,  main                                                               09/10/25  20:45:15  PAGE 8   
+
+  444   3                  // 判断位值（高电平持续时间>40μs为逻辑"1"）
+  445   3                  buf[i] <<= 1;     //将整个字节左移一位
+  446   3                  if (DHT11) {
+  447   4                      buf[i] |= 1;   //如果读到高电平 将buf[i]字节的对应位设置为1
+  448   4                      
+  449   4                      // 等待高电平结束
+  450   4                      timeout = 10000;
+  451   4                      while (DHT11 && timeout--);
+  452   4                      if (timeout == 0) return 1;
+  453   4                  }
+  454   3              }
+  455   2          }
+  456   1          
+  457   1          // 校验数据
+  458   1          if (buf[4] == (buf[0] + buf[1] + buf[2] + buf[3])) {
+  459   2              // 处理温度负数（手册说明：温度<0时，小数部分最高位为1）
+  460   2              if (buf[3] & 0x80) {
+  461   3                  *temp = -(float)(buf[2] + (buf[3] & 0x7F) * 0.1);
+  462   3              } else {
+  463   3                  *temp = (float)buf[2] + (float)buf[3] * 0.1;
+  464   3              }
+  465   2              *humi = (float)buf[0] + (float)buf[1] * 0.1;
+  466   2              return 0; // 成功
+  467   2          } else {
+  468   2              return 2; // 校验错误
+  469   2          }
+  470   1      }
+  471          
+  472          void OLED_First_UI(void)
+  473          {
+  474   1          float temperature, humidity;
+  475   1          unsigned char result;
+  476   1          
+  477   1          // 读取温湿度
+  478   1          result = DHT11_Read(&temperature, &humidity);
+  479   1          
+  480   1          // 清除显示区域
+  481   1          OLED_ClearLine(2);
+  482   1          OLED_ClearLine(3);
+  483   1          OLED_ClearLine(4);
+  484   1          OLED_ClearLine(5);
+  485   1          OLED_ClearLine(6);
+  486   1          OLED_ClearLine(7);
+  487   1          
+  488   1          // 显示温度
+  489   1          OLED_ShowCHinese(0, 2, 10);  // 温
+  490   1          OLED_ShowCHinese(16, 2, 12); // 度
+  491   1          OLED_ShowChar(32, 2, ':', 16);
+  492   1          
+  493   1          if(result == 0) {
+  494   2              OLED_ShowNum_Float(48, 2, temperature);
+  495   2              
+  496   2          } else {
+  497   2              OLED_ShowString(48, 2, "Error");
+  498   2          }
+  499   1          
+  500   1          // 显示湿度
+  501   1          OLED_ShowCHinese(0, 4, 10);  // 湿
+  502   1          OLED_ShowCHinese(16, 4, 12); // 度
+  503   1          OLED_ShowChar(32, 4, ':', 16);
+  504   1          
+  505   1          if(result == 0) {
+  506   2              OLED_ShowNum_Float(40, 4, humidity);
+  507   2              OLED_ShowChar(100, 4, '%', 16);
+  508   2          } else {
+  509   2              OLED_ShowString(40, 4, "Error");
+C251 COMPILER V5.60.0,  main                                                               09/10/25  20:45:15  PAGE 9   
+
+  510   2          }
+  511   1          
+  512   1          // 显示CO2（假设值）
+  513   1          OLED_ShowString(0, 6, "Co2:");
+  514   1          OLED_ShowNum(32, 6, 450, 3, 16);
+  515   1          OLED_ShowString(56, 6, "ppm");
+  516   1          
+  517   1          // 执行一次滚动步骤
+  518   1          OLED_ScrollStep();
+  519   1      }
+  520          
+  521          void main()
+  522          {
+  523   1          static unsigned char arr[]="hello world atc32g12k128";
+  524   1      
+  525   1          EAXFR = 1;                                                                  // 使能访问 XFR
+  526   1          CKCON = 0x00;                                                       // 设置外部数据总线速度为最快
+  527   1          WTST = 0x00;                                                                // 设置程序代码等待参数，等待时间为0个时钟，CPU执行程序速度最快
+  528   1      
+  529   1          P0M1 = 0x00;P0M0 = 0x00;            // 设置P0口为准双向口模式
+  530   1          P1M1 = 0x00;P1M0 = 0x00;            // 设置P1口为准双向口模式
+  531   1          P2M1 = 0x00;P2M0 = 0x00;            // 设置P2口为准双向口模式
+  532   1          P3M1 = 0x00;P3M0 = 0x00;            // 设置P3口为准双向口模式
+  533   1          
+  534   1          OLED_Init();
+  535   1          OLED_Clear();
+  536   1          
+  537   1          while(1) {
+  538   2              OLED_First_UI();      // 更新UI和传感器数据
+  539   2              Delay_ms(100);        // 控制滚动速度
+  540   2          }
+  541   1      }
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =      3032     ------
+  ecode size           =      2783     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =        42         48
+  xdata-const size     =    ------     ------
+  edata size           =    ------     ------
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =       133     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  9 WARNING(S),  0 ERROR(S)

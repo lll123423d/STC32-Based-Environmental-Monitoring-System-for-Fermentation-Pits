@@ -1,0 +1,1 @@
+"..\Hardware\oled.c" LARGE INTR2 BROWSE INCDIR(..\CMSIS;..\system;..\User;..\Hardware) DEBUG PRINT(.\Listings\oled.lst) OBJECT(.\Objects\oled.obj)

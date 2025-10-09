@@ -1,0 +1,85 @@
+C251 COMPILER V5.60.0,  USTAR1                                                             09/10/25  20:12:32  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE USTAR1
+OBJECT MODULE PLACED IN .\Objects\USTAR1.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE System\USTAR1.c LARGE INTR2 ROM(HUGE) BROWSE INCDIR(.\Hardware;.\User;
+                    -.\System) DEBUG PRINT(.\Listings\USTAR1.lst) OBJECT(.\Objects\USTAR1.obj) 
+
+stmt  level    source
+
+    1          #include "../User/main.h"
+    2          
+    3          
+    4          #define BRT (65536 - (MAIN_Fosc / 115200+2) / 4)                // 加 2 操作是为了让 Keil 编译器，自动实现四舍五入运算/
+             -/ 波特率115200                                                                                                                                                                                                                                                                                                                                                                                                                
+    5          bit busy;                                                                                       // 串口忙标志
+    6          unsigned char wptr;                                                                             // 写指针
+    7          unsigned char rptr;                                                                             // 读指针
+    8          unsigned char buffer[16];                                                       // 接收缓存，长度16
+    9          
+   10          
+   11          void Uart1Isr() interrupt 4
+   12          {
+   13   1              if (TI)                                                                                 // 发送中断标志置1时
+   14   1              {
+   15   2                      TI = 0;                                                                         // 清零发送中断标志
+   16   2                      busy = 0;                                                                       // 清零忙状态
+   17   2              }
+   18   1              if (RI)                                                                                 // 接收中断标志置1时
+   19   1              {
+   20   2                      RI = 0;                                                                         // 清零接收中断标志
+   21   2                      buffer[wptr] = SBUF;    // 接收长度16
+   22   2      //              wptr &= 0x0f;                                           // 接收长度16
+   23   2                      wptr = (wptr + 1) % 16;            // 存入环形缓冲区
+   24   2                      
+   25   2      //              buffer[0] = SBUF;                                       // 接收长度1
+   26   2              }
+   27   1      }
+   28          void Uart1Init()                                                        // UART1初始化
+   29          {
+   30   1              S1_S1 = 0;      
+   31   1              S1_S0 = 0;                                                                      // 设置为默认引脚P3.0 P3.1
+   32   1              
+   33   1              SCON = 0x50;                                                            // 模式1（8位数据）、接收使能
+   34   1              T2L = BRT;                                              
+   35   1              T2H = BRT >> 8;                                                 // 波特率对应的重装载值
+   36   1              S1BRT = 1;                                                                      // 定时器2做波特率发生器
+   37   1              T2x12 = 1;                                                                      // 1T模式
+   38   1              T2R = 1;                                                                                // 启动定时器2
+   39   1              wptr = 0x00;                                                            // 清零写指针
+   40   1              rptr = 0x00;                                                            // 清零读指针
+   41   1              busy = 0;                                                                               // 清零忙标志
+   42   1      }
+   43          void UartSend(unsigned char dat)                                // 发送字符函数
+   44          {
+   45   1              while (busy);                                                           // 当串口忙时，等待
+   46   1              busy = 1;                                                                               // 忙标志置1
+   47   1              SBUF = dat;                                                                     // 发送数据dat
+   48   1      }
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =         4     ------
+  ecode size           =       124     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =        18     ------
+C251 COMPILER V5.60.0,  USTAR1                                                             09/10/25  20:12:32  PAGE 2   
+
+  xdata-const size     =    ------     ------
+  edata size           =    ------     ------
+  bit size             =         1     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =    ------     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

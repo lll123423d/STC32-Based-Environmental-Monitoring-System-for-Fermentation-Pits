@@ -1,0 +1,90 @@
+C251 COMPILER V5.60.0,  middle                                                             06/06/23  21:09:24  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE middle
+OBJECT MODULE PLACED IN .\obj\middle.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE middle\middle.c XSMALL INTR2 BROWSE INCDIR(.\Resource;.\ware;.\src;.\m
+                    -iddle;.\user) DEBUG PRINT(.\obj\middle.lst) OBJECT(.\obj\middle.obj) 
+
+stmt  level    source
+
+    1          #include "middle.h"
+    2          #include "set.h"
+    3          
+    4          unsigned char xdata pos_x,pos_y;      //OLED显示调用的地址变量
+    5          u8 xdata state=1;
+    6          
+    7          void Screen_ShowAsc(u8 x,u8 y,u8 asc)
+    8          {
+    9   1          OLED_BuffShowChar(x,y,(asc));
+   10   1      }
+   11          void Screen_ShowAscOpp(u8 x,u8 y,u8 asc)
+   12          {
+   13   1          OLED_BuffShowCharOpp(x,y,(asc));
+   14   1      }
+   15          
+   16          void Screen_ShowNum(u8 x,u8 y,double num)
+   17          {
+   18   1          u8 xdata str[10];
+   19   1          memset(str,0,10);
+   20   1          sprintf(str,"%g",num);
+   21   1          OLED_BuffShowString(x,y,(u8*)str);
+   22   1      }
+   23          
+   24          void Screen_ShowStr(u8 x,u8 y,u8 *str)
+   25          {
+   26   1          OLED_BuffShowString(x,y,(u8*)str);
+   27   1      }
+   28          
+   29          void Screen_ShowFreshen(void)
+   30          {
+   31   1          OLED_BuffShow();
+   32   1      }
+   33          
+   34          void Screen_Clear(void)
+   35          {
+   36   1          OLED_BuffClear();
+   37   1      }
+   38          
+   39          void Screen_ShowLine( unsigned char x1, unsigned char y1, unsigned char x2,unsigned char y2)
+   40          {
+   41   1          OLED_BuffShowLine(x1,y1,x2,y2);
+   42   1      }
+   43          
+   44          void Screen_ShowPoint( unsigned char x, unsigned char y)
+   45          {
+   46   1          OLED_BuffShowPoint(x,y);     //OLED显示一个dian
+   47   1      }
+   48          
+   49          void Screen_Showlight(unsigned char num) //1-5
+   50          {
+   51   1          OLED_LightSet((u8)(10 + 45* num));     //亮度设置
+   52   1      }
+   53                  
+   54          
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =       105     ------
+C251 COMPILER V5.60.0,  middle                                                             06/06/23  21:09:24  PAGE 2   
+
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =         3         10
+  xdata-const size     =    ------     ------
+  edata size           =    ------          2
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =         9     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

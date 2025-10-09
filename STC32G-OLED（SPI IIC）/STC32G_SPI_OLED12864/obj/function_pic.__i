@@ -1,0 +1,1 @@
+"Resource\function_pic.c" XSMALL ROM(HUGE) BROWSE INCDIR(.\Resource;.\ware;.\src;.\middle) DEBUG PRINT(.\obj\function_pic.lst) OBJECT(.\obj\function_pic.obj)

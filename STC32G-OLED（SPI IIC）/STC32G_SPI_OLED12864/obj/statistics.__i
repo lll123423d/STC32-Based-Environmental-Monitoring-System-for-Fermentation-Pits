@@ -1,0 +1,1 @@
+"Resource\statistics.c" XSMALL ROM(HUGE) BROWSE INCDIR(.\Resource;.\ware;.\src;.\middle) DEBUG PRINT(.\obj\statistics.lst) OBJECT(.\obj\statistics.obj)

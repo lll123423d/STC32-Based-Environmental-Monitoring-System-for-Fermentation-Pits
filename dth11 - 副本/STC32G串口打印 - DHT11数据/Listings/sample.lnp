@@ -1,0 +1,6 @@
+".\Listings\sample.obj" 
+TO ".\Listings\sample" 
+PRINT(".\Listings\sample.map") CASE 
+REMOVEUNUSED 
+CLASSES (EDATA (0x0-0xFFF), 
+HDATA (0x0-0xFFF)) 

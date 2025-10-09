@@ -1,0 +1,366 @@
+C251 COMPILER V5.60.0,  solve_differential_equation                                        27/09/22  13:55:47  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE solve_differential_equation
+OBJECT MODULE PLACED IN .\obj\solve_differential_equation.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE Resource\solve_differential_equation.c XSMALL ROM(HUGE) BROWSE INCDIR(
+                    -.\Resource;.\ware;.\src;.\middle) DEBUG PRINT(.\obj\solve_differential_equation.lst) OBJECT(.\obj\solve_differential_equ
+                    -ation.obj) 
+
+stmt  level    source
+
+    1          #include <stdio.h>
+    2          #include <math.h> 
+    3          #include "solve_differential_equation.h"
+    4          #include "middle.h"
+    5          #include "alg_atof.h"
+    6          #include "keyboard_device.h"
+    7          #include "keyboard_input.h"
+    8          #include "alg_caculate.h"
+    9          
+   10          extern uchar num0;
+   11          extern double x,y;
+   12          extern uchar g_chCalcStatus;
+   13          
+   14          
+   15          //求微分方程函数 
+   16          void solve_differential_equation()
+   17          {
+   18   1              uchar hanshu_buff[26];//用来存函数表达式 
+   19   1              uchar temp_buff[26];//用来存一些式子 
+   20   1              uchar result_output[17];
+   21   1              double a_shuzhi=0;
+   22   1              double b_shuzhi=0; 
+   23   1              double h_shuzhi=0;
+   24   1              double y_shuzhi=0;
+   25   1              double x_array[10];//微分方程的解的列表 
+   26   1              double y_array[10];
+   27   1              int n;//间隔数 
+   28   1              double temp_0  =0;//临时值 
+   29   1              double temp_1  =0;
+   30   1              uchar judge=0xff;//判断值 
+   31   1              
+   32   1              uchar m;                        //用于菜单上下移屏 
+   33   1              uchar count1 = 1;
+   34   1              
+   35   1              //初始化 
+   36   1              uchar i=0;
+   37   1              for(i=0;i<26;i++)
+   38   1              {
+   39   2                      hanshu_buff[i]=temp_buff[i]=' ';
+   40   2              }
+   41   1              for(i=0;i<16;i++)
+   42   1                      result_output[i]=' ';
+   43   1              result_output[16]=0;
+   44   1              
+   45   1              //进入主要步骤
+   46   1              g_chCalcStatus = CALC_NORMAL; 
+   47   1              num0=0xff;//初始化
+   48   1              
+   49   1              while(1) 
+   50   1              {
+   51   2                      judge=0xff;
+   52   2                      //初始化菜单显示
+   53   2                      lcd_clear();
+   54   2                      lcd_clear_pic();
+   55   2                      
+   56   2                      if(count1>3)
+   57   2                              count1=3;
+C251 COMPILER V5.60.0,  solve_differential_equation                                        27/09/22  13:55:47  PAGE 2   
+
+   58   2                      else if(count1<1)
+   59   2                              count1=1;
+   60   2                      for(m=0;m<4;m++)
+   61   2                      {
+   62   3                              lcd_set_pos(m,0);       
+   63   3                              switch ('0'+m+count1)
+   64   3                              {
+   65   4                                      case '1':
+   66   4                                              lcd_write_str("1.右边的函数是");break;
+   67   4                                      case '2':
+   68   4                                              lcd_write_str("2.左端点a");break;
+   69   4                                      case '3':
+   70   4                                              lcd_write_str("3.右端点b");break;
+   71   4                                      case '4':
+   72   4                                              lcd_write_str("4.步长h");break;
+   73   4                                      case '5':
+   74   4                                              lcd_write_str("5.左端点的y 值");break;
+   75   4                                      case '6':
+   76   4                                              lcd_write_str("6.结果");break;
+   77   4                                      }
+   78   3                      }
+   79   2                      //按键选择菜单选项 
+   80   2                      num0=0xff;
+   81   2                      do
+   82   2                      {
+   83   3                              num0=keyboard_output();//读取键盘值, 直到按下1,2,3,4,5,6或者↑ ↓ 
+   84   3                      }while(num0!='1' && num0!='2' && num0!='3'&& num0!='4' && num0!='5' && num0!='6' && num0!=3 &&num0!=6);
+   85   2                      
+   86   2                      //根据按键选择不同的功能 
+   87   2                      lcd_clear();
+   88   2                      lcd_clear_pic();
+   89   2                      
+   90   2                      switch(num0)
+   91   2                      {
+   92   3                              case 3:
+   93   3                                      count1--;//菜单显示上移 
+   94   3                                      break;
+   95   3                              case 6:
+   96   3                                      count1++;//菜单显示下移 
+   97   3                                      break;
+   98   3                              case '1':
+   99   3                                      lcd_set_pos(0,0);
+  100   3                                      lcd_write_str("右边的函数是");
+  101   3                                      lcd_set_pos(1,0);
+  102   3                                      for(i=0; i<16 && hanshu_buff[i]!=0 ; i++ )
+  103   3                                      {
+  104   4                                              lcd_write_dat( hanshu_buff[i] ) ;
+  105   4                                              if(i==15)
+  106   4                                              {
+  107   5                                                      lcd_set_pos(2,0);
+  108   5                                                      for(i=16; i<25 && hanshu_buff[i]!=0 ; i++ )
+  109   5                                                      {
+  110   6                                                              lcd_write_dat( hanshu_buff[i] ) ;
+  111   6                                                      }
+  112   5                                              }       
+  113   4                                      } 
+  114   3                                      //读取函数
+  115   3                              
+  116   3                                                      //在第3行输入函数 
+  117   3                                      do
+  118   3                                      {
+  119   4                                              for(i=0;i<26;i++)
+  120   4                                              {
+  121   5                                                      hanshu_buff[i]=0;
+  122   5                                              } 
+  123   4                                              judge = input_to_str(3,hanshu_buff,0xff);
+C251 COMPILER V5.60.0,  solve_differential_equation                                        27/09/22  13:55:47  PAGE 3   
+
+  124   4                                      }while(judge !=INPUT_EQ && judge !=INPUT_AC);
+  125   3                                      
+  126   3                                      break;
+  127   3                                      
+  128   3                              case '2': 
+  129   3                                      lcd_set_pos(0,0);
+  130   3                                      lcd_write_str("a =");
+  131   3                                      lcd_set_pos(1,0);
+  132   3                                      sprintf( temp_buff,"%g",a_shuzhi ); 
+  133   3                                      lcd_write_str(temp_buff);
+  134   3                                      //读取a
+  135   3      //look                  
+  136   3                                      for(i=0;i<26;i++)
+  137   3                                      {
+  138   4                                              temp_buff[i]=' '; 
+  139   4                                      }
+  140   3                                      do
+  141   3                                      {
+  142   4                                              judge = input_to_str(3,temp_buff,0xff);
+  143   4                                      }while(judge !=INPUT_EQ && judge !=INPUT_AC);
+  144   3                                      if( judge ==INPUT_EQ )
+  145   3                                      {
+  146   4                                              a_shuzhi = alg_atof(temp_buff); 
+  147   4                                      }
+  148   3                                      break;
+  149   3                                      
+  150   3                              case '3': 
+  151   3                                      lcd_set_pos(0,0);
+  152   3                                      lcd_write_str("b =");
+  153   3                                      lcd_set_pos(1,0);
+  154   3                                      sprintf( temp_buff,"%g",b_shuzhi ); 
+  155   3                                      lcd_write_str(temp_buff);
+  156   3                                      //读取b
+  157   3      //look                  
+  158   3                                      for(i=0;i<26;i++)
+  159   3                                      {
+  160   4                                              temp_buff[i]=' '; 
+  161   4                                      }
+  162   3                                      do
+  163   3                                      {
+  164   4                                              judge = input_to_str(3,temp_buff,0xff);
+  165   4                                      }while(judge !=INPUT_EQ && judge !=INPUT_AC);
+  166   3                                      if( judge ==INPUT_EQ )
+  167   3                                      {
+  168   4                                              b_shuzhi = alg_atof(temp_buff); 
+  169   4                                      }
+  170   3                                      break;
+  171   3                              case '4': 
+  172   3                                      lcd_set_pos(0,0);
+  173   3                                      lcd_write_str("h =");
+  174   3                                      lcd_set_pos(1,0);
+  175   3                                      sprintf( temp_buff,"%g",h_shuzhi ); 
+  176   3                                      lcd_write_str(temp_buff);
+  177   3                                      //读取h
+  178   3      //look                  
+  179   3                                      for(i=0;i<26;i++)
+  180   3                                      {
+  181   4                                              temp_buff[i]=' '; 
+  182   4                                      }
+  183   3                                      do
+  184   3                                      {
+  185   4                                              judge = input_to_str(3,temp_buff,0xff);
+  186   4                                      }while(judge !=INPUT_EQ && judge !=INPUT_AC);
+  187   3                                      if( judge ==INPUT_EQ )
+  188   3                                      {
+  189   4                                              h_shuzhi = alg_atof(temp_buff); 
+C251 COMPILER V5.60.0,  solve_differential_equation                                        27/09/22  13:55:47  PAGE 4   
+
+  190   4                                      }
+  191   3                                      break;
+  192   3                              
+  193   3                              case '5': 
+  194   3                                      lcd_set_pos(0,0);
+  195   3                                      lcd_write_str("左端点的y 值 =");
+  196   3                                      lcd_set_pos(1,0);
+  197   3                                      sprintf( temp_buff,"%g",y_shuzhi ); 
+  198   3                                      lcd_write_str(temp_buff);
+  199   3                                      //读取y
+  200   3      //look                  
+  201   3                                      for(i=0;i<26;i++)
+  202   3                                      {
+  203   4                                              temp_buff[i]=' '; 
+  204   4                                      }
+  205   3                                      do
+  206   3                                      {
+  207   4                                              judge = input_to_str(3,temp_buff,0xff);
+  208   4                                      }while(judge !=INPUT_EQ && judge !=INPUT_AC);
+  209   3                                      if( judge ==INPUT_EQ )
+  210   3                                      {
+  211   4                                              y_shuzhi = alg_atof(temp_buff); 
+  212   4                                      }
+  213   3                                      break;  
+  214   3                                      
+  215   3                              case '6'://输出 
+  216   3                                      n=(int)(b_shuzhi-a_shuzhi)/h_shuzhi;
+  217   3                                      if(a_shuzhi>b_shuzhi)
+  218   3                                      {
+  219   4                                              lcd_set_pos(0,0);
+  220   4                                              lcd_write_str("a>b,wrong");
+  221   4                                      } 
+  222   3                                      else if(h_shuzhi<0)
+  223   3                                      {
+  224   4                                              lcd_set_pos(0,0);
+  225   4                                              lcd_write_str("h<0,wrong");
+  226   4                                      }       
+  227   3                                      else if(n>10)
+  228   3                                      {
+  229   4                                              lcd_set_pos(0,0);
+  230   4                                              lcd_write_str("请尝试缩小(b-a)");
+  231   4                                              lcd_set_pos(1,0);
+  232   4                                              lcd_write_str("或者增大h"); 
+  233   4                                      }       
+  234   3                                      else
+  235   3                                      {
+  236   4                                              x_array[0]=a_shuzhi;
+  237   4                                              y_array[0]=y_shuzhi;
+  238   4                                              for(i=0;i<n+1;i++)
+  239   4                                          {
+  240   5                                              
+  241   5                                              x_array[i+1]=x_array[i]+h_shuzhi;
+  242   5                                              
+  243   5                                          //  uchar alg_calc_expression(char *pExpression, double *pRealResult, double *pImaginaryResult);
+  244   5                                              //  y[i+1]=y[i]+h * g(x[i],y[i]);
+  245   5                                                      x=x_array[i];
+  246   5                                              y=y_array[i];
+  247   5                                              alg_calc_expression(hanshu_buff, &temp_0, 0);
+  248   5                                              y_array[i+1]=y_array[i] + h_shuzhi * temp_0;
+  249   5                                          //  y[i+1]=y[i]+h/2*( g( x[i],y[i] ) + g( x[i+1],y[i+1] ) );
+  250   5                                              x=x_array[i+1];
+  251   5                                              y=y_array[i+1];
+  252   5                                              alg_calc_expression(hanshu_buff, &temp_1, 0);
+  253   5                                              y_array[i+1]=y_array[i]+h_shuzhi/2*( temp_0+ temp_1 );
+  254   5                                          }
+  255   4                                          i=0;
+C251 COMPILER V5.60.0,  solve_differential_equation                                        27/09/22  13:55:47  PAGE 5   
+
+  256   4                                          do
+  257   4                                          {
+  258   5                                              lcd_clear();
+  259   5                                                      lcd_set_pos(0,0);//x[i]= 
+  260   5                                                      lcd_write_str("x[");
+  261   5                                                      if(i/10!=0)
+  262   5                                                              lcd_write_dat(i/10+'0');
+*** WARNING C188 IN LINE 262 OF Resource\solve_differential_equation.c: 'parameter 1': value truncated
+  263   5                                                      lcd_write_dat(i%10+'0');
+*** WARNING C188 IN LINE 263 OF Resource\solve_differential_equation.c: 'parameter 1': value truncated
+  264   5                                                      lcd_write_str("]=");
+  265   5                                                      lcd_set_pos(0,7);//显示箭头提示 
+  266   5                                                      if(i==0)
+  267   5                                                      {
+  268   6                                                              lcd_write_dat(' ');
+  269   6                                                              lcd_write_dat(0x1a);
+  270   6                                                      }
+  271   5                                                      else if(i==n)
+  272   5                                                      {
+  273   6                                                              lcd_write_dat(0x1b);
+  274   6                                                              lcd_write_dat(' ');
+  275   6                                                      }
+  276   5                                                      else
+  277   5                                                      {
+  278   6                                                              lcd_write_dat(0x1b);
+  279   6                                                              lcd_write_dat(0x1a);
+  280   6                                                      }
+  281   5                                                      
+  282   5                                                      lcd_set_pos(1,0);
+  283   5                                                      sprintf(result_output,"%g",x_array[i]);
+  284   5                                                      lcd_write_str(result_output);
+  285   5                                                      
+  286   5                                                      
+  287   5                                                      lcd_set_pos(2,0);//y[i]= 
+  288   5                                                      lcd_write_str("y[");
+  289   5                                                      if(i/10!=0)
+  290   5                                                              lcd_write_dat(i/10+'0');
+*** WARNING C188 IN LINE 290 OF Resource\solve_differential_equation.c: 'parameter 1': value truncated
+  291   5                                                      lcd_write_dat(i%10+'0');
+*** WARNING C188 IN LINE 291 OF Resource\solve_differential_equation.c: 'parameter 1': value truncated
+  292   5                                                      lcd_write_str("]=");
+  293   5                                                      sprintf(result_output,"%g",y_array[i]);
+  294   5                                                      lcd_set_pos(3,0);
+  295   5                                                      lcd_write_str(result_output);
+  296   5                                                      
+  297   5                                                      num0=keyboard_output();
+  298   5                                                      if(num0==5)
+  299   5                                                      {
+  300   6                                                              if(i>0)
+  301   6                                                                      i--;
+  302   6                                                      }
+  303   5                                                      else if(num0==7)
+  304   5                                                      {
+  305   6                                                              if(i<n)//小心 //-1+1
+  306   6                                                                      i++;
+  307   6                                                      }
+  308   5                                                              
+  309   5                                              }while(num0!=19);//如果不是AC键 
+  310   4                                      }
+  311   3                                      break;
+  312   3                      }       
+  313   2              }
+  314   1              
+  315   1      }
+  316          
+  317          
+C251 COMPILER V5.60.0,  solve_differential_equation                                        27/09/22  13:55:47  PAGE 6   
+
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =    ------     ------
+  ecode size           =      1943     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------        175
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =       161     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  4 WARNING(S),  0 ERROR(S)

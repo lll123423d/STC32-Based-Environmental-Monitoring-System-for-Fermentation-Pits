@@ -19,34 +19,66 @@ CPU DLL:         S251.DLL V3.129.0.0
 Dialog DLL:      DCORE51.DLL V2.81.6.0 
 <h2>Project:</h2>
 E:\keil-Project\STC32-Based Environmental Monitoring System for Fermentation Pits\first\project.uvproj
-Project File Date:  09/27/2025
+Project File Date:  09/28/2025
 
 <h2>Output:</h2>
 Rebuild target 'Target 1'
 compiling main.c...
+Usr\main.c(20): warning C91: '&': pointer to different objects
+Usr\main.c(38): warning C96: 'OLED_BuffShowString': too few actual parameters
+Usr\main.c(42): warning C188: 'parameter 1': value truncated
+Usr\main.c(49): warning C96: 'OLED_BuffShowString': too few actual parameters
+Usr\main.c(53): warning C188: 'parameter 2': value truncated
+Usr\main.c(53): warning C188: 'parameter 4': value truncated
+Usr\main.c(59): warning C188: 'parameter 1': value truncated
+Usr\main.c(59): warning C188: 'parameter 3': value truncated
+Usr\main.c(66): warning C96: 'OLED_BuffShowString': too few actual parameters
+Usr\main.c(70): warning C188: 'parameter 3': value truncated
+Usr\main.c(77): warning C96: 'OLED_BuffShowString': too few actual parameters
 compiling SPI.c...
-compiling OLED.c...
+compiling sys.c...
+compiling oled.c...
+Hardware\oled.c(87): warning C140: 'SPI_init' undefined; assuming 'extern int SPI_init()'
+Hardware\oled.c(255): warning C188: 'parameter 1': value truncated
+Hardware\oled.c(360): warning C188: 'parameter 1': value truncated
+Hardware\oled.c(360): warning C188: 'parameter 2': value truncated
+Hardware\oled.c(361): warning C188: 'parameter 1': value truncated
+Hardware\oled.c(361): warning C188: 'parameter 2': value truncated
+Hardware\oled.c(362): warning C188: 'parameter 1': value truncated
+Hardware\oled.c(362): warning C188: 'parameter 2': value truncated
+Hardware\oled.c(363): warning C188: 'parameter 1': value truncated
+Hardware\oled.c(363): warning C188: 'parameter 2': value truncated
+Hardware\oled.c(364): warning C188: 'parameter 1': value truncated
+Hardware\oled.c(364): warning C188: 'parameter 2': value truncated
+Hardware\oled.c(365): warning C188: 'parameter 1': value truncated
+Hardware\oled.c(365): warning C188: 'parameter 2': value truncated
+Hardware\oled.c(366): warning C188: 'parameter 1': value truncated
+Hardware\oled.c(366): warning C188: 'parameter 2': value truncated
+Hardware\oled.c(367): warning C188: 'parameter 1': value truncated
+Hardware\oled.c(367): warning C188: 'parameter 2': value truncated
+Hardware\oled.c(492): warning C96: 'OLED_BuffShowString': too few actual parameters
+Hardware\oled.c(487): warning C47: 'mode': unreferenced parameter
 linking...
 *** WARNING L57: UNCALLED FUNCTION, IGNORED FOR OVERLAY PROCESS
     NAME:    SPI_ReadByte/SPI
 *** WARNING L57: UNCALLED FUNCTION, IGNORED FOR OVERLAY PROCESS
-    NAME:    SPI_WriteByte/SPI
+    NAME:    delayms/sys
 *** WARNING L57: UNCALLED FUNCTION, IGNORED FOR OVERLAY PROCESS
-    NAME:    OLED_Display_On/OLED
+    NAME:    OLED_LightSet/oled
 *** WARNING L57: UNCALLED FUNCTION, IGNORED FOR OVERLAY PROCESS
-    NAME:    OLED_ShowString/OLED
+    NAME:    OLED_BuffShowRectangle/oled
 *** WARNING L57: UNCALLED FUNCTION, IGNORED FOR OVERLAY PROCESS
-    NAME:    OLED_ShowCHinese/OLED
+    NAME:    OLED_DrawBMP/oled
 *** WARNING L57: UNCALLED FUNCTION, IGNORED FOR OVERLAY PROCESS
-    NAME:    OLED_ShowNum/OLED
-*** WARNING L57: UNCALLED FUNCTION, IGNORED FOR OVERLAY PROCESS
-    NAME:    OLED_Display_Off/OLED
-*** WARNING L57: UNCALLED FUNCTION, IGNORED FOR OVERLAY PROCESS
-    NAME:    OLED_DrawBMP/OLED
-Program Size: data=8.0 edata+hdata=272 xdata=0 const=0 code=3777
+    NAME:    OLED_DisplayOff/oled
+*** WARNING L25: DATA TYPES DIFFERENT
+    SYMBOL:  SPI_Init
+    MODULE:  .\Objects\oled.obj (oled)
+   DEFINED:  .\Objects\SPI.obj (SPI)
+Program Size: data=8.0 edata+hdata=307 xdata=1037 const=177 code=9978
 creating hex file from ".\Objects\project"...
-".\Objects\project" - 0 Error(s), 8 Warning(s).
-Build Time Elapsed:  00:00:00
+".\Objects\project" - 0 Error(s), 38 Warning(s).
+Build Time Elapsed:  00:00:01
 </pre>
 </body>
 </html>

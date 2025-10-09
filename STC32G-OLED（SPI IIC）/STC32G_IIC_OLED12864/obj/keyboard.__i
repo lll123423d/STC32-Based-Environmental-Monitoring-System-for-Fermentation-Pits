@@ -1,0 +1,1 @@
+"keyboard.c" XSMALL INTR2 BROWSE INCDIR(.\Resource;.\ware;.\src;.\middle;.\user) DEBUG PRINT(.\obj\keyboard.lst) OBJECT(.\obj\keyboard.obj)

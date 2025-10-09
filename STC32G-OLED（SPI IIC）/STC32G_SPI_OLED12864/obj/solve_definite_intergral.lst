@@ -1,0 +1,248 @@
+C251 COMPILER V5.60.0,  solve_definite_intergral                                           27/09/22  13:55:47  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE solve_definite_intergral
+OBJECT MODULE PLACED IN .\obj\solve_definite_intergral.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE Resource\solve_definite_intergral.c XSMALL ROM(HUGE) BROWSE INCDIR(.\R
+                    -esource;.\ware;.\src;.\middle) DEBUG PRINT(.\obj\solve_definite_intergral.lst) OBJECT(.\obj\solve_definite_intergral.obj
+                    -) 
+
+stmt  level    source
+
+    1          #include <stdio.h>
+    2          #include <math.h> 
+    3          #include "solve_definite_intergral.h"
+    4          #include "middle.h"
+    5          #include "alg_atof.h"
+    6          #include "keyboard_device.h"
+    7          #include "keyboard_input.h"
+    8          #include "alg_caculate.h"
+    9          
+   10          extern uchar num0;
+   11          extern double x;
+   12          extern uchar g_chCalcStatus;
+   13          
+   14          
+   15          //求定积分
+   16          void solve_definite_intergral()
+   17          {
+   18   1              uchar hanshu_buff[26];//用来存函数表达式 
+   19   1              uchar temp_buff[26];//用来存一些式子 
+   20   1              uchar result_out[17];
+   21   1              double a_shuzhi=0;
+   22   1              double b_shuzhi=0; 
+   23   1              double h_shuzhi=0;
+   24   1              
+   25   1              unsigned long int n=1;   //子区间个数
+   26   1              double temp_0  =0;//临时值 
+   27   1              double temp_1  =0;
+   28   1              double tn,t2n;  //定积分tn和t2n
+   29   1              uchar judge=0xff;//判断值
+   30   1              uchar i;
+   31   1              //初始化 
+   32   1              for(i=0;i<26;i++)
+   33   1              {
+   34   2                      hanshu_buff[i]=temp_buff[i]=' ';
+   35   2              }
+   36   1              for(i=0;i<16;i++)
+   37   1                      result_out[i]=' ';
+   38   1              result_out[16]=0;
+   39   1              
+   40   1              //进入主要步骤
+   41   1              g_chCalcStatus = CALC_NORMAL; 
+   42   1              num0=0xff;//初始化
+   43   1              
+   44   1              while(1) 
+   45   1              {
+   46   2                      judge=0xff;
+   47   2                      //初始化菜单显示
+   48   2                      lcd_clear();
+   49   2                      lcd_clear_pic();
+   50   2                      
+   51   2                      for(i=0;i<4;i++)
+   52   2                      {
+   53   3                              lcd_set_pos(i,0);       
+   54   3                              switch ('0'+i+1)
+   55   3                              {
+   56   4                                      case '1':
+   57   4                                              lcd_write_str("1.积分函数 y =");break;
+C251 COMPILER V5.60.0,  solve_definite_intergral                                           27/09/22  13:55:47  PAGE 2   
+
+   58   4                                      case '2':
+   59   4                                              lcd_write_str("2.左端点a");break;
+   60   4                                      case '3':
+   61   4                                              lcd_write_str("3.右端点b");break;
+   62   4                                      case '4':
+   63   4                                              lcd_write_str("4.结果");break;
+   64   4                                      }
+   65   3                      }
+   66   2                      //按键选择菜单选项 
+   67   2                      do
+   68   2                      {
+   69   3                              num0=keyboard_output();//读取键盘值, 直到按下1,2,3,4
+   70   3                      }while(num0!='1' && num0!='2' && num0!='3'&& num0!='4');
+   71   2                      
+   72   2                      //根据按键选择不同的功能 
+   73   2                      lcd_clear();
+   74   2                      lcd_clear_pic();
+   75   2                      
+   76   2                      switch(num0)
+   77   2                      {
+   78   3                              case '1':
+   79   3                                      lcd_set_pos(0,0);
+   80   3                                      lcd_write_str("积分函数 y =");
+   81   3                                      lcd_set_pos(1,0);
+   82   3                                      for(i=0; i<16 && hanshu_buff[i]!=0 ; i++ )
+   83   3                                      {
+   84   4                                              lcd_write_dat( hanshu_buff[i] ) ;
+   85   4                                              if(i==15)
+   86   4                                              {
+   87   5                                                      lcd_set_pos(2,0);
+   88   5                                                      for(i=16; i<25 && hanshu_buff[i]!=0 ; i++ )
+   89   5                                                      {
+   90   6                                                              lcd_write_dat( hanshu_buff[i] ) ;
+   91   6                                                      }
+   92   5                                              }       
+   93   4                                      } 
+   94   3                                      //读取函数
+   95   3                              
+   96   3                                                      //在第3行输入函数 
+   97   3                                      do
+   98   3                                      {
+   99   4                                              for(i=0;i<26;i++)
+  100   4                                              {
+  101   5                                                      hanshu_buff[i]=0;
+  102   5                                              } 
+  103   4                                              judge = input_to_str(3,hanshu_buff,0xff);
+  104   4                                      }while(judge !=INPUT_EQ && judge !=INPUT_AC);
+  105   3                                      
+  106   3                                      break;
+  107   3                                      
+  108   3                              case '2': 
+  109   3                                      lcd_set_pos(0,0);
+  110   3                                      lcd_write_str("左端点 a=");
+  111   3                                      lcd_set_pos(1,0);
+  112   3                                      sprintf( temp_buff,"%g",a_shuzhi ); 
+  113   3                                      lcd_write_str(temp_buff);
+  114   3                                      //读取a
+  115   3      //look                  
+  116   3                                      for(i=0;i<26;i++)
+  117   3                                      {
+  118   4                                              temp_buff[i]=' '; 
+  119   4                                      }
+  120   3                                      do
+  121   3                                      {
+  122   4                                              judge = input_to_str(3,temp_buff,0xff);
+  123   4                                      }while(judge !=INPUT_EQ && judge !=INPUT_AC);
+C251 COMPILER V5.60.0,  solve_definite_intergral                                           27/09/22  13:55:47  PAGE 3   
+
+  124   3                                      if( judge ==INPUT_EQ )
+  125   3                                      {
+  126   4                                              a_shuzhi = alg_atof(temp_buff); 
+  127   4                                      }
+  128   3                                      break;
+  129   3                                      
+  130   3                              case '3': 
+  131   3                                      lcd_set_pos(0,0);
+  132   3                                      lcd_write_str("右端点 b=");
+  133   3                                      lcd_set_pos(1,0);
+  134   3                                      sprintf( temp_buff,"%g",b_shuzhi ); 
+  135   3                                      lcd_write_str(temp_buff);
+  136   3                                      //读取b
+  137   3      //look                  
+  138   3                                      for(i=0;i<26;i++)
+  139   3                                      {
+  140   4                                              temp_buff[i]=' '; 
+  141   4                                      }
+  142   3                                      do
+  143   3                                      {
+  144   4                                              judge = input_to_str(3,temp_buff,0xff);
+  145   4                                      }while(judge !=INPUT_EQ && judge !=INPUT_AC);
+  146   3                                      if( judge ==INPUT_EQ )
+  147   3                                      {
+  148   4                                              b_shuzhi = alg_atof(temp_buff); 
+  149   4                                      }
+  150   3                                      break;
+  151   3                              
+  152   3                                      
+  153   3                              case '4'://输出结果 
+  154   3                                      if(a_shuzhi>b_shuzhi)
+  155   3                                      {
+  156   4                                              lcd_set_pos(0,0);
+  157   4                                              lcd_write_str("a>b,wrong");
+  158   4                                      } 
+  159   3                                      else
+  160   3                                      {          
+  161   4                                          n=1;   //子区间个数
+  162   4                                          h_shuzhi=b_shuzhi-a_shuzhi;
+  163   4                                        //  uchar alg_calc_expression(char *pExpression, double *pRealResult, double *pImaginaryResult);
+  164   4                                        
+  165   4                                        //t2n=h*( f(a)+f(b) )/2 ;
+  166   4                                        
+  167   4                                              x=a_shuzhi;
+  168   4                                              alg_calc_expression(hanshu_buff, &temp_0, 0);
+  169   4                                              x=b_shuzhi;
+  170   4                                              alg_calc_expression(hanshu_buff, &temp_1, 0);
+  171   4                                              t2n=h_shuzhi*(temp_0+temp_1)/2;
+  172   4                                              
+  173   4                                          do
+  174   4                                          {
+  175   5                                              tn=t2n;
+  176   5                                              h_shuzhi/=2;
+  177   5                                              t2n=0;
+  178   5                                              for(i=0;i<=n-1;i++)
+  179   5                                              {
+  180   6                                                  x=a_shuzhi+h_shuzhi*(2*i+1);
+  181   6                                                  alg_calc_expression(hanshu_buff, &temp_0, 0);
+  182   6                                                  t2n+=temp_0;
+  183   6                                              }
+  184   5                                              t2n=tn/2+t2n*h_shuzhi;
+  185   5                                              n*=2;
+  186   5                                              if(n>16777216) //为了大运算的速度舍弃了一部分精度
+  187   5                                      //      if(n>=268435456)
+  188   5                                      //      if(n>2147483647/2-1)    //c51的数据类型中，unsigned long int是0~2147483647.设置一个判断，防止
+             -溢出
+C251 COMPILER V5.60.0,  solve_definite_intergral                                           27/09/22  13:55:47  PAGE 4   
+
+  189   5                                                  break;
+  190   5                                      //      printf("n=%ld\n",n);//调试用的语句
+  191   5                                          }while(fabs(t2n-tn)>0.00001);//确保了小运算的精度
+  192   4                                              
+  193   4                                          lcd_set_pos(0,0);
+  194   4                                              lcd_write_str("积分的结果是：");
+  195   4                                              lcd_set_pos(1,0);
+  196   4                                              sprintf(result_out,"%g",t2n);
+  197   4                                              lcd_write_str(result_out);
+  198   4                                      } 
+  199   3                                      while(keyboard_output()!=19);
+  200   3                                      break;
+  201   3                      }       
+  202   2              }
+  203   1              
+  204   1      }
+  205          
+  206          
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =    ------     ------
+  ecode size           =      1081     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------        101
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =        98     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

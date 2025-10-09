@@ -1,0 +1,119 @@
+C251 COMPILER V5.60.0,  alg_complex                                                        27/09/22  13:55:45  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE alg_complex
+OBJECT MODULE PLACED IN .\obj\alg_complex.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE Resource\alg_complex.c XSMALL ROM(HUGE) BROWSE INCDIR(.\Resource;.\war
+                    -e;.\src;.\middle) DEBUG PRINT(.\obj\alg_complex.lst) OBJECT(.\obj\alg_complex.obj) 
+
+stmt  level    source
+
+    1          #include "alg_linearlist.h"
+    2          #include "alg_complex.h"
+    3          #include <math.h>
+    4          
+    5          #define ELEM_REAL(flag) eElem##flag->elemValue.dbNum
+    6          #define ELEM_IMAG(flag) eElem##flag->dbComplex
+    7          #define RESULT_REAL eResult->elemValue.dbNum
+    8          #define RESULT_IMAG eResult->dbComplex
+    9          
+   10          void complex_plus(LArrayElem *eElem1 ,LArrayElem *eElem2, LArrayElem *eResult) //复数加法，传入两个LArray
+             -Elem结构类型的指针
+   11          {
+   12   1              //z=（a+bi)+（c+di）=（a+c）+（b+d）i
+   13   1              RESULT_REAL = ELEM_REAL(1) + ELEM_REAL(2);
+   14   1              RESULT_IMAG = ELEM_IMAG(1) + ELEM_IMAG(2);
+   15   1      }
+   16          
+   17          void complex_subtract(LArrayElem *eElem1 ,LArrayElem *eElem2, LArrayElem *eResult) //复数减法，传入两个LA
+             -rrayElem结构类型的指针
+   18          {
+   19   1              //z=（a+bi）-（c+di）=（a-c）+（b-d）i
+   20   1              RESULT_REAL = ELEM_REAL(1) - ELEM_REAL(2);
+   21   1              RESULT_IMAG = ELEM_IMAG(1) - ELEM_IMAG(2);
+   22   1      }
+   23          
+   24          void complex_multiply(LArrayElem *eElem1 ,LArrayElem *eElem2, LArrayElem *eResult)//复数乘法，传入两个LAr
+             -rayElem结构类型的指针
+   25          {
+   26   1              //z=（a+bi）*（c+di）= ( ac-bd )+( ad+bc ) i
+   27   1              RESULT_REAL = (ELEM_REAL(1))*(ELEM_REAL(2)) - (ELEM_IMAG(1)) * (ELEM_IMAG(2));
+   28   1              RESULT_IMAG = (ELEM_REAL(1))*(ELEM_IMAG(2)) + (ELEM_IMAG(1)) * (ELEM_REAL(2));
+   29   1      }
+   30          
+   31          void complex_divide(LArrayElem *eElem1 ,LArrayElem *eElem2, LArrayElem *eResult)//复数除法，传入两个LArra
+             -yElem结构类型的指针
+   32          {
+   33   1              //z=(a+jb)/(c+jd)=( (ac+bd)+(bc-ad)i )/( c*c+d*d )
+   34   1              RESULT_REAL= ( (ELEM_REAL(1))*(ELEM_REAL(2)) + (ELEM_IMAG(1))*(ELEM_IMAG(2)) ) 
+   35   1              / ( (ELEM_REAL(2))* (ELEM_REAL(2)) + (ELEM_IMAG(2))* (ELEM_IMAG(2)) );
+   36   1              RESULT_IMAG= ( (ELEM_IMAG(1))*(ELEM_REAL(2)) - (ELEM_REAL(1))*(ELEM_IMAG(2)) ) 
+   37   1              / ( (ELEM_REAL(2))* (ELEM_REAL(2)) + (ELEM_IMAG(2))* (ELEM_IMAG(2)) );
+   38   1      }
+   39          
+   40          uchar complex_power(LArrayElem *eElem1 ,LArrayElem *eElem2, LArrayElem *eResult)//复数乘方，传入两个LArra
+             -yElem结构类型的指针
+   41          {
+   42   1              uint i;
+   43   1              LArrayElem eBuf;
+   44   1              
+   45   1              if(ELEM_IMAG(2) != 0.0 || ELEM_REAL(2) != (uint)ELEM_REAL(2))
+   46   1              {
+   47   2                      return LArray_FALSE;            //乘方运算只能为整实数
+   48   2              }
+   49   1              if(ELEM_REAL(2) > 0)
+   50   1              {
+   51   2                      *eResult = *eElem1;                                                                     //获取eElem的值
+   52   2                      for(i = 1;i < ELEM_REAL(2);i++)                                 //循环剩下n-1次
+   53   2                      {
+C251 COMPILER V5.60.0,  alg_complex                                                        27/09/22  13:55:45  PAGE 2   
+
+   54   3                              complex_multiply(eElem1, eResult, &eBuf);
+   55   3                              *eResult = eBuf;
+   56   3                      }
+   57   2              }
+   58   1              else
+   59   1              {
+   60   2                      if(0 == complex_mod(eElem1))
+   61   2                              return LArray_FALSE;    //0次幂底数不能为0
+   62   2                      else
+   63   2                      {
+   64   3                              RESULT_REAL = 1;
+   65   3                              RESULT_IMAG = 0;
+   66   3                      }
+   67   2              }
+   68   1              
+   69   1              return LArray_TRUE;
+   70   1              
+   71   1      }
+   72          
+   73          double complex_mod(LArrayElem *eElem1)//复数求模，传入一个LArrayElem结构类型的指针，返回模的值
+   74          {
+   75   1              double length;
+   76   1              length = sqrt ( (ELEM_REAL(1))* (ELEM_REAL(1)) + (ELEM_IMAG(1))* (ELEM_IMAG(1)) );
+   77   1              return length;
+   78   1      }
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =    ------     ------
+  ecode size           =       710     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------         36
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =    ------     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,305 @@
+C251 COMPILER V5.60.0,  take_the_differential                                              27/09/22  13:55:47  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE take_the_differential
+OBJECT MODULE PLACED IN .\obj\take_the_differential.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE Resource\take_the_differential.c XSMALL ROM(HUGE) BROWSE INCDIR(.\Reso
+                    -urce;.\ware;.\src;.\middle) DEBUG PRINT(.\obj\take_the_differential.lst) OBJECT(.\obj\take_the_differential.obj) 
+
+stmt  level    source
+
+    1          #include <stdio.h>
+    2          #include <math.h> 
+    3          #include "take_the_differential.h"
+    4          #include "middle.h"
+    5          #include "alg_atof.h"
+    6          #include "keyboard_device.h"
+    7          #include "keyboard_input.h"
+    8          #include "alg_caculate.h"
+    9          
+   10          #define PRECISION 0.01
+   11          extern uchar num0;
+   12          extern double x;
+   13          extern uchar g_chCalcStatus;
+   14          void take_the_derivative( uchar *hanshu_buff, double x0 , uchar *result_output) ;//´«½ø º¯Êý    Ò»¸öµÄÖ¸Õ
+             -ë ( ÓÃÀ´·µ»Ø½á¹û ) ;
+   15          
+   16          //Çóµ¼º¯Êý 
+   17          void run_the_differential()
+   18          {
+   19   1              uchar hanshu_buff[26];//ÓÃÀ´´æº¯Êý±í´ïÊ½ 
+   20   1              uchar x0_buff[26];//ÓÃÀ´´æº¯Êý±í´ïÊ½ 
+   21   1              uchar result_output[17];//´æ·Å½á¹û
+   22   1              double x0=0;
+   23   1              uchar judge=0xff;
+   24   1              //³õÊ¼»¯ 
+   25   1              uchar i=0;
+   26   1              for(i=0;i<26;i++)
+   27   1              {
+   28   2                      hanshu_buff[i]=x0_buff[i]=' ';
+   29   2              }
+   30   1              for(i=0;i<17;i++)
+   31   1              {
+   32   2                      result_output[i]=' ';
+   33   2              }
+   34   1              //½øÈëÖ÷Òª²½Öè
+   35   1              g_chCalcStatus = CALC_NORMAL; 
+   36   1              num0=0xff;//³õÊ¼»¯
+   37   1              while(1) 
+   38   1              {
+   39   2                      judge=0xff;
+   40   2                      //³õÊ¼»¯²Ëµ¥ÏÔÊ¾
+   41   2                      lcd_clear();
+   42   2                      lcd_clear_pic();
+   43   2                      lcd_set_pos(0,0);
+   44   2                      lcd_write_str("1 ÊäÈëº¯Êý"); 
+   45   2                      lcd_set_pos(1,0);
+   46   2                      lcd_write_str("2 ÊäÈëx0"); 
+   47   2                      lcd_set_pos(2,0);
+   48   2                      lcd_write_str("3 Çóµ¼½á¹û"); 
+   49   2      //              
+   50   2                      num0=0xff;
+   51   2                      do
+   52   2                      {
+   53   3                              num0=keyboard_output();//¶ÁÈ¡¼üÅÌÖµ, Ö±µ½°´ÏÂ1,2,3
+   54   3                      }while(num0!='1' && num0!='2' && num0!='3' );
+   55   2                      
+   56   2                      
+   57   2                      lcd_clear();
+C251 COMPILER V5.60.0,  take_the_differential                                              27/09/22  13:55:47  PAGE 2   
+
+   58   2                      lcd_clear_pic();
+   59   2                      
+   60   2                      switch(num0)
+   61   2                      {
+   62   3                              case '1':
+   63   3                                      lcd_set_pos(0,0);
+   64   3                                      lcd_write_str("y =");
+   65   3                                      lcd_set_pos(1,0);
+   66   3                                      for(i=0; i<16 && hanshu_buff[i]!=0 ; i++ )
+   67   3                                      {
+   68   4                                              lcd_write_dat( hanshu_buff[i] ) ;
+   69   4                                              if(i==15)
+   70   4                                              {
+   71   5                                                      lcd_set_pos(2,0);
+   72   5                                                      for(i=16; i<25 && hanshu_buff[i]!=0 ; i++ )
+   73   5                                                      {
+   74   6                                                              lcd_write_dat( hanshu_buff[i] ) ;
+   75   6                                                      }
+   76   5                                              }       
+   77   4                                      } 
+   78   3                                      //¶ÁÈ¡º¯Êý
+   79   3                              
+   80   3                                                      //ÔÚµÚ3ÐÐÊäÈëº¯Êý 
+   81   3                                      do
+   82   3                                      {
+   83   4                                              for(i=0;i<26;i++)
+   84   4                                              {
+   85   5                                                      hanshu_buff[i]=0;
+   86   5                                              } 
+   87   4                                              judge = input_to_str(3,hanshu_buff,0xff);
+   88   4                                      }while(judge !=INPUT_EQ && judge !=INPUT_AC);
+   89   3                                      
+   90   3                                      break;
+   91   3                                      
+   92   3                                      
+   93   3                              case '2': 
+   94   3                                      lcd_set_pos(0,0);
+   95   3                                      lcd_write_str("x0 =");
+   96   3                                      lcd_set_pos(1,0);
+   97   3                                      sprintf( x0_buff,"%g",x0 ); 
+   98   3                                      lcd_write_str(x0_buff);
+   99   3                                      //¶ÁÈ¡x0 
+  100   3      //look                  
+  101   3                                      for(i=0;i<26;i++)
+  102   3                                      {
+  103   4                                              x0_buff[i]=' '; 
+  104   4                                      }
+  105   3                                      do
+  106   3                                      {
+  107   4                                              judge = input_to_str(3,x0_buff,0xff);
+  108   4                                      }while(judge !=INPUT_EQ && judge !=INPUT_AC);
+  109   3                                      if( judge ==INPUT_EQ )
+  110   3                                      {
+  111   4                                              x0 = alg_atof(x0_buff); 
+  112   4                                      }
+  113   3                                      break;
+  114   3                                      
+  115   3                              case '3':
+  116   3                                      lcd_set_pos(0,0);
+  117   3                                      lcd_write_str("x0 =");
+  118   3                                      lcd_set_pos(1,0);
+  119   3                                      sprintf( x0_buff,"%g",x0 ); 
+  120   3                                      lcd_write_str(x0_buff);
+  121   3                                      lcd_set_pos(2,0);
+  122   3                                      lcd_write_str("y' =");
+  123   3                                      //ÔËÐÐÇóµ¼³ÌÐò 
+C251 COMPILER V5.60.0,  take_the_differential                                              27/09/22  13:55:47  PAGE 3   
+
+  124   3                                      take_the_derivative( hanshu_buff, x0, result_output );
+  125   3                                      while(keyboard_output()!=19);
+  126   3                                      
+  127   3                                      break;
+  128   3                      }       
+  129   2              }
+  130   1              
+  131   1               
+  132   1              
+  133   1      }
+  134          
+  135          
+  136                  
+  137          /*************Çóµ¼×Óº¯Êý*********************
+  138          //´«Èë£ºdouble x0 £¬´æ·Åº¯ÊýµÄ×Ö·û´®                                                            */      
+  139          
+  140          /*********µ÷ÊÔË¼Â· ******** 
+  141          //¼ÙÉèº¯ÊýÊÇ y = 1/x £»
+  142          
+  143          //ÅÐ¶Ï
+  144          
+  145          //1 ÊÇ·ñÔÚ¶¨ÒåÓòÄÚ 
+  146          
+  147          //2 ²»¿Éµ¼£¿
+  148          //      a ÅÐ¶ÏµÄÊ±ºò£¬¼ÓÉÏdxÖ®ºó¸ù±¾¾ÍÃ»ÓÐÕâ¸öÖµ ¡ª¡ª>»¹ÐèÒªÔÙµ÷ÓÃÅÐ¶Ïº¯Êý£¬ÅÐ¶Ï¼ÓÉÏdxÖ®ºóÊÇ²»ÊÇÔÚ¶¨ÒåÓòÄÚ
+  149          //      b Õý¸º²»µÈ->Ïà²î¹ý´ó    //ÓÃÁ½¸öµ¼ÊýµÄ²îÖµ ³ýÒÔ ËûÃÇµÄºÍ£¬ÅÐ¶ÏÒ»ÏÂ²îÖµÕ¼±È´óÐ¡£¬Ì«´ó¾ÍÊÇ²»¿Éµ¼ 
+  150          
+  151          //3 »¹²»¹»¾«È·£¿ 
+  152          // ¾«¶ÈËùÏÞ£¬Ö±½ÓÓÃ×î¸ß¾«¶ÈµÄdxÈ¥Ëã¾ÍºÃÁË£¬Ã»°ì·¨½â¾ö 
+  153          
+  154                  //interesting ,/0 bug,/0.0¿ÉÍ¨¹ý                        */
+  155                   
+  156          void take_the_derivative( uchar *hanshu_buff, double x0 , uchar *result_output) //´«½ø º¯Êý    Ò»¸öµÄÖ¸Õë
+             - ( ÓÃÀ´·µ»Ø½á¹û ) 
+  157          {
+  158   1          
+  159   1              double dx= 0.000001; 
+  160   1              
+  161   1              double positive_derivative = 0.0;
+  162   1              double negative_derivative = 0.0;
+  163   1              
+  164   1              double differential_result = 0.0;
+  165   1              
+  166   1              uchar flag_wrong  = 0;
+  167   1              uchar i=0;
+  168   1              double temp_0=0;
+  169   1              double temp_1=0;
+  170   1              
+  171   1      
+  172   1      //      uchar result_output[17];//ÓÃÀ´´æ·Å½á¹û 
+  173   1              for(i=0;i<16;i++)
+  174   1              {
+  175   2                      result_output[i]=' ';
+  176   2              }
+  177   1              result_output[16]=0;
+  178   1              
+  179   1      //    alg_calc_expression(char *pExpression, double *pRealResult, double *pImaginaryResult);
+  180   1                      x = x0; 
+  181   1                      if( alg_calc_expression( hanshu_buff , 0 , 0 )==1 )
+  182   1                      {
+  183   2                              x = x0 + dx;
+  184   2                              if( alg_calc_expression( hanshu_buff , 0 , 0 )==1 )
+  185   2                              {
+  186   3                                      x = x0 - dx;
+  187   3                                      if( alg_calc_expression( hanshu_buff , 0 , 0 )==1 )
+  188   3                                              ;
+C251 COMPILER V5.60.0,  take_the_differential                                              27/09/22  13:55:47  PAGE 4   
+
+  189   3                                      else
+  190   3                                              flag_wrong=1;
+  191   3                              }
+  192   2                              else
+  193   2                                      flag_wrong=1;
+  194   2                      }
+  195   1                      else 
+  196   1                              flag_wrong=1;
+  197   1                              
+  198   1                      if(flag_wrong==0)
+  199   1                      {
+  200   2                              x = x0;
+  201   2                              alg_calc_expression( hanshu_buff , &temp_1  , 0 );
+  202   2                              
+  203   2                              x = x0 + dx;
+  204   2                              alg_calc_expression( hanshu_buff , &temp_0  , 0 );
+  205   2                              
+  206   2                              positive_derivative = ( temp_0 - temp_1  )/dx; 
+  207   2                              
+  208   2                              x = x0 - dx;
+  209   2                              alg_calc_expression( hanshu_buff , &temp_0  , 0 );
+  210   2                              
+  211   2                              negative_derivative = ( temp_0 - temp_1  )/(-dx);
+  212   2                      
+  213   2                              
+  214   2      //                      if(  fabs(   ( positive_derivative - negative_derivative )
+  215   2      //                              /( positive_derivative + negative_derivative ) ) < PRECISION )
+  216   2      //                                                              //ÕâÀïµÄ¾«¶ÈÓÃÀ´ÅÐ¶ÏÊÇ·ñÕý¸ºÁ½¸öµ¼ÊýÏà²î¹ý´ó£¬¼´ÅÐ¶ÏÊÇ·ñ¸Ãµã¿Éµ¼ 
+  217   2      //                      {
+  218   2                                      differential_result = ( positive_derivative + negative_derivative ) /2;
+  219   2                                      
+  220   2                                      sprintf(result_output, "%g",differential_result);
+  221   2                                      lcd_set_pos(3,0);
+  222   2                                      lcd_write_str( result_output);
+  223   2      //                      }
+  224   2      //                      else
+  225   2      //                      {
+  226   2      //                              //ÌáÊ¾´íÎó      
+  227   2      //                              lcd_set_pos(3,0);
+  228   2      //                              lcd_write_str("²»¿Éµ¼");        
+  229   2      //                      }
+  230   2                      } 
+  231   1      //              else if(flag_wrong==1)  //ÌáÊ¾´íÎó
+  232   1      //              {
+  233   1      //                      lcd_set_pos(3,0);
+  234   1      //                      lcd_write_str( "ÊäÈë²»ºÏ·¨" );
+  235   1      //              }
+  236   1                      
+  237   1              
+  238   1      }
+  239          
+  240          
+  241          ///*************ÅÐ¶ÏÊÇ·ñÔÚ¶¨ÒåÓòÄÚ*************
+  242          //´«Èë£ºf(x)µÄÔËËã½á¹û double f
+  243          //·µ»Ø£ºTRUE 
+  244          //        FALSE                                                         */ 
+  245          //        
+  246          //int judge_domain_of_definition( double f ) 
+  247          //{
+  248          //      char str[8];
+  249          //      char str_error[]="1.#INF";      //´íÎóÖµ 
+  250          //      char str_error0[]="-1.#INF";
+  251          //      gcvt( f, 7,str);                        //ÀûÓÃgcvtº¯Êý£¬°Ñf×ª»¯³É×Ö·û´®£¬Óë´íÎóÖµ¶Ô±È
+  252          //      if(strcmp(str,str_error)==0 ||strcmp(str,str_error0)==0 )//ÅÐ¶ÏÒ»ÏÂÊÇ·ñÔÚ¶¨ÒåÓòÄÚ£¬Èç¹û²»ÔÚ¶¨ÒåÓòÄÚ£¬»
+             -á·µ»Ø0£¬²¢ÇÒÌáÊ¾ "ÄúÊäÈëµÄx²»ÔÚ´Ëº¯ÊýµÄ¶¨ÒåÓòÄÚ"  
+  253          //      {
+C251 COMPILER V5.60.0,  take_the_differential                                              27/09/22  13:55:47  PAGE 5   
+
+  254          //              printf("ÄúÊäÈëµÄx²»ÔÚ´Ëº¯ÊýµÄ¶¨ÒåÓòÄÚ\n");
+  255          //              return FALSE;
+  256          //      }
+  257          //      else
+  258          //              return TRUE;    
+  259          //} 
+  260          
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =    ------     ------
+  ecode size           =       935     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------         94
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =        47     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

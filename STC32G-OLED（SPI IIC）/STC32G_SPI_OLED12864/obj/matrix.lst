@@ -1,0 +1,991 @@
+C251 COMPILER V5.60.0,  matrix                                                             22/03/23  11:38:01  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE matrix
+OBJECT MODULE PLACED IN .\obj\matrix.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE user\matrix.c XSMALL INTR2 BROWSE INCDIR(.\Resource;.\ware;.\src;.\mid
+                    -dle;.\user) DEBUG PRINT(.\obj\matrix.lst) OBJECT(.\obj\matrix.obj) 
+
+stmt  level    source
+
+    1          #include "matrix.h"
+    2          #include "menu.h"
+    3          #include "stdlib.h"
+    4          
+    5          u8 xdata Ranks_Steps=2;
+    6          u8 xdata inputstr[12];
+    7          u8 xdata inputstrlength;
+    8          double xdata Ranks_Parm[5][5]=
+    9          {
+   10              {1,2,0,0,0},
+   11              {3,4,0,0,0},
+   12              {0,0,0,0,0},
+   13              {0,0,0,0,0},
+   14              {0,0,0,0,0},        
+   15          };
+   16          
+   17          double xdata Ranks_Parm2[5][5]=
+   18          {
+   19              {1,2,0,0,0},
+   20              {3,4,0,0,0},
+   21              {0,0,0,0,0},
+   22              {0,0,0,0,0},
+   23              {0,0,0,0,0},        
+   24          };
+   25          
+   26          double xdata Ranks_result[5][5]=
+   27          {
+   28              {1,2,0,0,0},
+   29              {3,4,0,0,0},
+   30              {0,0,0,0,0},
+   31              {0,0,0,0,0},
+   32              {0,0,0,0,0},        
+   33          };
+   34          
+   35          
+   36          //-----------------------------------------ÐÐÁÐÊ½¾ØÕó-----------------------------------------
+   37          void Ranks_Set(u8 keynum)
+   38          {
+   39   1          static  u8 xdata keynum_last=0;
+   40   1          switch( state )
+   41   1          {
+   42   2              case 0://³õÊ¼»¯
+   43   2                  Screen_Clear();
+   44   2                  Screen_ShowStr(0,0,"Now n=");
+   45   2                  Screen_ShowAsc(48,0,(u8)(Ranks_Steps%10+'0'));
+   46   2                  Screen_ShowStr(0,2,"end with '='");
+   47   2                  Screen_ShowStr(0,4,"    (1<=n<=5)");
+   48   2                  Screen_ShowStr(0,6,"new=");
+   49   2                  Screen_ShowFreshen();
+   50   2                  state = 1;
+   51   2      
+   52   2                  break;
+   53   2           
+   54   2              case 1://µÈ´ýÊäÈë
+   55   2                  if( keynum>0 )
+   56   2                  {
+   57   3                      if(( keynum>='1' )&&( keynum<='5' ))
+   58   3                      {
+C251 COMPILER V5.60.0,  matrix                                                             22/03/23  11:38:01  PAGE 2   
+
+   59   4                          Screen_ShowAsc(32,6,keynum);
+   60   4                         keynum_last = keynum;
+   61   4                      }
+   62   3                      else if( keynum == '=' )
+   63   3                      {
+   64   4                          Ranks_Steps = (keynum_last-'0');
+   65   4                          P_Index.Menu_KeyFunc=0;                    
+   66   4                      }
+   67   3                      Screen_ShowFreshen();
+   68   3                  }
+   69   2                  break; 
+   70   2          }    
+   71   1      }
+   72          
+   73          void Ranks_Amend(u8 keynum)
+   74          {
+   75   1          static u8 addr_str=0;
+   76   1          u8 i,j;
+   77   1          switch( state )
+   78   1          {
+   79   2              case 0://³õÊ¼»¯
+   80   2                  Screen_Clear();
+   81   2                  Screen_ShowStr(0,0,"Now A[1][1]");
+   82   2                  Screen_ShowStr(0,2,"= ");
+   83   2                  Screen_ShowNum(8,2,Ranks_Parm[0][0]);
+   84   2                  Screen_ShowStr(0,4," :ÉÏ·­   :ÏÂ·­");
+   85   2                  Screen_ShowStr(0,6,"new=");
+   86   2                  Screen_ShowFreshen();
+   87   2                  state = 1;
+   88   2                  inputstrlength=0;
+   89   2                  memset(inputstr,'\0',12);
+   90   2                  addr_str = 0;        
+   91   2                  break;
+   92   2           
+   93   2              case 1://µÈ´ýÊäÈë
+   94   2                  if( keynum>0 )
+   95   2                  {
+   96   3                      if(( keynum==4 )&&( addr_str>0 ))
+   97   3                      {
+   98   4                          addr_str--;
+   99   4                          Screen_ShowAsc(48,0,(addr_str)/Ranks_Steps+'1');
+*** WARNING C188 IN LINE 99 OF user\matrix.c: 'parameter 3': value truncated
+  100   4                          Screen_ShowAsc(72,0,(addr_str)%Ranks_Steps+'1');
+*** WARNING C188 IN LINE 100 OF user\matrix.c: 'parameter 3': value truncated
+  101   4                          Screen_ShowStr(32,6,"            ");
+  102   4                          memset(inputstr,'\0',12);
+  103   4                          inputstrlength=0;
+  104   4                          Screen_ShowStr(8,2,"               ");
+  105   4                          Screen_ShowNum(8,2,Ranks_Parm[addr_str/Ranks_Steps][addr_str%Ranks_Steps]);
+  106   4                      }
+  107   3                      else if(( keynum==9 )&&( addr_str< (Ranks_Steps*Ranks_Steps-1)))
+  108   3                      {
+  109   4                          addr_str++;
+  110   4                          Screen_ShowAsc(48,0,(addr_str)/Ranks_Steps+'1');
+*** WARNING C188 IN LINE 110 OF user\matrix.c: 'parameter 3': value truncated
+  111   4                          Screen_ShowAsc(72,0,(addr_str)%Ranks_Steps+'1');
+*** WARNING C188 IN LINE 111 OF user\matrix.c: 'parameter 3': value truncated
+  112   4                          Screen_ShowStr(32,6,"            ");
+  113   4                          memset(inputstr,'\0',12);
+  114   4                          inputstrlength = 0;
+  115   4                          Screen_ShowStr(8,2,"               ");
+  116   4                          Screen_ShowNum(8,2,Ranks_Parm[addr_str/Ranks_Steps][addr_str%Ranks_Steps]);
+  117   4                      }  
+  118   3                      else if((( keynum>='0' )&&(keynum<='9'))||( keynum=='.' )||( keynum=='-' ))
+  119   3                      {
+  120   4                          inputstr[inputstrlength]=keynum;
+C251 COMPILER V5.60.0,  matrix                                                             22/03/23  11:38:01  PAGE 3   
+
+  121   4                          inputstrlength++;
+  122   4                      }
+  123   3                      else if( keynum==21 )
+  124   3                      {
+  125   4                          inputstrlength--;
+  126   4                          inputstr[inputstrlength]=' '; 
+  127   4                      } 
+  128   3                      else if( keynum=='=' )
+  129   3                      {
+  130   4                          Screen_ShowStr(8,2,"               ");
+  131   4                          Screen_ShowStr(8,2,inputstr);
+  132   4                          Ranks_Parm[addr_str/Ranks_Steps][addr_str%Ranks_Steps]= atof(inputstr);
+  133   4                          
+  134   4                          if( addr_str< (Ranks_Steps*Ranks_Steps-1) )
+  135   4                          {
+  136   5                              addr_str++;
+  137   5                              Screen_ShowAsc(48,0,(addr_str)/Ranks_Steps+'1');
+*** WARNING C188 IN LINE 137 OF user\matrix.c: 'parameter 3': value truncated
+  138   5                              Screen_ShowAsc(72,0,(addr_str)%Ranks_Steps+'1');
+*** WARNING C188 IN LINE 138 OF user\matrix.c: 'parameter 3': value truncated
+  139   5                              Screen_ShowStr(32,6,"            ");
+  140   5                              memset(inputstr,'\0',12);
+  141   5                              inputstrlength=0;
+  142   5                              Screen_ShowStr(8,2,"               ");
+  143   5                              Screen_ShowNum(8,2,Ranks_Parm[addr_str/Ranks_Steps][addr_str%Ranks_Steps]);      
+             -                  
+  144   5                          }
+  145   4                      }
+  146   3                      else if( keynum==22 )
+  147   3                      {
+  148   4                          P_Index.Menu_KeyFunc = 0;
+  149   4                      } 
+  150   3                      
+  151   3                      Screen_ShowStr(32,6,inputstr);
+  152   3                      Screen_ShowFreshen();      
+  153   3                  }
+  154   2                  
+  155   2                  break;   
+  156   2          }    
+  157   1      }
+*** WARNING C47 IN LINE 76 OF user\matrix.c: 'i': unreferenced local variable
+*** WARNING C47 IN LINE 76 OF user\matrix.c: 'j': unreferenced local variable
+  158          double result;
+  159          
+  160          char cal_hanglieshi(double (*a)[5])          //¼ÆËãÐÐÁÐÊ½   //²ÎÊý: a[5][5]
+  161          {       
+  162   1          uchar z,j,i;
+  163   1          double k;
+  164   1          double d[5][5];
+  165   1          for(i=0;i<5;i++)
+  166   1              for(j=0;j<5;j++)
+  167   1                  d[i][j]=a[i][j];
+  168   1          result=1.0;
+  169   1          for(z=0;z<Ranks_Steps-1;z++)
+  170   1              for(i=z;i<Ranks_Steps-1;i++)
+  171   1               {    
+  172   2                  if(d[z][z]==0)
+  173   2                      for(i=z;d[z][z]==0;i++)
+  174   2                      {
+  175   3                          for(j=0;j<Ranks_Steps;j++)
+  176   3                              d[z][j]=d[z][j]+d[i+1][j];
+  177   3                          if(d[z][z]!=0)
+  178   3                              break;
+  179   3                          else  
+  180   3                          {   
+  181   4                              result=0;
+C251 COMPILER V5.60.0,  matrix                                                             22/03/23  11:38:01  PAGE 4   
+
+  182   4                              return 0;
+  183   4                              }
+  184   3                      }
+  185   2                   k=-d[i+1][z]/d[z][z];
+  186   2                   for(j=z;j<Ranks_Steps;j++)
+  187   2                  d[i+1][j]=k*(d[z][j])+d[i+1][j];
+  188   2               }
+  189   1              
+  190   1          for(z=0;z<Ranks_Steps;z++)
+  191   1                  result=result*(d[z][z]);
+  192   1          
+  193   1          return 0;
+  194   1      }
+  195              
+  196          void Ranks_Caculate(u8 keynum)
+  197          {
+  198   1          switch( state )
+  199   1          {
+  200   2              case 0://³õÊ¼»¯
+  201   2                  Screen_Clear();
+  202   2                  Screen_ShowStr(0,0,"the result is:");
+  203   2                  cal_hanglieshi(Ranks_Parm);
+  204   2                  if(result != 0)
+  205   2                  {
+  206   3                      Screen_ShowNum(0,2,result);
+  207   3                  }
+  208   2                  else
+  209   2                  {
+  210   3                      Screen_ShowStr(0,4,"Êý\xfd¾Ý´íÎó");
+  211   3                  }
+  212   2                  Screen_ShowStr(0,4,"Çë°´ÈÎÒâ¼ü·µ»Ø");
+  213   2                  Screen_ShowFreshen();  
+  214   2                  state = 1;
+  215   2      
+  216   2                  break;
+  217   2           
+  218   2              case 1://µÈ´ýÊäÈë
+  219   2                  if( keynum>0 )
+  220   2                  {
+  221   3                      P_Index.Menu_KeyFunc=0;                    
+  222   3                      Screen_Clear();
+  223   3                  }
+  224   2                  break; 
+  225   2          }        
+  226   1      
+  227   1      }
+  228          
+  229          u8 hang1=2,lie1=2;    //ÐÐÁÐÊ½ »òµÚÒ»¸ö¾ØÕóµÄ½×
+  230          u8 hang2=2,lie2=2;  //µÚ¶þ¸ö¾ØÕóµÄ½×
+  231          
+  232          //-----------------------------------------¼Ó¼õ³Ë·¨¾ÙÖ¤-----------------------------------------
+  233          void Ranks_2_4Set(u8 keynum)
+  234          {
+  235   1          static keynum_last;
+  236   1          switch( state )
+  237   1          {
+  238   2              case 0://³õÊ¼»¯
+  239   2                  Screen_Clear();
+  240   2                  Screen_ShowStr(0,0," A's hang=(<=5)");
+  241   2                  Screen_ShowNum(0,2,hang1);
+  242   2                  Screen_ShowStr(0,4,"end with '='");
+  243   2                  Screen_ShowStr(0,6,"new=");
+  244   2                  Screen_ShowFreshen();
+  245   2                  state = 1;
+  246   2      
+  247   2                  break;
+C251 COMPILER V5.60.0,  matrix                                                             22/03/23  11:38:01  PAGE 5   
+
+  248   2           
+  249   2              case 1://µÈ´ýÊäÈë
+  250   2                  if( keynum>0 )
+  251   2                  {
+  252   3                      if(( keynum>='1' )&&( keynum<='5' ))
+  253   3                      {
+  254   4                          Screen_ShowAsc(32,6,keynum);
+  255   4                          keynum_last = keynum;
+  256   4                      }
+  257   3                      else if( keynum == '=' )
+  258   3                      {
+  259   4                          hang1 = (keynum_last-'0');
+  260   4                          //P_Index.Menu_KeyFunc=0;  
+  261   4                          state = 2;
+  262   4                      }
+  263   3                      Screen_ShowFreshen();
+  264   3                  }
+  265   2                  break; 
+  266   2                  
+  267   2              case 2://³õÊ¼»¯
+  268   2                  Screen_Clear();
+  269   2                  Screen_ShowStr(0,0," A's lie=(<=5)");
+  270   2                  Screen_ShowNum(0,2,lie1);
+  271   2                  Screen_ShowStr(0,4,"end with '='");
+  272   2                  Screen_ShowStr(0,6,"new=");
+  273   2                  Screen_ShowFreshen();
+  274   2                  state = 3;
+  275   2      
+  276   2                  break;
+  277   2           
+  278   2              case 3://µÈ´ýÊäÈë
+  279   2                  if( keynum>0 )
+  280   2                  {
+  281   3                      if(( keynum>='1' )&&( keynum<='5' ))
+  282   3                      {
+  283   4                          Screen_ShowAsc(32,6,keynum);
+  284   4                          keynum_last = keynum;
+  285   4                      }
+  286   3                      else if( keynum == '=' )
+  287   3                      {
+  288   4                          lie1 = (keynum_last-'0');
+  289   4                          P_Index.Menu_KeyFunc=0;  
+  290   4                          hang2 = hang1;
+  291   4                          lie2 = lie1;
+  292   4      //Screen_Clear();                    
+  293   4                      }
+  294   3                      Screen_ShowFreshen();
+  295   3                  }
+  296   2                  break;             
+  297   2          }    
+  298   1      }
+  299          
+  300          void Ranks_AmendA(u8 keynum)
+  301          {
+  302   1          static u8 addr_str=0;
+  303   1          u8 i,j;
+  304   1          switch( state )
+  305   1          {
+  306   2              case 0://³õÊ¼»¯
+  307   2                  
+  308   2                  Screen_Clear();
+  309   2                  Screen_ShowStr(0,0,"Now A[1][1]");
+  310   2                  Screen_ShowStr(0,2,"= ");
+  311   2                  Screen_ShowNum(8,2,Ranks_Parm[0][0]);
+  312   2                  Screen_ShowStr(0,4," :ÉÏ·­   :ÏÂ·­");
+  313   2                  Screen_ShowStr(0,6,"new=");
+C251 COMPILER V5.60.0,  matrix                                                             22/03/23  11:38:01  PAGE 6   
+
+  314   2                  Screen_ShowFreshen();
+  315   2                  state = 1;
+  316   2                  inputstrlength=0;
+  317   2                  memset(inputstr,'\0',12);
+  318   2                  addr_str = 0;        
+  319   2                  break;
+  320   2           
+  321   2              case 1://µÈ´ýÊäÈë
+  322   2                  if( keynum>0 )
+  323   2                  {
+  324   3                      if(( keynum==4 )&&( addr_str>0 ))
+  325   3                      {
+  326   4                          addr_str--;
+  327   4                          Screen_ShowAsc(48,0,(addr_str)/lie1+'1');
+*** WARNING C188 IN LINE 327 OF user\matrix.c: 'parameter 3': value truncated
+  328   4                          Screen_ShowAsc(72,0,(addr_str)%lie1+'1');
+*** WARNING C188 IN LINE 328 OF user\matrix.c: 'parameter 3': value truncated
+  329   4                          Screen_ShowStr(32,6,"            ");
+  330   4                          memset(inputstr,'\0',12);
+  331   4                          inputstrlength=0;
+  332   4                          Screen_ShowStr(8,2,"               ");
+  333   4                          Screen_ShowNum(8,2,Ranks_Parm[addr_str/lie1][addr_str%lie1]);
+  334   4                      }
+  335   3                      else if(( keynum==9 )&&( addr_str< (lie1*hang1-1)))
+  336   3                      {
+  337   4                          addr_str++;
+  338   4                          Screen_ShowAsc(48,0,(addr_str)/lie1+'1');
+*** WARNING C188 IN LINE 338 OF user\matrix.c: 'parameter 3': value truncated
+  339   4                          Screen_ShowAsc(72,0,(addr_str)%lie1+'1');
+*** WARNING C188 IN LINE 339 OF user\matrix.c: 'parameter 3': value truncated
+  340   4                          Screen_ShowStr(32,6,"            ");
+  341   4                          memset(inputstr,'\0',12);
+  342   4                          inputstrlength = 0;
+  343   4                          Screen_ShowStr(8,2,"               ");
+  344   4                          Screen_ShowNum(8,2,Ranks_Parm[addr_str/lie1][addr_str%lie1]);
+  345   4                      }  
+  346   3                      else if((( keynum>='0' )&&(keynum<='9'))||( keynum=='.' )||( keynum=='-' ))
+  347   3                      {
+  348   4                          inputstr[inputstrlength]=keynum;
+  349   4                          inputstrlength++;
+  350   4                      }
+  351   3                      else if( keynum==21 )
+  352   3                      {
+  353   4                          inputstrlength--;
+  354   4                          inputstr[inputstrlength]=' '; 
+  355   4                      } 
+  356   3                      else if( keynum=='=' )
+  357   3                      {
+  358   4                          Screen_ShowStr(8,2,"               ");
+  359   4                          Screen_ShowStr(8,2,inputstr);
+  360   4                          Ranks_Parm[addr_str/lie1][addr_str%lie1]= atof(inputstr);
+  361   4                      }
+  362   3                      Screen_ShowStr(32,6,inputstr);
+  363   3                      Screen_ShowFreshen();      
+  364   3                  }
+  365   2                  break;   
+  366   2          }    
+  367   1      }
+*** WARNING C47 IN LINE 303 OF user\matrix.c: 'i': unreferenced local variable
+*** WARNING C47 IN LINE 303 OF user\matrix.c: 'j': unreferenced local variable
+  368          
+  369          void Ranks_AmendB(u8 keynum)
+  370          {
+  371   1          static u8 addr_str=0;
+  372   1          u8 i,j;
+  373   1          switch( state )
+C251 COMPILER V5.60.0,  matrix                                                             22/03/23  11:38:01  PAGE 7   
+
+  374   1          {
+  375   2              case 0://³õÊ¼»¯
+  376   2                  
+  377   2                  Screen_Clear();
+  378   2                  Screen_ShowStr(0,0,"Now B[1][1]");
+  379   2                  Screen_ShowStr(0,2,"= ");
+  380   2                  Screen_ShowNum(8,2,Ranks_Parm2[0][0]);
+  381   2                  Screen_ShowStr(0,4," :ÉÏ·­   :ÏÂ·­");
+  382   2                  Screen_ShowStr(0,6,"new=");
+  383   2                  Screen_ShowFreshen();
+  384   2                  state = 1;
+  385   2                  inputstrlength=0;
+  386   2                  memset(inputstr,'\0',12);
+  387   2                  addr_str = 0;        
+  388   2                  break;
+  389   2           
+  390   2              case 1://µÈ´ýÊäÈë
+  391   2                  if( keynum>0 )
+  392   2                  {
+  393   3                      if(( keynum==4 )&&( addr_str>0 ))
+  394   3                      {
+  395   4                          addr_str--;
+  396   4                          Screen_ShowAsc(48,0,(addr_str)/lie1+'1');
+*** WARNING C188 IN LINE 396 OF user\matrix.c: 'parameter 3': value truncated
+  397   4                          Screen_ShowAsc(72,0,(addr_str)%lie1+'1');
+*** WARNING C188 IN LINE 397 OF user\matrix.c: 'parameter 3': value truncated
+  398   4                          Screen_ShowStr(32,6,"            ");
+  399   4                          memset(inputstr,'\0',12);
+  400   4                          inputstrlength=0;
+  401   4                          Screen_ShowStr(8,2,"               ");
+  402   4                          Screen_ShowNum(8,2,Ranks_Parm2[addr_str/lie1][addr_str%lie1]);
+  403   4                      }
+  404   3                      else if(( keynum==9 )&&( addr_str< (lie1*hang1-1)))
+  405   3                      {
+  406   4                          addr_str++;
+  407   4                          Screen_ShowAsc(48,0,(addr_str)/lie1+'1');
+*** WARNING C188 IN LINE 407 OF user\matrix.c: 'parameter 3': value truncated
+  408   4                          Screen_ShowAsc(72,0,(addr_str)%lie1+'1');
+*** WARNING C188 IN LINE 408 OF user\matrix.c: 'parameter 3': value truncated
+  409   4                          Screen_ShowStr(32,6,"            ");
+  410   4                          memset(inputstr,'\0',12);
+  411   4                          inputstrlength = 0;
+  412   4                          Screen_ShowStr(8,2,"               ");
+  413   4                          Screen_ShowNum(8,2,Ranks_Parm2[addr_str/lie1][addr_str%lie1]);
+  414   4                      }  
+  415   3                      else if((( keynum>='0' )&&(keynum<='9'))||( keynum=='.' )||( keynum=='-' ))
+  416   3                      {
+  417   4                          inputstr[inputstrlength]=keynum;
+  418   4                          inputstrlength++;
+  419   4                      }
+  420   3                      else if( keynum==21 )
+  421   3                      {
+  422   4                          inputstrlength--;
+  423   4                          inputstr[inputstrlength]=' '; 
+  424   4                      } 
+  425   3                      else if( keynum=='=' )
+  426   3                      {
+  427   4                          Screen_ShowStr(8,2,"               ");
+  428   4                          Screen_ShowStr(8,2,inputstr);
+  429   4                          Ranks_Parm2[addr_str/lie1][addr_str%lie1]= atof(inputstr);
+  430   4                      }
+  431   3                      Screen_ShowStr(32,6,inputstr);
+  432   3                      Screen_ShowFreshen();      
+  433   3                  }
+  434   2                  break;   
+  435   2          }    
+C251 COMPILER V5.60.0,  matrix                                                             22/03/23  11:38:01  PAGE 8   
+
+  436   1      }
+*** WARNING C47 IN LINE 372 OF user\matrix.c: 'i': unreferenced local variable
+*** WARNING C47 IN LINE 372 OF user\matrix.c: 'j': unreferenced local variable
+  437          
+  438          void ju_jiajian(double (*a)[5],double (*b)[5],double (*c)[5],u8 mode)     //¾ØÕó¼Ó¼õÔËËã
+  439          {
+  440   1          u8 i,j,k;
+  441   1              double xdata d[5][5];
+  442   1              double xdata e[5][5];
+  443   1          
+  444   1          if(mode==1)         //¾ØÕó¼Ó·¨
+  445   1          {
+  446   2              for(i=0;i<hang1;i++)
+  447   2                  for(j=0;j<lie1;j++)
+  448   2                      c[i][j]=a[i][j]+b[i][j];
+  449   2          }
+  450   1          else if(mode==2) //¾ØÕó¼õ·¨
+  451   1          {
+  452   2              for(i=0;i<hang2;i++)
+  453   2                  for(j=0;j<lie2;j++)
+  454   2                      c[i][j]=a[i][j]-b[i][j];
+  455   2          }
+  456   1          else if( mode==3 )//¾ØÕó³Ë·¨
+  457   1          {
+  458   2                      for(i=0;i<5;i++)
+  459   2              {
+  460   3                              for(j=0;j<5;j++)
+  461   3                              {
+  462   4                                      d[i][j]=a[i][j];
+  463   4                                      e[i][j]=b[i][j];
+  464   4                                      }
+  465   3                  }
+  466   2                  for(i=0;i<hang1;i++)
+  467   2                  {
+  468   3                      for(j=0;j<lie2;j++)
+  469   3                      {
+  470   4                          result=0;
+  471   4                          for(k=0;k<lie1;k++)
+  472   4                              result=result+d[i][k]*e[k][j];
+  473   4                          c[i][j]=result;
+  474   4                      }    
+  475   3                  }    
+  476   2          }
+  477   1      }       
+  478          
+  479          void Ranks_Caculate2(u8 keynum)
+  480          {
+  481   1          static u8 cal_mode;         //µ±Ç°Ò³ÃæµÄÄ£Ê½ 1£º¼Ó·¨ 2£º¼õ·¨ 3£º³Ë·¨
+  482   1          static u8 addr_str=0;
+  483   1          
+  484   1          switch( state )
+  485   1          {
+  486   2              case 0://³õÊ¼»¯
+  487   2                  Screen_Clear();
+  488   2                  cal_mode = P_Index.Menu_Pilot[P_Index.Menu_Depth-1];
+  489   2                  ju_jiajian(Ranks_Parm,Ranks_Parm2,Ranks_result,cal_mode);
+  490   2                  Screen_ShowStr(0,0,"c[ ][ ]=");
+  491   2                  Screen_ShowStr(0,4,"c[ ][ ]=");
+  492   2      //            Screen_ShowAsc(100,0,cal_mode+'0');
+  493   2                  Screen_ShowFreshen(); 
+  494   2                  keynum = 1 ;       
+  495   2                  state = 1;
+  496   2                  addr_str = 0;
+  497   2                  //break;
+  498   2           
+  499   2              case 1://µÈ´ýÊäÈë
+C251 COMPILER V5.60.0,  matrix                                                             22/03/23  11:38:01  PAGE 9   
+
+  500   2                  if( keynum>0 )
+  501   2                  {
+  502   3                      //P_Index.Menu_KeyFunc=0;  
+  503   3      //                Screen_Clear();
+  504   3                      if(( keynum==4 )&&( addr_str>0 ))
+  505   3                      {
+  506   4                          addr_str--;
+  507   4                      }
+  508   3                      else if(( keynum==9 )&&( addr_str< (lie1*hang1-2)))
+  509   3                      {
+  510   4                          addr_str++;
+  511   4                      } 
+  512   3                      Screen_ShowAsc(16,0,(addr_str)/lie1+'1');
+*** WARNING C188 IN LINE 512 OF user\matrix.c: 'parameter 3': value truncated
+  513   3                      Screen_ShowAsc(40,0,(addr_str)%lie1+'1');
+*** WARNING C188 IN LINE 513 OF user\matrix.c: 'parameter 3': value truncated
+  514   3                      Screen_ShowStr(0,2,"                ");
+  515   3                      Screen_ShowNum(0,2,Ranks_result[addr_str/lie1][addr_str%lie1]);
+  516   3                      
+  517   3                      Screen_ShowAsc(16,4,(addr_str+1)/lie1+'1');
+*** WARNING C188 IN LINE 517 OF user\matrix.c: 'parameter 3': value truncated
+  518   3                      Screen_ShowAsc(40,4,(addr_str+1)%lie1+'1');
+*** WARNING C188 IN LINE 518 OF user\matrix.c: 'parameter 3': value truncated
+  519   3                      Screen_ShowStr(0,6,"                ");
+  520   3                      Screen_ShowNum(0,6,Ranks_result[(addr_str+1)/lie1][(addr_str+1)%lie1]);                
+  521   3                      Screen_ShowFreshen();
+  522   3                  }
+  523   2                  break; 
+  524   2          }        
+  525   1      }
+  526          u8 Ranks_power= 2;
+  527          //----------------------------------ÉèÖÃ´Î·½----------------------------------
+  528          void Ranks_Setpower(u8 keynum)
+  529          {
+  530   1          static keynum_last;
+  531   1          switch( state )
+  532   1          {
+  533   2              case 0://³õÊ¼»¯
+  534   2                  Screen_Clear();
+  535   2                  Screen_ShowStr(0,0,"Now the n is:");
+  536   2                  Screen_ShowAsc(120,0,(u8)(Ranks_power%10+'0'));
+  537   2                  Screen_ShowStr(0,2,"end with '='");
+  538   2                  Screen_ShowStr(0,4,"    (1<=n<10)");
+  539   2                  Screen_ShowStr(0,6,"new=");
+  540   2                  Screen_ShowFreshen();
+  541   2                  state = 1;
+  542   2      
+  543   2                  break;
+  544   2           
+  545   2              case 1://µÈ´ýÊäÈë
+  546   2                  if( keynum>0 )
+  547   2                  {
+  548   3                      if(( keynum>='1' )&&( keynum<='9' ))
+  549   3                      {
+  550   4                          Screen_ShowAsc(32,6,keynum);
+  551   4                         keynum_last = keynum;
+  552   4                      }
+  553   3                      else if( keynum == '=' )
+  554   3                      {
+  555   4                          Ranks_power = (keynum_last-'0');
+  556   4                          P_Index.Menu_KeyFunc=0;                    
+  557   4                      }
+  558   3                      Screen_ShowFreshen();
+  559   3                  }
+  560   2                  break; 
+  561   2          }    
+C251 COMPILER V5.60.0,  matrix                                                             22/03/23  11:38:01  PAGE 10  
+
+  562   1      }
+  563          void ju_cifang(uchar n,double (*a)[5],double (*b)[5],double (*c)[5])      //¾ØÕóµÄ´Î·½ÔËËã A^2 A^3 A^4¡­¡
+             -­
+  564          {
+  565   1          float xdata s=0;
+  566   1          uchar xdata i,j,m,k;
+  567   1          double xdata d[5][5];
+  568   1          
+  569   1          for(i=0;i<5;i++)
+  570   1              for(j=0;j<5;j++)
+  571   1                  d[i][j]=a[i][j];
+  572   1          if(n>1)
+  573   1          {
+  574   2              for(i=0;i<hang1;i++)
+  575   2                  for(j=0;j<hang1;j++)
+  576   2                      b[i][j]=d[i][j];
+  577   2              for(m=1;m<n;m++)
+  578   2              {
+  579   3               for(i=0;i<hang1;i++)
+  580   3                  for(j=0;j<hang1;j++)
+  581   3                  {
+  582   4                   s=0;
+  583   4                   for(k=0;k<hang1;k++)
+  584   4                      s=s+d[i][k]*b[k][j];
+  585   4                  c[i][j]=s;
+  586   4                  }
+  587   3              for(i=0;i<hang1;i++)
+  588   3                  for(j=0;j<hang1;j++)
+  589   3                      d[i][j]=c[i][j];
+  590   3              }
+  591   2          }
+  592   1          if(n==1)
+  593   1              for(i=0;i<hang1;i++)
+  594   1                  for(j=0;j<hang1;j++)
+  595   1                      c[i][j]=d[i][j];
+  596   1      }
+  597                  
+  598          
+  599                  void ju_ni(double (*a)[5],double (*b)[5],double (*c)[5])    //¾ØÕóÇóÄæ
+  600                  {
+  601   1                      char i,j,m;
+  602   1                      float t;
+  603   1                      double d[5][5];
+  604   1                      for(i=0;i<5;i++)
+  605   1                              for(j=0;j<5;j++)
+  606   1                                      d[i][j]=a[i][j];
+  607   1                      for(i=0;i<hang1;i++)
+  608   1                              for(j=0;j<hang1;j++)
+  609   1                                      b[i][j]=0;
+  610   1                      for(i=0;i<hang1;i++)
+  611   1                              b[i][i]=1;
+  612   1                      for(m=0;m<hang1;m++)          
+  613   1                      { 
+  614   2                              t=d[m][m];                 
+  615   2                              i=m;                        
+  616   2                              while(d[m][m]==0)
+  617   2                              {    
+  618   3                                      d[m][m]=d[i+1][m];
+  619   3                                      i++;
+  620   3                                      }
+  621   2                              if(i>m)
+  622   2                              {       
+  623   3                                      d[i][m]=t;                
+  624   3                                      for(j=0;j<hang1;j++)                     
+  625   3                                      {
+  626   4                                              t=d[m][j];
+C251 COMPILER V5.60.0,  matrix                                                             22/03/23  11:38:01  PAGE 11  
+
+  627   4                                              d[m][j]=d[i][j];
+  628   4                                              d[i][j]=t;
+  629   4                                              }
+  630   3                                      for(j=0;j<hang1;j++)                     
+  631   3                                      {
+  632   4                                              t=b[m][j];
+  633   4                                              b[m][j]=b[i][j];
+  634   4                                              b[i][j]=t;
+  635   4                                              }
+  636   3                              }
+  637   2                      for(i=m+1;i<hang1;i++)
+  638   2           for(j=hang1-1;j>=0;j--)
+  639   2                              b[i][j]-=b[m][j]*d[i][m]/d[m][m];
+  640   2                      for(i=m+1;i<hang1;i++)
+  641   2           for(j=hang1-1;j>=m;j--)
+  642   2                              d[i][j]-=d[m][j]*d[i][m]/d[m][m]; 
+  643   2                      for(j=hang1-1;j>=0;j--)
+  644   2                              b[m][j]/=d[m][m];   
+  645   2                      for(j=hang1-1;j>=m;j--)
+  646   2                              d[m][j]/=d[m][m];
+  647   2              }
+  648   1      
+  649   1              m=hang1-1;
+  650   1              while(m>0)
+  651   1               {
+  652   2                      for(i=0;i<m;i++)
+  653   2                      {
+  654   3                              for(j=hang1-1;j>=0;j--)
+  655   3                                      b[i][j]-=d[i][m]*b[m][j];
+  656   3                              for(j=hang1-1;j>=m;j--)          
+  657   3                                      d[i][j]-=d[i][m]*d[m][j];
+  658   3                              }
+  659   2                       m--;
+  660   2               }
+  661   1          
+  662   1               for(i=0;i<hang1;i++)                        
+  663   1                      for(j=0;j<hang1;j++)
+  664   1                       c[i][j]=b[i][j];
+  665   1              }
+  666                  void ju_zhuan(double (*a)[5],double (*c)[5])     //¾ØÕó×ªÖÃ
+  667                  {
+  668   1                      uchar i,j;
+  669   1                      for(i=0;i<hang1;i++)
+  670   1                              for(j=0;j<lie1;j++)
+  671   1                                      c[j][i]=a[i][j];
+  672   1              }
+  673                  void ju_kcheng(float k,double (*a)[5],double (*c)[5])    //¾ØÕóÊý³Ë
+  674                  {
+  675   1                      uchar i,j;
+  676   1                      
+  677   1                      for(i=0;i<hang1;i++)
+  678   1                       for(j=0;j<lie1;j++)
+  679   1                               c[i][j]=k*a[i][j];
+  680   1              }
+  681                  
+  682              
+  683          void Ranks_Caculate3(u8 keynum)
+  684          {
+  685   1          static u8 cal_mode;         //µ±Ç°Ò³ÃæµÄÄ£Ê½ 4:´Î·½ 
+  686   1          static u8 addr_str=0;
+  687   1          
+  688   1          switch( state )
+  689   1          {
+  690   2              case 0://³õÊ¼»¯
+  691   2                  Screen_Clear();
+  692   2                  cal_mode = P_Index.Menu_Pilot[P_Index.Menu_Depth-1];
+C251 COMPILER V5.60.0,  matrix                                                             22/03/23  11:38:01  PAGE 12  
+
+  693   2                  
+  694   2                  if( cal_mode == 4 )
+  695   2                      ju_cifang(Ranks_power,Ranks_Parm,Ranks_Parm2,Ranks_result);
+  696   2                  else if( cal_mode == 5 )
+  697   2                      ju_ni(Ranks_Parm,Ranks_Parm2,Ranks_result);           
+  698   2                  else if( cal_mode == 6 )
+  699   2                      ju_zhuan(Ranks_Parm,Ranks_result);
+  700   2                  else if( cal_mode == 8 )
+  701   2                      ju_kcheng(Ranks_power,Ranks_Parm,Ranks_result);
+  702   2                      
+  703   2                  
+  704   2                  Screen_ShowStr(0,0,"c[ ][ ]=");
+  705   2                  if(  (hang1+lie1)>1 )
+  706   2                      Screen_ShowStr(0,4,"c[ ][ ]=");
+  707   2                  Screen_ShowFreshen(); 
+  708   2                  keynum = 1 ;       
+  709   2                  state = 1;
+  710   2                  addr_str = 0;
+  711   2                  //break;
+  712   2           
+  713   2              case 1://µÈ´ýÊäÈë
+  714   2                  if( keynum>0 )
+  715   2                  {
+  716   3                      //P_Index.Menu_KeyFunc=0;  
+  717   3      //                Screen_Clear();
+  718   3                      if(( keynum==4 )&&( addr_str>0 ))
+  719   3                      {
+  720   4                          addr_str--;
+  721   4                      }
+  722   3                      else if(( keynum==9 )&&( addr_str< (lie1*hang1-2)))
+  723   3                      {
+  724   4                          addr_str++;
+  725   4                      } 
+  726   3                      Screen_ShowAsc(16,0,(addr_str)/lie1+'1');
+*** WARNING C188 IN LINE 726 OF user\matrix.c: 'parameter 3': value truncated
+  727   3                      Screen_ShowAsc(40,0,(addr_str)%lie1+'1');
+*** WARNING C188 IN LINE 727 OF user\matrix.c: 'parameter 3': value truncated
+  728   3                      Screen_ShowStr(0,2,"                ");
+  729   3                      Screen_ShowNum(0,2,Ranks_result[addr_str/lie1][addr_str%lie1]);
+  730   3                      
+  731   3                      if(  (hang1+lie1)>1 )
+  732   3                      {
+  733   4                          Screen_ShowAsc(16,4,(addr_str+1)/lie1+'1');
+*** WARNING C188 IN LINE 733 OF user\matrix.c: 'parameter 3': value truncated
+  734   4                          Screen_ShowAsc(40,4,(addr_str+1)%lie1+'1');
+*** WARNING C188 IN LINE 734 OF user\matrix.c: 'parameter 3': value truncated
+  735   4                          Screen_ShowStr(0,6,"                ");
+  736   4                          Screen_ShowNum(0,6,Ranks_result[(addr_str+1)/lie1][(addr_str+1)%lie1]);    
+  737   4                      }                    
+  738   3                      Screen_ShowFreshen();
+  739   3                  }
+  740   2                  break; 
+  741   2          }        
+  742   1      }
+  743          
+  744          double xdata zhiresult=1.0;                                              //ÐÐÁÐÊ½µÄÖµ
+  745          
+  746          char ju_zhi(double (*a)[5],double (*c)[5])   //¾ØÕóÇóÖÈ
+  747                  {
+  748   1                      char xdata  temp[16];
+  749   1                      float xdata  t;
+  750   1                      char xdata  i,j;
+  751   1                      char xdata  ri,ci;  
+  752   1                      bit xdata  f_z; 
+  753   1                      double  xdata d[5][5];
+  754   1                      for(i=0;i<5;i++)
+C251 COMPILER V5.60.0,  matrix                                                             22/03/23  11:38:01  PAGE 13  
+
+  755   1                              for(j=0;j<5;j++)
+  756   1                                      d[i][j]=a[i][j];
+  757   1                      for(ri=ci=0;ci<lie1;ci++)
+  758   1                      {
+  759   2                              f_z=1;
+  760   2                              for(i=ri;i<hang1;i++)
+  761   2                                      if(d[i][ci]!=0)
+  762   2                                      {
+  763   3                                              if(i!=ri) 
+  764   3                                                      if(f_z)
+  765   3                                                              for(j=0;j<lie1-ci;j++)
+  766   3                                                               { 
+  767   4                                                                       t=d[ri][ci+j]; 
+  768   4                                                                       d[ri][ci+j]=d[i][ci+j];
+  769   4                                                                       d[i][ci+j]=t;
+  770   4                                                               }
+  771   3                                                      else 
+  772   3                                                      { 
+  773   4                                                              t=d[i][ci];
+  774   4                                                              for(j=0;j<lie1-ci;j++)
+  775   4                                                                      d[i][ci+j]*=d[ri][ci];
+  776   4                                                              for(j=0;j<lie1-ci;j++)
+  777   4                                                                      d[i][ci+j]+=d[ri][ci+j]*(-t);
+  778   4                                                      }
+  779   3                                              f_z=0; 
+  780   3                                      } 
+  781   2                       if(!f_z) ri++; 
+  782   2         }
+  783   1                      for(i=0;i<hang1;i++)
+  784   1                              for(j=0;j<lie1;j++)
+  785   1                                      c[i][j]=d[i][j];
+  786   1                      zhiresult=ri;
+  787   1              }
+*** WARNING C47 IN LINE 748 OF user\matrix.c: 'temp': unreferenced local variable
+  788              
+  789          
+  790          void Ranks_changeCaculate(u8 keynum)
+  791          {
+  792   1          static  u8 xdata cal_mode;  //µ±Ç°Ò³ÃæµÄÄ£Ê½ 4:´Î·½ 
+  793   1          static  u8 xdata addr_str=0;
+  794   1          
+  795   1          switch( state )
+  796   1          {
+  797   2              case 0://³õÊ¼»¯
+  798   2                  Screen_Clear();
+  799   2                  ju_zhi(Ranks_Parm,Ranks_result);
+  800   2                  Screen_ShowStr(0,0,"1.²é¿´ÐÐÁÐÊ½µÄÖÈ");
+  801   2                  Screen_ShowStr(0,2,"2.²é¿´±ä»»ºó¾ØÕó");
+  802   2                  Screen_ShowStr(0,4,"0.·µ»Ø");
+  803   2                  Screen_ShowFreshen(); 
+  804   2       //           keynum = 1 ;       
+  805   2                  state = 1;
+  806   2                  addr_str = 0;
+  807   2                  break;
+  808   2           
+  809   2              case 1://µÈ´ýÊäÈë
+  810   2                  if( keynum>0 )
+  811   2                  {
+  812   3                      if( keynum=='1' )
+  813   3                      {
+  814   4                         state=2;
+  815   4                          goto state2;
+  816   4                      }
+  817   3                      else if( keynum=='2' )
+  818   3                      {
+  819   4                          state=3;
+C251 COMPILER V5.60.0,  matrix                                                             22/03/23  11:38:01  PAGE 14  
+
+  820   4                          Screen_Clear();
+  821   4                          Screen_ShowStr(0,0,"c[ ][ ]=");
+  822   4                          if(  (hang1+lie1)>1 )
+  823   4                              Screen_ShowStr(0,4,"c[ ][ ]=");
+  824   4                          Screen_ShowFreshen(); 
+  825   4                          keynum = 1 ;       
+  826   4                          addr_str = 0; 
+  827   4                          goto state4;                       
+  828   4                      }
+  829   3                      else if( keynum=='0' )
+  830   3                          P_Index.Menu_KeyFunc=0;   
+  831   3                  }
+  832   2                  break;
+  833   2                  
+  834   2              case 2:
+  835   2      state2:     Screen_Clear();
+  836   2                  Screen_ShowStr(0,0,"¸Ã¾ØÕóµÄÖÈÎª:");
+  837   2                  Screen_ShowNum(0,2,zhiresult);    
+  838   2              
+  839   2                  if(hang1==lie1)
+  840   2                  {
+  841   3                      if(zhiresult==hang1)
+  842   3                          Screen_ShowStr(0,4,"¸Ã¾ØÕóÂúÖÈ!");
+  843   3                      else 
+  844   3                          Screen_ShowStr(0,4,"¸Ã¾ØÕóÍË»¯¾ØÕó!");
+  845   3                  }
+  846   2                  Screen_ShowStr(0,6,"°´'='¼ü·µ»Ø");
+  847   2                  Screen_ShowFreshen();
+  848   2                  state = 4;
+  849   2                  break;
+  850   2              case 4:
+  851   2                  if( keynum>0 )
+  852   2                  {
+  853   3                      if( keynum == '=' )
+  854   3                         state=0;
+  855   3                  }  
+  856   2                  break;
+  857   2                  
+  858   2              case 3:
+  859   2                  if( keynum>0 )
+  860   2                  {
+  861   3                      
+  862   3      state4:         //Screen_Clear();
+  863   3      //                Screen_ShowNum(0,2,zhiresult);    
+  864   3      
+  865   3                      if(( keynum==4 )&&( addr_str>0 ))
+  866   3                      {
+  867   4                          addr_str--;
+  868   4                      }
+  869   3                      else if(( keynum==9 )&&( addr_str< (lie1*hang1-2)))
+  870   3                      {
+  871   4                          addr_str++;
+  872   4                      } 
+  873   3                      else if( keynum=='=' )
+  874   3                          P_Index.Menu_KeyFunc=0;   
+  875   3                                      
+  876   3                      Screen_ShowAsc(16,0,(addr_str)/lie1+'1');
+*** WARNING C188 IN LINE 876 OF user\matrix.c: 'parameter 3': value truncated
+  877   3                      Screen_ShowAsc(40,0,(addr_str)%lie1+'1');
+*** WARNING C188 IN LINE 877 OF user\matrix.c: 'parameter 3': value truncated
+  878   3                      Screen_ShowStr(0,2,"                ");
+  879   3                      Screen_ShowNum(0,2,Ranks_result[addr_str/lie1][addr_str%lie1]);
+  880   3                      
+  881   3                      if(  (hang1+lie1)>1 )
+  882   3                      {
+  883   4                          Screen_ShowAsc(16,4,(addr_str+1)/lie1+'1');
+C251 COMPILER V5.60.0,  matrix                                                             22/03/23  11:38:01  PAGE 15  
+
+*** WARNING C188 IN LINE 883 OF user\matrix.c: 'parameter 3': value truncated
+  884   4                          Screen_ShowAsc(40,4,(addr_str+1)%lie1+'1');
+*** WARNING C188 IN LINE 884 OF user\matrix.c: 'parameter 3': value truncated
+  885   4                          Screen_ShowStr(0,6,"                ");
+  886   4                          Screen_ShowNum(0,6,Ranks_result[(addr_str+1)/lie1][(addr_str+1)%lie1]);    
+  887   4                      }                    
+  888   3                      Screen_ShowFreshen();
+  889   3                  }
+  890   2                  break; 
+  891   2          }        
+  892   1      }
+*** WARNING C135 IN LINE 787 OF user\matrix.c: 'ju_zhi': no return value
+*** WARNING C135 IN LINE 787 OF user\matrix.c: 'ju_zhi': no return value
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =      8128     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =       321        402
+  xdata-const size     =    ------     ------
+  edata size           =        20        220
+  bit size             =    ------          1
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =       721     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  35 WARNING(S),  0 ERROR(S)

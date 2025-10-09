@@ -1,0 +1,106 @@
+C251 COMPILER V5.60.0,  dth11                                                              09/10/25  19:47:51  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE dth11
+OBJECT MODULE PLACED IN .\Objects\dth11.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE ..\Hardware\dth11.c LARGE INTR2 BROWSE INCDIR(..\CMSIS;..\system;..\Us
+                    -er;..\Hardware) DEBUG PRINT(.\Listings\dth11.lst) OBJECT(.\Objects\dth11.obj) 
+
+stmt  level    source
+
+    1          #include "../User/main.h"
+    2          sbit DHT11 = P1^1;    //dth11数字信号输入脚
+    3          
+    4          // 读取DHT11数据函数
+    5          // 返回值：0-成功，1-无响应，2-校验错误
+    6          //temp 温度 humi 湿度
+    7                  unsigned char DHT11_Read(float *temp, float *humi)
+    8          {
+    9   1          unsigned char buf[5] = {0};
+   10   1          unsigned char i, j;
+   11   1          
+   12   1          // 主机启动信号
+   13   1          DHT11 = 0;
+   14   1          delay_ms(20);    // 拉低至少18ms
+   15   1          DHT11 = 1;
+   16   1          Delay_us(30);    // 拉高等待20-40μs
+   17   1          
+   18   1          // 检测从机响应
+   19   1          if (!DHT11) {
+   20   2              // 等待83μs低电平响应
+   21   2              while (!DHT11);
+   22   2              // 等待87μs高电平
+   23   2              while (DHT11);
+   24   2              
+   25   2              // 接收40位数据
+   26   2              for (i = 0; i < 5; i++) {
+   27   3                  for (j = 0; j < 8; j++) {
+   28   4                      // 等待54μs低电平结束
+   29   4                      while (!DHT11);
+   30   4                      // 延时40μs（判断高电平持续时间）
+   31   4                      Delay_us(40);
+   32   4                      // 判断位值（高电平持续时间>40μs为逻辑"1"）
+   33   4                      buf[i] <<= 1;     //将整个字节左移一位
+   34   4                      if (DHT11) {
+   35   5                          buf[i] |= 1;   //如果读到高电平 将buf[i]字节的对应位设置为1//这个操作是对buf[i]的最低
+             -位或运算
+   36   5                          // 等待高电平结束
+   37   5                          while (DHT11);
+   38   5                      }
+   39   4                  }
+   40   3              }
+   41   2              
+   42   2              // 校验数据
+   43   2              if (buf[4] == (buf[0] + buf[1] + buf[2] + buf[3])) {
+   44   3                  // 处理温度负数（手册说明：温度<0时，小数部分最高位为1）
+   45   3                  if (buf[3] & 0x80) {
+   46   4                      *temp = -(float)(buf[2] + (buf[3] & 0x7F) * 0.1);
+   47   4                  } else {
+   48   4                      *temp = (float)buf[2] + (float)buf[3] * 0.1;
+   49   4                  }
+   50   3                  *humi = (float)buf[0] + (float)buf[1] * 0.1;
+   51   3                  return 0; // 成功
+   52   3              } else {
+   53   3                  return 2; // 校验错误
+   54   3              }
+   55   2          }
+   56   1          return 1; // 无响应
+   57   1      }
+C251 COMPILER V5.60.0,  dth11                                                              09/10/25  19:47:51  PAGE 2   
+
+   58          
+   59          
+   60          
+   61          
+   62          
+   63          
+   64          
+   65          
+   66          
+   67          
+   68          
+   69          
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =       369     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------         11
+  xdata-const size     =    ------     ------
+  edata size           =    ------     ------
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =         5     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

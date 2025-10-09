@@ -1,0 +1,1 @@
+"Resource\mode.c" XSMALL ROM(HUGE) BROWSE INCDIR(.\Resource;.\ware;.\src;.\middle) DEBUG PRINT(.\obj\mode.lst) OBJECT(.\obj\mode.obj)

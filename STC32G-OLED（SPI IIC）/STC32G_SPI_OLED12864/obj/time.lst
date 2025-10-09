@@ -1,0 +1,602 @@
+C251 COMPILER V5.60.0,  time                                                               25/09/22  11:34:21  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE time
+OBJECT MODULE PLACED IN .\obj\time.obj
+COMPILER INVOKED BY: G:\APP\c251\C251\BIN\C251.EXE Resource\time.c XSMALL INTR2 BROWSE INCDIR(.\Resource) DEBUG PRINT(.\
+                    -obj\time.lst) TABS(2) OBJECT(.\obj\time.obj) 
+
+stmt  level    source
+
+    1          #include "STC12C5A60S2.h"
+    2          #include "ds1302.h"
+    3          #include "time.h"
+    4          #include "lcd_12864.h"
+    5          #include "keyboard_device.h"
+    6          
+    7          #define CASE break;case
+    8          
+    9          extern uint time_out;
+   10          
+   11          /* ========= Ê±¼äÏÔÊ¾×Ö¿â ========= */
+   12          uchar code lib_num1632[11][64]={
+   13          /*---0---*/
+   14          {0x00,0x00,0x7F,0xFC,0xBF,0xFA,0xDF,0xF6,0xEF,0xEE,0xF0,0x1E,0xF0,0x1E,0xF0,0x1E,
+   15           0xF0,0x1E,0xF0,0x1E,0xF0,0x1E,0xF0,0x1E,0xF0,0x1E,0xE0,0x0E,0xC0,0x06,0x80,0x02,
+   16           0x00,0x00,0x80,0x02,0xC0,0x06,0xE0,0x0E,0xF0,0x1E,0xF0,0x1E,0xF0,0x1E,0xF0,0x1E,
+   17           0xF0,0x1E,0xF0,0x1E,0xF0,0x1E,0xEF,0xEE,0xDF,0xF6,0xBF,0xFA,0x7F,0xFC,0x00,0x00},
+   18          /*---1---*/
+   19          {0x00,0x00,0x00,0x00,0x00,0x02,0x00,0x06,0x00,0x0E,0x00,0x1E,0x00,0x1E,0x00,0x1E,
+   20           0x00,0x1E,0x00,0x1E,0x00,0x1E,0x00,0x1E,0x00,0x1E,0x00,0x0E,0x00,0x06,0x00,0x02,
+   21           0x00,0x00,0x00,0x02,0x00,0x06,0x00,0x0E,0x00,0x1E,0x00,0x1E,0x00,0x1E,0x00,0x1E,
+   22           0x00,0x1E,0x00,0x1E,0x00,0x1E,0x00,0x0E,0x00,0x06,0x00,0x02,0x00,0x00,0x00,0x00},
+   23          /*---2---*/
+   24          {0x00,0x00,0x7F,0xFC,0x3F,0xFA,0x1F,0xF6,0x0F,0xEE,0x00,0x1E,0x00,0x1E,0x00,0x1E,
+   25           0x00,0x1E,0x00,0x1E,0x00,0x1E,0x00,0x1E,0x00,0x1E,0x00,0x0E,0x1F,0xF6,0x3F,0xFA,
+   26           0x7F,0xFC,0xBF,0xF8,0xDF,0xF0,0xE0,0x00,0xF0,0x00,0xF0,0x00,0xF0,0x00,0xF0,0x00,
+   27           0xF0,0x00,0xF0,0x00,0xF0,0x00,0xEF,0xE0,0xDF,0xF0,0xBF,0xF8,0x7F,0xFC,0x00,0x00},
+   28          /*---3---*/
+   29          {0x00,0x00,0x7F,0xFC,0x3F,0xFA,0x1F,0xF6,0x0F,0xEE,0x00,0x1E,0x00,0x1E,0x00,0x1E,
+   30           0x00,0x1E,0x00,0x1E,0x00,0x1E,0x00,0x1E,0x00,0x1E,0x00,0x0E,0x1F,0xF6,0x3F,0xFA,
+   31           0x7F,0xFC,0x3F,0xFA,0x1F,0xF6,0x00,0x0E,0x00,0x1E,0x00,0x1E,0x00,0x1E,0x00,0x1E,
+   32           0x00,0x1E,0x00,0x1E,0x00,0x1E,0x0F,0xEE,0x1F,0xF6,0x3F,0xFA,0x7F,0xFC,0x00,0x00},
+   33          /*---4---*/
+   34          {0x00,0x00,0x00,0x00,0x80,0x02,0xC0,0x06,0xE0,0x0E,0xF0,0x1E,0xF0,0x1E,0xF0,0x1E,
+   35           0xF0,0x1E,0xF0,0x1E,0xF0,0x1E,0xF0,0x1E,0xF0,0x1E,0xE0,0x0E,0xDF,0xF6,0xBF,0xFA,
+   36           0x7F,0xFC,0x3F,0xFA,0x1F,0xF6,0x00,0x0E,0x00,0x1E,0x00,0x1E,0x00,0x1E,0x00,0x1E,
+   37           0x00,0x1E,0x00,0x1E,0x00,0x1E,0x00,0x0E,0x00,0x06,0x00,0x02,0x00,0x00,0x00,0x00},
+   38          /*---5---*/
+   39          {0x00,0x00,0x7F,0xFC,0xBF,0xF8,0xDF,0xF0,0xEF,0xE0,0xF0,0x00,0xF0,0x00,0xF0,0x00,
+   40           0xF0,0x00,0xF0,0x00,0xF0,0x00,0xF0,0x00,0xF0,0x00,0xE0,0x00,0xDF,0xF0,0xBF,0xF8,
+   41           0x7F,0xFC,0x3F,0xFA,0x1F,0xF6,0x00,0x0E,0x00,0x1E,0x00,0x1E,0x00,0x1E,0x00,0x1E,
+   42           0x00,0x1E,0x00,0x1E,0x00,0x1E,0x0F,0xEE,0x1F,0xF6,0x3F,0xFA,0x7F,0xFC,0x00,0x00},
+   43          /*---6---*/
+   44          {0x00,0x00,0x7F,0xFC,0xBF,0xF8,0xDF,0xF0,0xEF,0xE0,0xF0,0x00,0xF0,0x00,0xF0,0x00,
+   45           0xF0,0x00,0xF0,0x00,0xF0,0x00,0xF0,0x00,0xF0,0x00,0xE0,0x00,0xDF,0xF0,0xBF,0xF8,
+   46           0x7F,0xFC,0xBF,0xFA,0xDF,0xF6,0xE0,0x0E,0xF0,0x1E,0xF0,0x1E,0xF0,0x1E,0xF0,0x1E,
+   47           0xF0,0x1E,0xF0,0x1E,0xF0,0x1E,0xEF,0xEE,0xDF,0xF6,0xBF,0xFA,0x7F,0xFC,0x00,0x00},
+   48          /*---7---*/
+   49          {0x00,0x00,0x7F,0xFC,0x3F,0xFA,0x1F,0xF6,0x0F,0xEE,0x00,0x1E,0x00,0x1E,0x00,0x1E,
+   50           0x00,0x1E,0x00,0x1E,0x00,0x1E,0x00,0x1E,0x00,0x1E,0x00,0x0E,0x00,0x06,0x00,0x02,
+   51           0x00,0x00,0x00,0x02,0x00,0x06,0x00,0x0E,0x00,0x1E,0x00,0x1E,0x00,0x1E,0x00,0x1E,
+   52           0x00,0x1E,0x00,0x1E,0x00,0x1E,0x00,0x0E,0x00,0x06,0x00,0x02,0x00,0x00,0x00,0x00},
+   53          /*---8---*/
+   54          {0x00,0x00,0x7F,0xFC,0xBF,0xFA,0xDF,0xF6,0xEF,0xEE,0xF0,0x1E,0xF0,0x1E,0xF0,0x1E,
+   55           0xF0,0x1E,0xF0,0x1E,0xF0,0x1E,0xF0,0x1E,0xF0,0x1E,0xE0,0x0E,0xDF,0xF6,0xBF,0xFA,
+   56           0x7F,0xFC,0xBF,0xFA,0xDF,0xF6,0xE0,0x0E,0xF0,0x1E,0xF0,0x1E,0xF0,0x1E,0xF0,0x1E,
+   57           0xF0,0x1E,0xF0,0x1E,0xF0,0x1E,0xEF,0xEE,0xDF,0xF6,0xBF,0xFA,0x7F,0xFC,0x00,0x00},
+   58          /*---9---*/
+C251 COMPILER V5.60.0,  time                                                               25/09/22  11:34:21  PAGE 2   
+
+   59          {0x00,0x00,0x7F,0xFC,0xBF,0xFA,0xDF,0xF6,0xEF,0xEE,0xF0,0x1E,0xF0,0x1E,0xF0,0x1E,
+   60           0xF0,0x1E,0xF0,0x1E,0xF0,0x1E,0xF0,0x1E,0xF0,0x1E,0xE0,0x0E,0xDF,0xF6,0xBF,0xFA,
+   61           0x7F,0xFC,0x3F,0xFA,0x1F,0xF6,0x00,0x0E,0x00,0x1E,0x00,0x1E,0x00,0x1E,0x00,0x1E,
+   62           0x00,0x1E,0x00,0x1E,0x00,0x1E,0x0F,0xEE,0x1F,0xF6,0x3F,0xFA,0x7F,0xFC,0x00,0x00},
+   63          /*---:---*/
+   64          {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x07,0xE0,0x07,0xE0,
+   65          0x07,0xE0,0x07,0xE0,0x07,0xE0,0x07,0xE0,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   66          0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x07,0xE0,0x07,0xE0,0x07,0xE0,0x07,0xE0,
+   67          0x07,0xE0,0x07,0xE0,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
+   68          };
+   69          
+   70          uchar code lib_empty1632[]={
+   71          0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   72          0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   73          0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   74          0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   75          };
+   76          
+   77          
+   78          uchar code *dec_bit[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+*** WARNING C151 IN LINE 78 OF Resource\time.c: pointer truncation: 'huge const' to 'code'
+*** WARNING C151 IN LINE 78 OF Resource\time.c: pointer truncation: 'huge const' to 'code'
+*** WARNING C151 IN LINE 78 OF Resource\time.c: pointer truncation: 'huge const' to 'code'
+*** WARNING C151 IN LINE 78 OF Resource\time.c: pointer truncation: 'huge const' to 'code'
+*** WARNING C151 IN LINE 78 OF Resource\time.c: pointer truncation: 'huge const' to 'code'
+*** WARNING C151 IN LINE 78 OF Resource\time.c: pointer truncation: 'huge const' to 'code'
+*** WARNING C151 IN LINE 78 OF Resource\time.c: pointer truncation: 'huge const' to 'code'
+*** WARNING C151 IN LINE 78 OF Resource\time.c: pointer truncation: 'huge const' to 'code'
+*** WARNING C151 IN LINE 78 OF Resource\time.c: pointer truncation: 'huge const' to 'code'
+*** WARNING C151 IN LINE 78 OF Resource\time.c: pointer truncation: 'huge const' to 'code'
+   79          uchar code weekday_bit_ch[7][6] =   {{0xd2,0xbb,'\0'},{0xb6,0xfe,'\0'},
+   80                             {0xc8,0xfd,'\0'},{0xcb,0xc4,'\0'},
+   81                               {0xce,0xe5,'\0'},{0xc1,0xf9,'\0'},
+   82                             {0xc8,0xd5,'\0'}};
+   83                             
+   84                             
+   85          uchar general_setbyte(enum WHICH_TIME_SET p_time);
+   86          uchar general_month_have_day(void);
+   87          void general_gflush_date(void);
+   88          void general_gflush_time(void);                  
+   89          
+   90          
+   91          /* ========= ¶¯Ì¬Ê±¼äÏÔÊ¾ ========= */
+   92          void page_time()
+   93          {
+   94   1        uchar key = 0;
+   95   1        uchar time[7];            /*ÄêÔÂÈÕÊ±·ÖÃëÖÜ*/
+   96   1        uchar dec_display[14];
+   97   1          
+   98   1        while(key == 0)
+   99   1        {
+  100   2          time_read(time);          /*´ÓDS1302ÖÐ¶ÁÈ¡Ê±¼ä*/
+  101   2          time_dec(time, dec_display);    /*½«Ê±¼ä²ð·Ö×ª»¯³ÉÎ»*/
+  102   2        
+  103   2          lcd_set_pos(0,0);
+  104   2          lcd_write_str("20");
+  105   2          lcd_write_str(dec_bit[dec_display[0]]);   /*Äê*/
+  106   2          lcd_write_str(dec_bit[dec_display[1]]);
+  107   2          lcd_write_str("-");
+  108   2          lcd_write_str(dec_bit[dec_display[2]]);   /*ÔÂ*/
+  109   2          lcd_write_str(dec_bit[dec_display[3]]);
+  110   2          lcd_write_str("-");
+  111   2          lcd_write_str(dec_bit[dec_display[4]]);   /*ÈÕ*/
+  112   2          lcd_write_str(dec_bit[dec_display[5]]);
+  113   2            
+  114   2          lcd_set_pos(0,6);
+C251 COMPILER V5.60.0,  time                                                               25/09/22  11:34:21  PAGE 3   
+
+  115   2          lcd_write_str("ÖÜ");
+  116   2          lcd_write_str(weekday_bit_ch[dec_display[13]]);   /*ÖÜ*/
+  117   2          
+  118   2          
+  119   2            /*´ó×Ö·ûÊ±ÖÓ*/
+  120   2          lcd_write_pic(0,16,lib_num1632[dec_display[6]],16,32);      /*Ê±*/
+  121   2          lcd_write_pic(1,16,lib_num1632[dec_display[7]],16,32);
+  122   2          if(dec_display[11] == 1 || dec_display[11] == 6)
+  123   2            {lcd_write_pic(2,17,lib_empty1632,16,32);}
+  124   2          else
+  125   2            {lcd_write_pic(2,17,lib_num1632[10],16,32);}
+  126   2          
+  127   2          lcd_write_pic(3,16,lib_num1632[dec_display[8]],16,32);      /*·Ö*/
+  128   2          lcd_write_pic(4,16,lib_num1632[dec_display[9]],16,32);
+  129   2          if(dec_display[11] == 1 || dec_display[11] == 6)
+  130   2            {lcd_write_pic(5,17,lib_empty1632,16,32);}
+  131   2          else
+  132   2            {lcd_write_pic(5,17,lib_num1632[10],16,32);}
+  133   2          lcd_write_pic(6,16,lib_num1632[dec_display[10]],16,32);   /*Ãë*/
+  134   2          lcd_write_pic(7,16,lib_num1632[dec_display[11]],16,32);
+  135   2          
+  136   2          time_out = 0;
+  137   2          
+  138   2          key = keyboard_wake();
+  139   2          
+  140   2        }
+  141   1        
+  142   1        
+  143   1      }
+  144          
+  145          
+  146          /* ========= ÈÕÆÚÉèÖÃ ========= */
+  147          void general_dateset(void)
+  148          {
+  149   1        char ptr = 0;       /*µ±Ç°µÄÐÞ¸ÄÏîÄ¿±êÖ¾Î»*/
+  150   1        
+  151   1        do
+  152   1        {
+  153   2          general_gflush_date();  /*Ë¢ÐÂÏÔÊ¾*/
+  154   2          if(general_setbyte(ptr) == 1)
+  155   2            ptr += 1;
+  156   2          else
+  157   2            ptr -= 1;
+  158   2          
+  159   2          if(ptr == 3)    /*ÈÃÖ¸ÕëÌø¹ý·Ç·¨ÇøÓò*/
+  160   2            ptr = 6;
+  161   2          if(ptr == 5)
+  162   2            ptr = 2;
+  163   2          
+  164   2        }while(ptr != -1 && ptr != 7);
+  165   1        
+  166   1        if(ptr == 7)
+  167   1        {
+  168   2          lcd_clear();
+  169   2          lcd_clear_pic();  /*Çå¿Õ·´°×*/
+  170   2          lcd_set_pos(1,2);
+  171   2      
+  172   2          lcd_write_str("ÉèÖÃ³É¹¦");
+  173   2        
+  174   2          delay_2s();     /*ÑÓÊ±2s*/
+  175   2          lcd_clear();
+  176   2          return;
+  177   2        }
+  178   1        
+  179   1        lcd_clear_pic();  /*Çå¿Õ·´°×*/
+  180   1      }
+C251 COMPILER V5.60.0,  time                                                               25/09/22  11:34:21  PAGE 4   
+
+  181          
+  182          
+  183          /* ========= Ê±ÖÓÉèÖÃ ========= */
+  184          void general_timeset(void)
+  185          {
+  186   1        uchar ptr = 3;        /*µ±Ç°µÄÐÞ¸ÄÏîÄ¿±êÖ¾Î»*/
+  187   1        
+  188   1        do
+  189   1        {
+  190   2          general_gflush_time();  /*Ë¢ÐÂÏÔÊ¾*/
+  191   2          if(general_setbyte(ptr) == 1)
+  192   2            ptr += 1;
+  193   2          else
+  194   2            ptr -= 1;
+  195   2              
+  196   2        }while(ptr != 2 && ptr != 6);
+  197   1        
+  198   1        if(ptr == 6)
+  199   1        {
+  200   2          lcd_clear();
+  201   2          lcd_clear_pic();  /*Çå¿Õ·´°×*/
+  202   2          lcd_set_pos(1,2);
+  203   2        
+  204   2          lcd_write_str("ÉèÖÃ³É¹¦");
+  205   2        
+  206   2          delay_2s();     /*ÑÓÊ±2s*/
+  207   2          lcd_clear();
+  208   2          return;
+  209   2        }
+  210   1        
+  211   1        lcd_clear_pic();  /*Çå¿Õ·´°×*/
+  212   1      }
+  213          
+  214          
+  215          
+  216          /* ========= Î»ÉèÖÃ ========= */
+  217          uchar general_setbyte(enum WHICH_TIME_SET p_time)       /*ÔÊÐíÐ´ÈëµÄ·¶Î§0-99*//*·µ»ØÖµÎª1±íÊ¾µ±Ç°ÉèÖÃ³É¹¦£¬·
+             -µ»ØÖµÎª0±íÊ¾ÍË³öÉèÖÃ*//*p_timeÖ¸Ê¾µ±Ç°ÉèÖÃ¶ÔÏó*/
+  218          {
+  219   1        uchar key,check = 0, flag = 0, check_ok = 0;
+  220   1        char i = 0;
+  221   1        uchar temp[2] = {0,0};        /*Ð´Èë»º³åÇø*/
+  222   1        uchar viso[3] = {0,0,'\0'};     /*ÏÔ´æ*/
+  223   1        if(p_time != WEEK)          /*ÐÇÆÚÐèÒªÌØÊâÉèÖÃ*/
+  224   1        {
+  225   2          switch(p_time)
+  226   2          {
+  227   3            case YEAR :             /*Ð´¶ÔÓ¦Î»ÖÃµÄ·´°×¿é*/
+  228   3                    lcd_set_pos(0,3);
+  229   3                    lcd_inverse(0,3,1);
+  230   3                    
+  231   3            
+  232   3            CASE MONTH :            /*Ð´¶ÔÓ¦Î»ÖÃµÄ·´°×¿é*/
+  233   3                    lcd_set_pos(1,2);
+  234   3                    lcd_inverse(1,2,1);
+  235   3                    
+  236   3            
+  237   3            CASE DAY   :          /*Ð´¶ÔÓ¦Î»ÖÃµÄ·´°×¿é*/
+  238   3                    lcd_set_pos(1,4);
+  239   3                    lcd_inverse(1,4,1);
+  240   3                    
+  241   3            
+  242   3            CASE HOUR  :  lcd_set_pos(1,1);
+  243   3                    lcd_inverse(1,1,1);         /*Ð´¶ÔÓ¦Î»ÖÃµÄ·´°×¿é*/
+  244   3                    
+  245   3            CASE MIN   :  lcd_set_pos(1,3);
+C251 COMPILER V5.60.0,  time                                                               25/09/22  11:34:21  PAGE 5   
+
+  246   3                    lcd_inverse(1,3,1);         /*Ð´¶ÔÓ¦Î»ÖÃµÄ·´°×¿é*/
+  247   3            
+  248   3            CASE SEC   :  lcd_set_pos(1,5);
+  249   3                    lcd_inverse(1,5,1); 
+  250   3          }
+  251   2          key = keyboard_output();
+  252   2          temp[0] = 0;
+  253   2          lcd_write_str("0");       /*¸ßÎ»Ìî³ä0*/
+  254   2          
+  255   2          while(1)
+  256   2          {
+  257   3            if(i == 1 || i == 0)      /*Î´Âú*/
+  258   3            {
+  259   4              switch(key)           /*°´¼ü´¦Àí³ÌÐò*/
+  260   4              {
+  261   5                case '1' :  check = 1;
+  262   5                CASE '2' :  check = 2;
+  263   5                CASE '3' :  check = 3;
+  264   5                CASE '4' :  check = 4;
+  265   5                CASE '5' :  check = 5;
+  266   5                CASE '6' :  check = 6;
+  267   5                CASE '7' :  check = 7;
+  268   5                CASE '8' :  check = 8;
+  269   5                CASE '9' :  check = 9;
+  270   5                CASE '0' :  check = 0;
+  271   5                CASE 18 : if(i >= 0)
+  272   5                      {
+  273   6                        temp[1] = temp[0];
+  274   6                        temp[0] = 0;          /*É¾³ýÊý¾Ý*/
+  275   6                        i -= 1;
+  276   6                      }                 /*ÍË¸ñ¼ü*/
+  277   5                      
+  278   5                CASE '=' : flag = 1;      /*È·ÈÏ¼ü*/
+  279   5              } 
+  280   4            }
+  281   3            
+  282   3            if(i == 2)    /*ÒÑÂú*/
+  283   3            {
+  284   4              while(key != 18 && key != '=')
+  285   4              {
+  286   5                key = keyboard_output();
+  287   5              }
+  288   4              if(key == 18)
+  289   4              {
+  290   5                temp[1] = temp[0];
+  291   5                temp[0] = 0;          /*É¾³ýÊý¾Ý*/
+  292   5                i -= 1;
+  293   5              }
+  294   4              else if(key == '=')
+  295   4              {
+  296   5                flag = 1;
+  297   5              
+  298   5              }
+  299   4            }
+  300   3            if(i == -1)
+  301   3            {
+  302   4              switch(key)           /*°´¼ü´¦Àí³ÌÐò*/
+  303   4              {
+  304   5                case '1' :  check = 1;
+  305   5                CASE '2' :  check = 2;
+  306   5                CASE '3' :  check = 3;
+  307   5                CASE '4' :  check = 4;
+  308   5                CASE '5' :  check = 5;
+  309   5                CASE '6' :  check = 6;
+  310   5                CASE '7' :  check = 7;
+  311   5                CASE '8' :  check = 8;
+C251 COMPILER V5.60.0,  time                                                               25/09/22  11:34:21  PAGE 6   
+
+  312   5                CASE '9' :  check = 9;
+  313   5                CASE '0' :  check = 0;
+  314   5                CASE 18 : return 0;     /*ºóÍË*/
+  315   5                CASE '=' : flag = 1;      /*È·ÈÏ¼ü*/
+  316   5              } 
+  317   4            }
+  318   3            
+  319   3            
+  320   3            if((key >= '0')&&(key <= '9')|| key == 18)  /*Ê¶±ðÎª·Ç¹¦ÄÜÓÐÐ§ÊäÈë*/
+  321   3            {
+  322   4              switch(p_time)
+  323   4              {
+  324   5                case YEAR  : check_ok = 1;
+  325   5                CASE MONTH : if(temp[1]*10 + check >= 0 && temp[1]*10 + check < 13)check_ok = 1;    /*Ö»ÄÜÔÚ1-12ÖÐÐ´*/
+  326   5                CASE DAY   : if(temp[1]*10 + check >= 0 && temp[1]*10 + check <= general_month_have_day())check_ok =
+             - 1;  /*Ö»ÄÜÔÚ1-?ÖÐÐ´*/
+  327   5                CASE HOUR  : if(temp[1]*10 + check >= 0 && temp[1]*10 + check < 24)check_ok = 1;  /*Ö»ÄÜÔÚ0-23ÖÐÐ´*/
+  328   5                CASE MIN   : if(temp[1]*10 + check >= 0 && temp[1]*10 + check < 60)check_ok = 1;  /*Ö»ÄÜÔÚ0-59ÖÐÐ´*/
+  329   5                CASE SEC   : if(temp[1]*10 + check >= 0 && temp[1]*10 + check < 60)check_ok = 1;  /*Ö»ÄÜÔÚ0-59ÖÐÐ´*/
+  330   5              }
+  331   4              
+  332   4              if(check_ok)
+  333   4              {
+  334   5                check_ok = 0;
+  335   5                temp[0] = temp[1];
+  336   5                temp[1] = check;
+  337   5                i += 1;
+  338   5              }
+  339   4              
+  340   4            } 
+  341   3          
+  342   3            if((key >= '0')&&(key <= '9')|| key == 18)  /*Ê¶±ðÎª·Ç¹¦ÄÜÓÐÐ§ÊäÈë*/
+  343   3            { 
+  344   4            
+  345   4              viso[0] = temp[0] + '0';
+  346   4              viso[1] = temp[1] + '0';
+  347   4              switch(p_time)
+  348   4              {
+  349   5                case YEAR :                       /*Ð´¶ÔÓ¦Î»ÖÃµÄÉèÖÃÖµ*/
+  350   5                        lcd_set_pos(0,3);
+  351   5                        lcd_write_str(viso);
+  352   5                        
+  353   5                
+  354   5                CASE MONTH :                      /*Ð´¶ÔÓ¦Î»ÖÃµÄÉèÖÃÖµ*/
+  355   5                        lcd_set_pos(1,2);
+  356   5                        lcd_write_str(viso);
+  357   5                
+  358   5                CASE DAY   :                      /*Ð´¶ÔÓ¦Î»ÖÃµÄÉèÖÃÖµ*/
+  359   5                        lcd_set_pos(1,4);
+  360   5                        lcd_write_str(viso);
+  361   5      
+  362   5                CASE HOUR  :  lcd_set_pos(1,1);
+  363   5                        lcd_write_str(viso);          /*Ð´¶ÔÓ¦Î»ÖÃµÄÉèÖÃÖµ*/
+  364   5                        
+  365   5                CASE MIN   :  lcd_set_pos(1,3);
+  366   5                        lcd_write_str(viso);          /*Ð´¶ÔÓ¦Î»ÖÃµÄÉèÖÃÖµ*/
+  367   5                
+  368   5                CASE SEC   :  lcd_set_pos(1,5);
+  369   5                        lcd_write_str(viso);  
+  370   5              }
+  371   4            }     
+  372   3      
+  373   3            if(flag == 1)
+  374   3              break;
+  375   3            
+  376   3            check = 0;
+C251 COMPILER V5.60.0,  time                                                               25/09/22  11:34:21  PAGE 7   
+
+  377   3            key = keyboard_output();                      
+  378   3          }
+  379   2          if(p_time == MONTH || p_time == DAY)
+  380   2          {
+  381   3            if(temp[0]*10 + temp[1] > 0)          /*²»ÔÊÐíÐ´0*/
+  382   3              time_set(temp[0]*10 + temp[1], p_time);   /*Ïò1302ÖÐÐ´*/
+*** WARNING C188 IN LINE 382 OF Resource\time.c: 'parameter 1': value truncated
+  383   3          }
+  384   2          else if(i > 0 || p_time == SEC)
+  385   2            time_set(temp[0]*10 + temp[1], p_time);   /*Ïò1302ÖÐÐ´*/
+*** WARNING C188 IN LINE 385 OF Resource\time.c: 'parameter 1': value truncated
+  386   2      
+  387   2          
+  388   2          return 1;
+  389   2        }
+  390   1        
+  391   1                        /*WEEKÌØÊâ´¦Àí*/
+  392   1        lcd_set_pos(2,4);
+  393   1        lcd_inverse(2,4,1);
+  394   1      
+  395   1        key = keyboard_output();
+  396   1        
+  397   1        while(1)
+  398   1        {
+  399   2          switch(key)
+  400   2          {
+  401   3            case '1' :  check = 1;
+  402   3            CASE '2' :  check = 2;
+  403   3            CASE '3' :  check = 3;
+  404   3            CASE '4' :  check = 4;
+  405   3            CASE '5' :  check = 5;
+  406   3            CASE '6' :  check = 6;
+  407   3            CASE '7' :  check = 7;
+  408   3            CASE '8' :  check = 8;
+  409   3            CASE '9' :  check = 9;
+  410   3            CASE '0' :  check = 0;
+  411   3            CASE 18 : return 0;         /*ºóÍË*/
+  412   3            CASE '=' : flag = 1;          /*È·ÈÏ¼ü*/
+  413   3          }
+  414   2          if((key >= '0')&&(key <= '9'))  /*Ê¶±ðÎª·Ç¹¦ÄÜÓÐÐ§ÊäÈë*/
+  415   2          {
+  416   3            check = check - 1;
+  417   3            
+  418   3                  /*Ð´¶ÔÓ¦Î»ÖÃµÄÖµ*/
+  419   3              lcd_set_pos(2,4);
+  420   3              lcd_write_str(weekday_bit_ch[check]);
+  421   3            
+  422   3            time_set(check,p_time);         /*Ð´Èë*/
+  423   3          }
+  424   2          if(flag == 1)
+  425   2            break;
+  426   2          
+  427   2          check += 1;
+  428   2          key = keyboard_output();
+  429   2        }
+  430   1        
+  431   1        return 1;
+  432   1      }
+  433          
+  434          
+  435          /* ========= Ë¢ÐÂÈÕÆÚ ========= */
+  436          void general_gflush_date(void)
+  437          {
+  438   1        uchar time[7];            /*ÄêÔÂÈÕÊ±·ÖÃëÖÜ*/
+  439   1        uchar dec_display[14];
+  440   1        time_read(time);          /*´ÓDS1302ÖÐ¶ÁÈ¡Ê±¼ä*/
+C251 COMPILER V5.60.0,  time                                                               25/09/22  11:34:21  PAGE 8   
+
+  441   1        time_dec(time, dec_display);    /*½«Ê±¼ä²ð·Ö×ª»¯³ÉÎ»*/
+  442   1        lcd_clear();
+  443   1        
+  444   1          lcd_set_pos(0,2);
+  445   1          lcd_write_str("20");
+  446   1          
+  447   1          lcd_set_pos(0,4);
+  448   1          lcd_write_str("Äê");
+  449   1      
+  450   1          lcd_set_pos(1,3);
+  451   1          lcd_write_str("ÔÂ");
+  452   1      
+  453   1          
+  454   1          lcd_set_pos(1,5);
+  455   1          lcd_write_str("ÈÕ");
+  456   1            
+  457   1          lcd_set_pos(2,2);
+  458   1          lcd_write_str("ÐÇÆÚ");
+  459   1      
+  460   1        
+  461   1          lcd_set_pos(0,3);
+  462   1          lcd_write_str(dec_bit[dec_display[0]]);   /*Äê*/
+  463   1          lcd_write_str(dec_bit[dec_display[1]]);
+  464   1        
+  465   1          lcd_set_pos(1,2);
+  466   1          lcd_write_str(dec_bit[dec_display[2]]);   /*ÔÂ*/
+  467   1          lcd_write_str(dec_bit[dec_display[3]]);
+  468   1          
+  469   1          lcd_set_pos(1,4);
+  470   1          lcd_write_str(dec_bit[dec_display[4]]);   /*ÈÕ*/
+  471   1          lcd_write_str(dec_bit[dec_display[5]]);
+  472   1          
+  473   1          lcd_set_pos(2,4);
+  474   1          lcd_write_str(weekday_bit_ch[dec_display[13]]);   /*ÐÇÆÚ*/
+  475   1      }
+  476          
+  477          
+  478          /* ========= Ë¢ÐÂÊ±ÖÓ ========= */
+  479          void general_gflush_time(void)
+  480          {
+  481   1        uchar time[7];            /*ÄêÔÂÈÕÊ±·ÖÃëÖÜ*/
+  482   1        uchar dec_display[14];
+  483   1        time_set(0,5);            /*ÃëÎ»ÖÃÇ¿Ë¢0*/
+  484   1        time_read(time);          /*´ÓDS1302ÖÐ¶ÁÈ¡Ê±¼ä*/
+  485   1        time_dec(time, dec_display);    /*½«Ê±¼ä²ð·Ö×ª»¯³ÉÎ»*/
+  486   1        lcd_clear();
+  487   1        
+  488   1      
+  489   1        lcd_set_pos(1,2);
+  490   1        lcd_write_str(" :");
+  491   1        
+  492   1        lcd_set_pos(1,4);
+  493   1        lcd_write_str(" :");
+  494   1      
+  495   1        lcd_set_pos(1,1);
+  496   1        lcd_write_str(dec_bit[dec_display[6]]);   /*Ê±*/
+  497   1        lcd_write_str(dec_bit[dec_display[7]]);
+  498   1      
+  499   1        lcd_set_pos(1,3);
+  500   1        lcd_write_str(dec_bit[dec_display[8]]);   /*·Ö*/
+  501   1        lcd_write_str(dec_bit[dec_display[9]]);
+  502   1        
+  503   1        lcd_set_pos(1,5);
+  504   1        lcd_write_str(dec_bit[dec_display[10]]);  /*Ãë*/
+  505   1        lcd_write_str(dec_bit[dec_display[11]]);  
+  506   1      }
+C251 COMPILER V5.60.0,  time                                                               25/09/22  11:34:21  PAGE 9   
+
+  507          
+  508          
+  509          /* ========= ²é¿´µ±Ç°ÔÂ·ÝµÄÌìÊý ========= */
+  510          uchar general_month_have_day(void)
+  511          {
+  512   1        uchar time[7];
+  513   1        uchar dec_display[14];
+  514   1        time_read(time);
+  515   1        time_dec(time, dec_display);
+  516   1        
+  517   1        switch(dec_display[2]*10 + dec_display[3])
+  518   1        {
+  519   2          case 1 :
+  520   2          case 3 :
+  521   2          case 5 :
+  522   2          case 7 :
+  523   2          case 8 :
+  524   2          case 10:
+  525   2          case 12:  return 31;
+  526   2          
+  527   2          case 4 :
+  528   2          case 6 :
+  529   2          case 9 :
+  530   2          case 11:  return 30;
+  531   2          
+  532   2          case 2 :  if((dec_display[0] + dec_display[1]) % 4) return 28;    /*ÈòÄêÅÐ¶¨*/
+  533   2                  else return 29;
+  534   2          
+  535   2        }
+  536   1        
+  537   1        return 0;
+  538   1      }
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =      3629     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =        20         92
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =        83     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  12 WARNING(S),  0 ERROR(S)

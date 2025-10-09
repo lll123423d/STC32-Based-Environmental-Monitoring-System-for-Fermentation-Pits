@@ -1,0 +1,1 @@
+"user\sensus.c" XSMALL INTR2 BROWSE INCDIR(.\Resource;.\ware;.\src;.\middle;.\user) DEBUG PRINT(.\obj\sensus.lst) OBJECT(.\obj\sensus.obj)

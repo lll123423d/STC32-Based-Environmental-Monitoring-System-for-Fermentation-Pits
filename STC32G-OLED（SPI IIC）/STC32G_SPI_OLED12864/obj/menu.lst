@@ -1,0 +1,555 @@
+C251 COMPILER V5.60.0,  menu                                                               22/03/23  11:38:00  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE menu
+OBJECT MODULE PLACED IN .\obj\menu.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE menu.c XSMALL INTR2 BROWSE INCDIR(.\Resource;.\ware;.\src;.\middle;.\u
+                    -ser) DEBUG PRINT(.\obj\menu.lst) OBJECT(.\obj\menu.obj) 
+
+stmt  level    source
+
+    1          #include "menu.h"
+    2          #include "nor_cal.h"
+    3          #include "fun.h"
+    4          #include "matrix.h"
+    5          #include "funcpic.h"
+    6          #include "Solve.h"
+    7          #include "Sensus.h"
+    8          #include "calculus.h"
+    9          #include "set.h"
+   10          
+   11          void  (*function)(u8 num);                      //ÏµÍ³µÄÖ¸Õëº¯Êý
+   12          struct MenuItem *P_menu;     //µ±Ç°²Ëµ¥½ÚµãµÄÖ¸Õë
+   13          struct MenuIndex P_Index=        //µ±Ç°²Ëµ¥µÄµ¼º½ÐÅÏ¢
+   14          {
+   15                  0,
+   16                  {0,0,0,0,0,0,0,0,0,0},
+   17              {0,0,0,0,0,0,0,0,0,0},
+   18                  0                       //Ä¬ÈÏ°´¼üÎªÎª²Ëµ¥ÇÐ»»¹¦ÄÜ
+   19          };
+   20          
+   21          void Nop(u8 num) 
+   22          {}
+*** WARNING C47 IN LINE 21 OF menu.c: 'num': unreferenced parameter
+   23          
+   24          struct MenuItem Menu_Main[9];       //Ö÷²Ëµ¥
+   25          struct MenuItem Menu_Other[9];      //ÆäËû²Ëµ¥
+   26          struct MenuItem Menu_Matrix[10];     //¾ØÕó²Ëµ¥Ñ¡Ïî 
+   27          struct MenuItem Menu_Matrix1[4];    //¾ØÕó²Ëµ¥1
+   28          struct MenuItem Menu_Matrix2_4[5];  //¾ØÕó²Ëµ¥2-4
+   29          struct MenuItem Menu_Matrix5_9[4];  //¾ØÕó²Ëµ¥5-9 
+   30          struct MenuItem Menu_FuncImg[7];    //º¯ÊýÍ¼Ïñ½çÃæ 
+   31          struct MenuItem Menu_ODEFunc[6];    //³£Î¢·Ö·½³Ì½çÃæ    
+   32          struct MenuItem Menu_Sensus[4];
+   33          struct MenuItem Menu_Sensus1[3];
+   34                  
+   35                  
+   36          //½á¹¹ÌåÊµÏÖ 
+   37          struct MenuItem Menu_Main[9]= 
+   38          { 
+   39              {8,"1.ÆÕÍ¨¼ÆËã",Menu_MainFunc1,Null,Null}, 
+   40              {8,"2.¸´Êý\xfd¼ÆËã",Menu_MainFunc2,Null,Null}, 
+   41              {8,"3.¾ØÕóÔËËã",Nop,Menu_Matrix,Null}, 
+   42              {8,"4.º¯Êý\xfdÍ¼Ïñ",Nop,Menu_FuncImg,Null}, 
+   43              {8,"5.½â·½³Ì",Menu_MainFunc5,Null,Null}, 
+   44              {8,"6.Í³¼Æ",Nop,Menu_Sensus,Null}, 
+   45              {8,"7.Ò»½×³£Î¢·Ö·½³Ì",Nop,Menu_ODEFunc,Null}, 
+   46              {8,"8.²ÎÊý\xfdÉèÖÃ",Nop,Menu_Other,Null},  //Ê±¼äÏÔÊ¾
+   47          //    {9,"9.Ô¤Áô",Nop,Null,Null},  //¹¦ÄÜÉèÖÃ
+   48          };
+*** WARNING C91 IN LINE 41 OF menu.c: '&': pointer to different objects
+*** WARNING C91 IN LINE 42 OF menu.c: '&': pointer to different objects
+*** WARNING C91 IN LINE 44 OF menu.c: '&': pointer to different objects
+*** WARNING C91 IN LINE 45 OF menu.c: '&': pointer to different objects
+*** WARNING C91 IN LINE 46 OF menu.c: '&': pointer to different objects
+   49          
+   50          struct MenuItem Menu_Matrix[10]= 
+   51          { 
+   52              {10,"1.¼ÆËãÐÐÁÐÊ½",Nop,Menu_Matrix1,Menu_Main}, 
+C251 COMPILER V5.60.0,  menu                                                               22/03/23  11:38:00  PAGE 2   
+
+   53              {10,"2.¼ÆËã¾ØÕó¼Ó·¨",Nop,Menu_Matrix2_4,Menu_Main}, 
+   54              {10,"3.¼ÆËã¾ØÕó¼õ·¨",Nop,Menu_Matrix2_4,Menu_Main}, 
+   55              {10,"4.¼ÆËã¾ØÕó³Ë·¨",Nop,Menu_Matrix2_4,Menu_Main}, 
+   56              {10,"5.¼ÆËã·½Õó¸ß´ÎÃÝ",Nop,Menu_Matrix5_9,Menu_Main}, 
+   57              {10,"6.Çó¾ØÕóµÄÄæ",Nop,Menu_Matrix5_9,Menu_Main}, 
+   58              {10,"7.Çó×ªÖÃ¾ØÕó",Nop,Menu_Matrix5_9,Menu_Main}, 
+   59              {10,"8.Çó¾ØÕóµÄÖÈ",Nop,Menu_Matrix5_9,Menu_Main},  
+   60              {10,"9.¼ÆËã¾ØÕóµÄÊý\xfd³Ë",Nop,Menu_Matrix5_9,Menu_Main},  
+   61              {10,"0.·µ»Ø",Nop,Nop,Menu_Main}, 
+   62          };
+*** WARNING C91 IN LINE 52 OF menu.c: '&': pointer to different objects
+*** WARNING C91 IN LINE 53 OF menu.c: '&': pointer to different objects
+*** WARNING C91 IN LINE 54 OF menu.c: '&': pointer to different objects
+*** WARNING C91 IN LINE 55 OF menu.c: '&': pointer to different objects
+*** WARNING C91 IN LINE 56 OF menu.c: '&': pointer to different objects
+*** WARNING C91 IN LINE 57 OF menu.c: '&': pointer to different objects
+*** WARNING C91 IN LINE 58 OF menu.c: '&': pointer to different objects
+*** WARNING C91 IN LINE 59 OF menu.c: '&': pointer to different objects
+*** WARNING C91 IN LINE 60 OF menu.c: '&': pointer to different objects
+*** WARNING C91 IN LINE 61 OF menu.c: '&': pointer to different objects
+*** WARNING C91 IN LINE 61 OF menu.c: '&': pointer to different objects
+   63          struct MenuItem Menu_Matrix1[4]= 
+   64          { 
+   65              {4,"1.ÐÐÁÐÊ½½×",Menu_MainFunc31,Null,Menu_Matrix}, 
+   66              {4,"2.²é¿´²¢¸ü¸Ä",Menu_MainFunc31,Null,Menu_Matrix}, 
+   67              {4,"3.¼ÆËãÐÐÁÐÊ½",Menu_MainFunc31,Null,Menu_Matrix}, 
+   68              {4,"0.·µ»Ø",Nop,Null,Menu_Matrix}, 
+   69          };
+*** WARNING C91 IN LINE 68 OF menu.c: '&': pointer to different objects
+   70          struct MenuItem Menu_Matrix2_4[5]= 
+   71          { 
+   72              {5,"1.¾ØÕóµÄ½×",Menu_MainFunc32,Null,Menu_Matrix}, 
+   73              {5,"2.ÐÞ¸ÄµÚÒ»¾ØÕó",Menu_MainFunc32,Null,Menu_Matrix}, 
+   74              {5,"3.ÐÞ¸ÄµÚ¶þ¾ØÕó",Menu_MainFunc32,Null,Menu_Matrix}, 
+   75              {5,"4.¼ÆËã¾ØÕó",Menu_MainFunc32,Null,Menu_Matrix}, 
+   76              {5,"0.·µ»Ø",Nop,Null,Menu_Matrix},     
+   77          };
+*** WARNING C91 IN LINE 76 OF menu.c: '&': pointer to different objects
+   78          struct MenuItem Menu_Matrix5_9[4]= 
+   79          { 
+   80              {4,"1.ÉèÖÃ¾ØÕóÐÐÁÐ",Menu_MainFunc33,Null,Menu_Matrix}, 
+   81              {4,"2.²é¿´»òÐÞ¸Ä¾ØÕó",Menu_MainFunc33,Null,Menu_Matrix}, 
+   82              {4,"3.      ",Menu_MainFunc33,Null,Menu_Matrix}, 
+   83              {4,"0.·µ»Ø",Menu_MainFunc33,Null,Menu_Matrix}, 
+   84          };
+   85          
+   86          struct MenuItem Menu_FuncImg[7]= 
+   87          { 
+   88              {7,"1.Ô­µã×ø±êX0",Menu_MainFunc4,Null,Menu_Main}, 
+   89              {7,"2.Ô­µã×ø±êy0",Menu_MainFunc4,Null,Menu_Main}, 
+   90              {7,"3.ºá×ø±êµ¥Î»³¤¶È",Menu_MainFunc4,Null,Menu_Main}, 
+   91              {7,"4.×Ý×ø±êµ¥Î»³¤¶È",Menu_MainFunc4,Null,Menu_Main},
+   92              {7,"5.Í¼Ïñ±í´ïÊ½",Menu_MainFunc4,Null,Menu_Main}, 
+   93              {7,"6.ÏÔÊ¾Í¼Ïñ",Menu_MainFunc4,Null,Menu_Main},   
+   94              {7,"0.·µ»Ø",Nop,Null,Menu_Main},      
+   95          };
+*** WARNING C91 IN LINE 94 OF menu.c: '&': pointer to different objects
+   96          
+   97          struct MenuItem Menu_Sensus[4]= 
+   98          { 
+   99              {4,"1.ÊäÈëÊý\xfd¾Ý¸öÊý\xfd",Menu_MainFunc6,Null,Menu_Main}, 
+  100              {4,"2.ÊäÈëÊý\xfd¾Ý",Menu_MainFunc6,Null,Menu_Main}, 
+  101              {4,"3.¼ÆËã",Nop,Menu_Sensus1,Menu_Main},   
+  102              {4,"0.·µ»Ø",Nop,Null,Menu_Main},      
+  103          };
+*** WARNING C91 IN LINE 101 OF menu.c: '&': pointer to different objects
+C251 COMPILER V5.60.0,  menu                                                               22/03/23  11:38:00  PAGE 3   
+
+*** WARNING C91 IN LINE 102 OF menu.c: '&': pointer to different objects
+  104          struct MenuItem Menu_Sensus1[3]= 
+  105          { 
+  106              {3,"1.²é¿´Êý\xfd¾Ý½á¹û",Menu_MainFunc61,Null,Menu_Sensus}, 
+  107              {3,"2.²é¿´ÖÚÊý\xfd",Menu_MainFunc61,Null,Menu_Sensus},  
+  108              {3,"0.·µ»Ø",Nop,Null,Menu_Main},      
+  109          };
+*** WARNING C91 IN LINE 108 OF menu.c: '&': pointer to different objects
+  110          
+  111          
+  112          struct MenuItem Menu_ODEFunc[6]= 
+  113          { 
+  114              {6,"1.ÓÒ±ßµÄº¯Êý\xfdÊÇ",Menu_MainFunc7,Null,Menu_Main}, 
+  115              {6,"2.×ó¶Ëµãa",Menu_MainFunc7,Null,Menu_Main}, 
+  116              {6,"3.ÓÒ¶Ëµãb",Menu_MainFunc7,Null,Menu_Main}, 
+  117              {6,"4.²½³¤h",Menu_MainFunc7,Null,Menu_Main},  
+  118              {6,"5.×ó¶ËµãµÄy Öµ",Menu_MainFunc7,Null,Menu_Main}, 
+  119              {6,"6.½á¹û",Menu_MainFunc7,Null,Menu_Main},      
+  120          };
+  121          
+  122          
+  123          //½á¹¹ÌåÊµÏÖ 
+  124          struct MenuItem Menu_Other[9]= 
+  125          { 
+  126              {6,"1.ÆÁÄ»ÁÁ¶È",Menu_MainFunc8,Null,Menu_Main}, 
+  127              {6,"2.shift ÌáÊ¾",Menu_MainFunc8,Null,Menu_Main}, 
+  128              {6,"3.½ÚµçÉèÖÃ",Menu_MainFunc8,Null,Menu_Main}, 
+  129              {6,"4.ÈÕÆÚÉèÖÃ",Menu_MainFunc8,Null,Menu_Main}, 
+  130              {6,"5.Ê±ÖÓÉèÖÃ",Menu_MainFunc8,Null,Menu_Main}, 
+  131              {6,"6.¹ØÓÚ",Menu_MainFunc8,Null,Menu_Main}, 
+  132          };
+  133          
+  134          //------------------------------------------------------------------²Ëµ¥³õÊ¼»¯¡¢²Ëµ¥ÇÐ»»¡¢º¯ÊýÖ´ÐÐµÈµÄµÄ²
+             -Ù×÷º¯Êý-------------------------------------------------------------
+  135          void Menu_Init(void)
+  136          {
+  137   1          P_menu = &Menu_Main[0];      //Ö¸ÕëÖ¸Ïò³õÊ¼½Úµã 
+  138   1              P_Index.Menu_Depth = 0; //²Ëµ¥Éî¶ÈÎª0
+  139   1          function = Nop;
+  140   1          P_Index.Menu_KeyFunc = 0;   //²Ë†ÎÌŽÀí
+  141   1      //    Menu_Display();//ÏÔÊ¾ÆÁÉÏÏÔÊ¾²Ëµ¥
+  142   1      }
+  143          
+  144          void Menu_Display(void)
+  145          {
+  146   1              int i,j;
+  147   1              
+  148   1              j = P_Index.Menu_Start[P_Index.Menu_Depth];             //µ±Ç°Ò³Ãæ¿ªÊ¼µÄµÄÑ¡Ïî
+  149   1              Screen_Clear();
+  150   1      
+  151   1                      
+  152   1          for( i=0;i<4;i++ )
+  153   1          {
+  154   2              if( i<P_menu[0].MenuCount )
+  155   2                  Screen_ShowStr(0,(u8)(i*2),P_menu[i+j].DisplayString);
+  156   2              else 
+  157   2                  break;
+  158   2              
+  159   2          }    
+  160   1          if( P_Index.Menu_Depth==2 )    //Ç¿ÖÆÏÔÊ¾
+  161   1          {
+  162   2              switch( P_Index.Menu_Pilot[P_Index.Menu_Depth-1] )
+  163   2              {
+  164   3                  case 4:Screen_ShowStr(16,4,"ÊäÈë´Î·½n");
+  165   3                         Screen_ShowStr(0,6,"4.¼ÆËã  0.·µ»Ø");break;
+  166   3                  
+C251 COMPILER V5.60.0,  menu                                                               22/03/23  11:38:00  PAGE 4   
+
+  167   3                  case 5:Screen_ShowStr(16,4,"²é¿´¾ØÕóµÄÄæ");break;
+  168   3                  case 6:
+  169   3                      Screen_ShowStr(16,4,"²é¿´×ª»»ºó¾ØÕó");break;
+  170   3                  case 7:Screen_ShowStr(16,4,"²é¿´¾ØÕóµÄÖÈ");break;  
+  171   3                  case 8:Screen_ShowStr(16,4,"ÊäÈëÊý\xfd³ËÏµÊý\xfdk");
+  172   3                          Screen_ShowStr(0,6,"4.¼ÆËã  0.·µ»Ø");
+  173   3                          break; 
+  174   3              }
+  175   2              //Screen_ShowFreshen();
+  176   2          }
+  177   1          Screen_ShowFreshen();
+  178   1      }
+  179          
+  180          void Run(struct MenuItem *manyou) 
+  181          { 
+  182   1              (*(manyou->Subs))(); 
+  183   1      }
+  184          
+  185          void Menu_Deal(char* key)
+  186          {
+  187   1          u8 keyval = *key;
+  188   1          
+  189   1          if( P_Index.Menu_KeyFunc==0 )               //²Ëµ¥ÇÐ»»
+  190   1          {
+  191   2              if( keyval >0 )
+  192   2              {
+  193   3                  if( keyval==4 ) //ÉÏ·­
+  194   3                  {
+  195   4                      if( P_Index.Menu_Start[P_Index.Menu_Depth]>0 )
+  196   4                          P_Index.Menu_Start[P_Index.Menu_Depth]--;
+  197   4                  }
+  198   3                  else if( keyval==9 ) //ÏÂ·­
+  199   3                  {
+  200   4                      if( P_Index.Menu_Start[P_Index.Menu_Depth]+4<P_menu[0].MenuCount )
+  201   4                          P_Index.Menu_Start[P_Index.Menu_Depth]++;           //Ö¸Õë             
+  202   4                  } 
+  203   3                  else if(( keyval==22 )||( keyval=='0' )) //·µ»Ø
+  204   3                  {
+  205   4                      unsigned char p =  P_Index.Menu_Start[P_Index.Menu_Depth];              //¼ÆËãµ±Ç°Ñ¡ÖÐµÄÏîµÄ±àºÅ
+  206   4                      if( P_menu[p].Parentms != Null )
+  207   4                      {
+  208   5                          P_Index.Menu_Start[P_Index.Menu_Depth]=0;
+  209   5                          P_Index.Menu_Pilot[P_Index.Menu_Depth]=0;
+  210   5                          
+  211   5                          P_Index.Menu_Depth--;
+  212   5                          P_menu = P_menu[p].Parentms;
+  213   5                      }  
+  214   4      
+  215   4                  } 
+  216   3                  else if(( keyval >='1' )&&( keyval<='9' )) //½øÈë
+  217   3                  {
+  218   4                     // if( (u8)(keyval-'0')<(u8)P_menu[P_Index.Menu_Depth-1].MenuCount )
+  219   4                      {                    
+  220   5                          unsigned char p = keyval-'1' ;              //¼ÆËãµ±Ç°Ñ¡ÖÐµÄÏîµÄ±àºÅ
+  221   5                          
+  222   5                          if( P_menu[p].Childrenms != Null )
+  223   5                          {
+  224   6                              P_Index.Menu_Pilot[P_Index.Menu_Depth]=p;
+  225   6                              P_Index.Menu_Depth++;
+  226   6                              P_menu = P_menu[p].Childrenms;
+  227   6                          }
+  228   5                          else if( P_menu[p].Subs != Null )
+  229   5                          { 
+  230   6                              P_Index.Menu_Pilot[P_Index.Menu_Depth]=p;
+  231   6                              Run( &P_menu[p]);
+  232   6                          }  
+C251 COMPILER V5.60.0,  menu                                                               22/03/23  11:38:00  PAGE 5   
+
+  233   5                      }                
+  234   4                  }     
+  235   3                  if( P_Index.Menu_KeyFunc==0 )
+  236   3                  {
+  237   4                      Menu_Display();
+  238   4                  }
+  239   3                  *key = 0;            
+  240   3              }
+  241   2              if( state>0 )
+  242   2              {
+  243   3                  Menu_Display();
+  244   3                  state = 0;
+  245   3              }
+  246   2          }
+  247   1          else
+  248   1          {
+  249   2              if( keyval==5 )
+  250   2              {
+  251   3                  Menu_Display();  
+  252   3                  P_Index.Menu_KeyFunc=0;
+  253   3              }
+  254   2              else
+  255   2                  function(keyval);
+  256   2              *key = 0;
+  257   2          }
+  258   1      }
+  259          
+  260          //------------------------------------------------------------------²Ëµ¥³õÊ¼»¯ÒÔ¼°²Ëµ¥ÇÐ»»µÄ²Ù×÷º¯Êý-----
+             ---------------------------------------------------------
+  261          void Menu_MainFunc1(void)
+  262          {
+  263   1              Screen_Clear();
+  264   1              P_Index.Menu_KeyFunc = 1;
+  265   1          state = 0;
+  266   1          g_chCalcStatus = CALC_NORMAL;
+  267   1              function = normal_calculate;
+  268   1      }
+  269          
+  270          void Menu_MainFunc2(void)
+  271          {
+  272   1              Screen_Clear();
+  273   1              P_Index.Menu_KeyFunc = 1;
+  274   1          state = 0;
+  275   1          g_chCalcStatus = CALC_COMPLEX;
+  276   1              function = complex_calculate;
+  277   1      }
+  278          
+  279          void Menu_MainFunc31(void)
+  280          {
+  281   1          unsigned char address = P_Index.Menu_Pilot[P_Index.Menu_Depth];     //µ±Ç°Ò³Ãæ¿ªÊ¼µÄµÄÑ¡Ïî
+  282   1              Screen_Clear();
+  283   1              P_Index.Menu_KeyFunc = 1;
+  284   1          state = 0;
+  285   1          
+  286   1          if( address==0 )
+  287   1          {
+  288   2              function = Ranks_Set;
+  289   2          }
+  290   1          else if( address==1 )
+  291   1          {
+  292   2              function = Ranks_Amend;
+  293   2          }
+  294   1          else if( address==2 )
+  295   1          {
+  296   2              function = Ranks_Caculate;
+  297   2          }
+C251 COMPILER V5.60.0,  menu                                                               22/03/23  11:38:00  PAGE 6   
+
+  298   1      }
+  299          
+  300          void Menu_MainFunc32(void)
+  301          {
+  302   1          unsigned char address = P_Index.Menu_Pilot[P_Index.Menu_Depth];     //µ±Ç°Ò³Ãæ¿ªÊ¼µÄµÄÑ¡Ïî
+  303   1              Screen_Clear();
+  304   1              P_Index.Menu_KeyFunc = 1;
+  305   1          state = 0;
+  306   1          
+  307   1          if( address==0 )
+  308   1          {
+  309   2              function = Ranks_2_4Set;
+  310   2          }
+  311   1          else if( address==1 )
+  312   1          {
+  313   2              function = Ranks_AmendA;
+  314   2          }
+  315   1          else if( address==2 )
+  316   1          {
+  317   2              function = Ranks_AmendB;
+  318   2          }
+  319   1          else if( address==3 )
+  320   1          {
+  321   2              function = Ranks_Caculate2;
+  322   2          }    
+  323   1      }
+  324          
+  325          void Menu_MainFunc33(void)
+  326          {
+  327   1          unsigned char address = P_Index.Menu_Pilot[P_Index.Menu_Depth];     //µ±Ç°Ò³Ãæ¿ªÊ¼µÄµÄÑ¡Ïî
+  328   1              Screen_Clear();
+  329   1              P_Index.Menu_KeyFunc = 1;
+  330   1          state = 0;
+  331   1          
+  332   1          if( address==0 )
+  333   1          {
+  334   2              if(( P_Index.Menu_Pilot[P_Index.Menu_Depth-1]==6 )
+  335   2                  ||( P_Index.Menu_Pilot[P_Index.Menu_Depth-1]==7 )
+  336   2                  ||( P_Index.Menu_Pilot[P_Index.Menu_Depth-1]==8 )
+  337   2              )
+  338   2                  function = Ranks_2_4Set;       //Ý”ÈëÐÐºÍÁÐƒÉ‚€”µÖµ
+  339   2              else
+  340   2                  function = Ranks_Set;       //Ý”Èë1-5n
+  341   2          }
+  342   1          else if( address==1 )
+  343   1          {
+  344   2              function = Ranks_AmendA;        //ÊäÈë¾ØÕó
+  345   2          }
+  346   1          else if( address==2 )
+  347   1          {
+  348   2              switch( P_Index.Menu_Pilot[P_Index.Menu_Depth-1] )
+  349   2              {
+  350   3                  case 4:function = Ranks_Setpower;break;     //´Î·½Ý”Èë
+  351   3                  case 5:function = Ranks_Caculate3;break;   //²é¿´¾ØÕóµÄÄæ
+  352   3                  case 6:function = Ranks_Caculate3;break;//²é¿´×ª»»ºó¾ØÕó
+  353   3                  case 7:function = Ranks_changeCaculate;break;//²é¿´¾ØÕóµÄÖÈ
+  354   3                  case 8:function = Ranks_Setpower;break;     //ÊäÈëÊý³ËÏµÊýk
+  355   3                  default:function = Nop;break;
+  356   3              }
+  357   2          }
+  358   1          else if( address==3 )
+  359   1          {
+  360   2              switch( P_Index.Menu_Pilot[P_Index.Menu_Depth-1] )
+  361   2              {
+  362   3                  case 4:function = Ranks_Caculate3;break;
+  363   3                  case 8:function = Ranks_Caculate3;break;
+C251 COMPILER V5.60.0,  menu                                                               22/03/23  11:38:00  PAGE 7   
+
+  364   3                  default:function = Nop;break;
+  365   3              }
+  366   2              //function = Ranks_Caculate2;
+  367   2          }    
+  368   1      }
+  369          
+  370          void Menu_MainFunc4(void)
+  371          {
+  372   1          unsigned char address = P_Index.Menu_Pilot[P_Index.Menu_Depth];     //µ±Ç°Ò³Ãæ¿ªÊ¼µÄµÄÑ¡Ïî
+  373   1              Screen_Clear();
+  374   1              P_Index.Menu_KeyFunc = 1;
+  375   1          state = 0;
+  376   1          g_chCalcStatus = CALC_NORMAL;
+  377   1          
+  378   1          if( address==0 )
+  379   1          {
+  380   2              function = FuncPic_SetX0;
+  381   2          }
+  382   1          else if( address==1 )
+  383   1          {
+  384   2              function = FuncPic_SetY0;
+  385   2          }
+  386   1          else if( address==2 )
+  387   1          {
+  388   2              function = FuncPic_SetKX;
+  389   2          }
+  390   1          else if( address==3 )
+  391   1          {
+  392   2              function = FuncPic_SetKY;
+  393   2          }    
+  394   1          else if( address==4 )
+  395   1          {
+  396   2              function = FuncPic_Write;
+  397   2          }   
+  398   1          else if( address==5 )
+  399   1          {
+  400   2              function = FuncPic_ShowPic;
+  401   2          }        
+  402   1      }
+  403          
+  404          
+  405          void Menu_MainFunc5(void)
+  406          {
+  407   1          unsigned char address = P_Index.Menu_Pilot[P_Index.Menu_Depth];     //µ±Ç°Ò³Ãæ¿ªÊ¼µÄµÄÑ¡Ïî
+  408   1              Screen_Clear();
+  409   1              P_Index.Menu_KeyFunc = 1;
+  410   1          state = 0;
+  411   1          function = Solve;    
+  412   1      }
+  413          
+  414          void Menu_MainFunc6(void)
+  415          {
+  416   1          unsigned char address = P_Index.Menu_Pilot[P_Index.Menu_Depth];     //µ±Ç°Ò³Ãæ¿ªÊ¼µÄµÄÑ¡Ïî
+  417   1              Screen_Clear();
+  418   1              P_Index.Menu_KeyFunc = 1;
+  419   1          state = 0;
+  420   1          if( address==0 )
+  421   1              function = Sensus_Set;  
+  422   1          else if( address==1 )
+  423   1              function =  Sensus_Amend;
+  424   1      }
+  425          void Menu_MainFunc61(void)
+  426          {
+  427   1          unsigned char address = P_Index.Menu_Pilot[P_Index.Menu_Depth];     //µ±Ç°Ò³Ãæ¿ªÊ¼µÄµÄÑ¡Ïî
+  428   1              Screen_Clear();
+  429   1              P_Index.Menu_KeyFunc = 1;
+C251 COMPILER V5.60.0,  menu                                                               22/03/23  11:38:00  PAGE 8   
+
+  430   1          state = 0;
+  431   1          if( address==0 )
+  432   1              function = Sensus_Check;  
+  433   1          else if( address=1 )
+*** WARNING C137 IN LINE 433 OF menu.c: constant in condition expression
+  434   1          function =  Sensus_Check2;
+  435   1      }
+  436          
+  437          void Menu_MainFunc7(void)
+  438          {
+  439   1          unsigned char address = P_Index.Menu_Pilot[P_Index.Menu_Depth];     //µ±Ç°Ò³Ãæ¿ªÊ¼µÄµÄÑ¡Ïî
+  440   1              Screen_Clear();
+  441   1              P_Index.Menu_KeyFunc = 1;
+  442   1          state = 0;
+  443   1          g_chCalcStatus = CALC_NORMAL; 
+  444   1          if( address==0 )
+  445   1              function = calculus_funcWR;  
+  446   1          else if( address==1 )
+  447   1              function =  calculus_funcWRa;
+  448   1          else if( address==2 )
+  449   1              function =  calculus_funcWRb;
+  450   1          else if( address==3 )
+  451   1              function =  calculus_funcWRh;
+  452   1          else if( address==4 )
+  453   1              function =  calculus_funcWRy;    
+  454   1          else if( address==5 )
+  455   1              function =  calculus_funcShow;
+  456   1          
+  457   1      }
+  458          void Menu_MainFunc8(void)
+  459          {
+  460   1          unsigned char address = P_Index.Menu_Pilot[P_Index.Menu_Depth];     //µ±Ç°Ò³Ãæ¿ªÊ¼µÄµÄÑ¡Ïî
+  461   1              Screen_Clear();
+  462   1              P_Index.Menu_KeyFunc = 1;
+  463   1          state = 0;
+  464   1      
+  465   1          if( address==0 )
+  466   1              function = Set_Light;  
+  467   1          else if( address==1 )
+  468   1              function =  Set_LightShift;
+  469   1          else if( address==2 )
+  470   1              function =  Set_Sleep;
+  471   1          else if( address==3 )
+  472   1              function =  Set_Data;
+  473   1          else if( address==4 )
+  474   1              function =Set_Time  ;    
+  475   1      //    else if( address==5 )
+  476   1      //        function =  calculus_funcShow;
+  477   1          
+  478   1      }
+  479          
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =      1381     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =      1919          1
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+C251 COMPILER V5.60.0,  menu                                                               22/03/23  11:38:00  PAGE 9   
+
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =      2037     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  24 WARNING(S),  0 ERROR(S)

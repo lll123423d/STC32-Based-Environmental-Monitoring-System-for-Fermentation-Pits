@@ -1,0 +1,69 @@
+C251 COMPILER V5.60.0,  alg_atof                                                           27/09/22  13:55:45  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE alg_atof
+OBJECT MODULE PLACED IN .\obj\alg_atof.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE Resource\alg_atof.c XSMALL ROM(HUGE) BROWSE INCDIR(.\Resource;.\ware;.
+                    -\src;.\middle) DEBUG PRINT(.\obj\alg_atof.lst) OBJECT(.\obj\alg_atof.obj) 
+
+stmt  level    source
+
+    1          #include "alg_atof.h"
+    2          
+    3          char is_digit(char ch)
+    4          {
+    5   1          if(ch>='0'&&ch<='9')
+    6   1              return 1;
+    7   1          else
+    8   1              return 0;
+    9   1      }
+   10          uchar is_space(char ch)
+   11          {
+   12   1          if(ch==' ')
+   13   1              return 1;
+   14   1          else
+   15   1              return 0;
+   16   1      }
+   17          double alg_atof(char *s)
+   18          {
+   19   1          double power,value;
+   20   1          int i,sign;
+   21   1          for(i=0;is_space(s[i]);i++);//除去字符串前的空格
+   22   1          sign=(s[i]=='-')?-1:1;
+   23   1          if(s[i]=='-'||s[i]=='+')//要是有符号位就前进一位
+   24   1              i++;
+   25   1          for(value=0.0;is_digit(s[i]);i++)//计算小数点钱的数字
+   26   1              value=value*10.0+(s[i]-'0');
+   27   1          if(s[i]=='.')
+   28   1              i++;
+   29   1          for(power=1.0;is_digit(s[i]);i++)//计算小数点后的数字
+   30   1          {
+   31   2              value=value*10.0+(s[i]-'0');
+   32   2              power*=10.0;
+   33   2          }
+   34   1          return sign*value/power;
+   35   1      }
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =    ------     ------
+  ecode size           =       332     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------         12
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =    ------     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

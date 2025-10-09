@@ -1,0 +1,1 @@
+"Resource\take_the_differential.c" XSMALL ROM(HUGE) BROWSE INCDIR(.\Resource;.\ware;.\src;.\middle) DEBUG PRINT(.\obj\take_the_differential.lst) OBJECT(.\obj\take_the_differential.obj)

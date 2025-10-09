@@ -1,0 +1,1 @@
+"Resource\pwm.c" XSMALL INTR2 BROWSE INCDIR(.\Resource) DEBUG PRINT(.\obj\pwm.lst) TABS (2) OBJECT(.\obj\pwm.obj)

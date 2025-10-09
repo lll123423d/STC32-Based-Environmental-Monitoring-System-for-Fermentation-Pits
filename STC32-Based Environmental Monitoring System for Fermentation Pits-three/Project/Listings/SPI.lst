@@ -1,0 +1,58 @@
+C251 COMPILER V5.60.0,  SPI                                                                09/10/25  19:47:51  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE SPI
+OBJECT MODULE PLACED IN .\Objects\SPI.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE ..\System\SPI.c LARGE INTR2 BROWSE INCDIR(..\CMSIS;..\system;..\User;.
+                    -.\Hardware) DEBUG PRINT(.\Listings\SPI.lst) OBJECT(.\Objects\SPI.obj) 
+
+stmt  level    source
+
+    1          #include "../User/main.h"
+    2          
+    3          /*------------------------------------------引脚选择----------------------*/
+    4              //注意：这里SPI的引脚选择要通过P_SW1寄存器切换，在修改这里的引脚
+    5          sbit    SPI_MISO = P2^4;    //PIN2
+    6          sbit    SPI_MOSI = P2^3;    //PIN5
+    7          sbit    SPI_SCK = P2^5;     //PIN6
+    8          
+    9          void SPI_Init(void)                             //初始化
+   10          {
+   11   1              P_SW1 = (P_SW1 & ~(3<<2)) | (1<<2);     //IO口切换
+   12   1              SPCTL = 0X90;           //模式配置 ssig==1 忽略SS
+   13   1              SPCTL |= 0X40;
+   14   1              SPI_SCK = 0;                    //引脚初始化
+   15   1              SPI_MOSI=1;
+   16   1              SPSTAT = 0xC0;  // 写1清除SPIF和WCOL标志位
+   17   1      }
+   18          
+   19          void SPI_WriteByte(unsigned char dat)           //写入一个字节
+   20                  {
+   21   1                      SPDAT = dat;
+   22   1                      while(SPIF == 0);
+   23   1                      SPSTAT = 0xC0;  // 写1清除SPIF和WCOL标志位
+   24   1              }
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =        36     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------     ------
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =    ------     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

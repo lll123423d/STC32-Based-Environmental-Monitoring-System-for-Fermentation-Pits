@@ -1,0 +1,7 @@
+".\obj\main.obj",
+".\obj\oled.obj",
+".\obj\iic.obj" 
+TO ".\obj\stc_usb_ser" 
+PRINT(".\obj\stc_usb_ser.map") CASE DISABLEWARNING (57) 
+CLASSES (EDATA (0x0-0xFFF), 
+HDATA (0x0-0xFFF, 0xFE2000-0xFFFFFF)) 

@@ -1,0 +1,94 @@
+C251 COMPILER V5.60.0,  system                                                             09/10/25  20:12:32  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE system
+OBJECT MODULE PLACED IN .\Objects\system.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE System\system.c LARGE INTR2 ROM(HUGE) BROWSE INCDIR(.\Hardware;.\User;
+                    -.\System) DEBUG PRINT(.\Listings\system.lst) OBJECT(.\Objects\system.obj) 
+
+stmt  level    source
+
+    1          #include "../User/main.h"
+    2          
+    3          volatile unsigned int timer_ms = 0;       // ºÁÃë¼ÆÊ±Æ÷
+    4          
+    5          /***********************
+    6           * ¶¨Ê±Æ÷0³õÊ¼»¯
+    7           * ÅäÖÃ1ms¶¨Ê±ÖÐ¶Ï
+    8           ***********************/
+    9          void Timer0_Init(void) {
+   10   1              AUXR &= 0x7F;                   //¶¨Ê±Æ÷Ê±ÖÓ12TÄ£Ê½
+   11   1              TMOD &= 0xF0;                   //ÉèÖÃ¶¨Ê±Æ÷Ä£Ê½
+   12   1              TL0 = 0x18;                             //ÉèÖÃ¶¨Ê±³õÊ¼Öµ
+   13   1              TH0 = 0xFC;                             //ÉèÖÃ¶¨Ê±³õÊ¼Öµ
+   14   1              TF0 = 0;                                //Çå³ýTF0±êÖ¾
+   15   1              TR0 = 1;                                //¶¨Ê±Æ÷0¿ªÊ¼¼ÆÊ±
+   16   1              ET0 = 1;                                //Ê¹ÄÜ¶¨Ê±Æ÷0ÖÐ¶Ï
+   17   1      }
+   18          
+   19          /***********************
+   20           * ¶¨Ê±Æ÷0ÖÐ¶Ï·þÎñº¯Êý
+   21           * Ã¿1ms¸üÐÂºÁÃë¼ÆÊýÆ÷
+   22           ***********************/
+   23          void Timer0_ISR() interrupt 1 {
+   24   1          TH0 = 0xFC;                 // ÖØ×°¸ß8Î»
+   25   1          TL0 = 0x18;                 // ÖØ×°µÍ8Î»
+   26   1          timer_ms++;                 // ¸üÐÂºÁÃë¼ÆÊýÆ÷
+   27   1      }
+   28          
+   29          /***********************
+   30           * ºÁÃëÑÓÊ±º¯Êý
+   31           * »ùÓÚ¶¨Ê±Æ÷0µÄºÁÃë¼ÆÊýÆ÷
+   32           ***********************/
+   33          void delay_ms(unsigned int ms) {
+   34   1      unsigned int start = timer_ms; //start ÊÇ ¾Ö²¿±äÁ¿£¬½öÔÚ delayus() º¯ÊýµÄ×÷ÓÃÓòÄÚÓÐÐ§£¬ÇÒÔÚ³õÊ¼»¯ºó ²»ÔÙ±
+             -»ÐÞ¸Ä
+   35   1          while (timer_ms- start < ms); // µÈ´ýÖ¸¶¨ºÁÃëÊý
+   36   1      
+   37   1      }
+   38          
+   39          // Î¢Ãë¼¶ÑÓÊ±º¯Êý£¨»ùÓÚSTC32G12K128µÄIRCÆµÂÊµ÷Õû£©
+   40          void Delay_us(unsigned int us) {
+   41   1          while (us--) {
+   42   2              _nop_(); _nop_(); _nop_(); // ¸ù¾ÝÖ÷Æµµ÷ÕûÖ¸ÁîÖÜÆÚ
+   43   2          }
+   44   1      }
+   45          
+   46          // »ñÈ¡ÏµÍ³Ê±¼äº¯Êý
+   47          unsigned long GetSystemTime(void)
+   48          {
+   49   1          unsigned long time;
+   50   1          
+   51   1          // ½ûÖ¹ÖÐ¶ÏÒÔÈ·±£¶ÁÈ¡Ê±¼äµÄÔ­×ÓÐÔ
+   52   1          EA = 0;
+   53   1          time = timer_ms;
+   54   1          EA = 1;
+   55   1          
+   56   1          return time;
+   57   1      }
+C251 COMPILER V5.60.0,  system                                                             09/10/25  20:12:32  PAGE 2   
+
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =         4     ------
+  ecode size           =       101     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =         2     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------     ------
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =         7     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

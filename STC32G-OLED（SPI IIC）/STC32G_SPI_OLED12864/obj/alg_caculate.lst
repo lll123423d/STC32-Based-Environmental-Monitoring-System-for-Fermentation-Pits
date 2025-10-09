@@ -1,0 +1,780 @@
+C251 COMPILER V5.60.0,  alg_caculate                                                       27/09/22  13:55:45  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE alg_caculate
+OBJECT MODULE PLACED IN .\obj\alg_caculate.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE Resource\alg_caculate.c XSMALL ROM(HUGE) BROWSE INCDIR(.\Resource;.\wa
+                    -re;.\src;.\middle) DEBUG PRINT(.\obj\alg_caculate.lst) OBJECT(.\obj\alg_caculate.obj) 
+
+stmt  level    source
+
+    1          #include <math.h>
+    2          #include <stdlib.h>
+    3          #include <string.h>
+    4          #include "alg_linearlist.h"
+    5          #include "alg_caculate.h"
+    6          #include "alg_atof.h"
+    7          #include "alg_complex.h"
+    8          
+    9          
+   10          #define E 2.718282
+   11          #define PI 3.141593
+   12          #define PI_FONT 'p'                 //PIµƒ12864±‡¬Î
+   13          #define DEGREE_FONT 'd'                //°„µƒ12864±‡¬Î
+   14          
+   15          #define check_if(function,value) if(0 == strcmp(strTemp,#function)) return value
+   16          #define CASE break;case
+   17          #define STACK_PUSH(pTarget,eElem) if(LArray_FALSE == stack_push(pTarget,eElem)){bResult = LArray_FALSE; b
+             -reak;}
+   18          
+   19          extern uchar g_chCalcStatus;
+   20          extern double x,y,z;
+   21          extern double g_ans;
+   22          uchar alg_const_handle(char c);
+   23          
+   24          /***********************************************************************************
+   25                  π¶ƒ‹£∫±»Ωœ≤Ÿ◊˜∑˚µƒ”≈œ»º∂À≥–Ú
+   26                  –Œ≤Œ£∫operator1:≤Ÿ◊˜∑˚1 operator2:≤Ÿ◊˜∑˚ 2
+   27                  ∑µªÿ£∫≤Ÿ◊˜∑˚1”≈œ»º∂¥Û”⁄≤Ÿ◊˜∑˚2  --LEVEL_BIGGER
+   28                            ≤Ÿ◊˜∑˚1”≈œ»º∂–°”⁄≤Ÿ◊˜∑˚2      --LEVEL_SMALLER
+   29                            ≤Ÿ◊˜∑˚1”≈œ»º∂µ»”⁄≤Ÿ◊˜∑˚2      --LEVEL_SAME
+   30                            ≤Ÿ◊˜∑˚1≤Ÿ◊˜∑˚2∂‘±»≤ª∫œ∑®      --LEVEL_INVALID
+   31                  œÍΩ‚£∫±æ∫Ø ˝µƒπ¶ƒ‹ «±»Ωœ¡Ω∏ˆ≤Ÿ◊˜∑˚µƒ”≈œ»º∂£¨ µœ÷¿˝»Áœ»≥À≥˝∫Ûº”ºıµƒπ¶ƒ‹
+   32                            ‘⁄◊™∫Û–Ú±Ì¥Ô Ωµƒπ˝≥Ã÷––Ë“™±»Ωœµ±«∞≤Ÿ◊˜∑˚∫Õ’ª∂•≤Ÿ◊˜∑˚”≈œ»º∂À≥–Ú
+   33          ***********************************************************************************/
+   34          LEVEL_TYPE alg_compare_level(char operator1, char operator2)
+   35          {
+   36   1              char operator1_level, operator2_level;
+   37   1      
+   38   1              //≈–∂œ¡Ω∏ˆ≤Ÿ◊˜∑˚‘⁄¡Ω∏ˆ”≈œ»º∂±Ì÷–µƒŒª÷√
+   39   1              switch(operator1)
+   40   1              {
+   41   2                      case '+' :
+   42   2                      case '-' : operator1_level = 1; break;
+   43   2      
+   44   2                      case '*' :
+   45   2                      case '/' : operator1_level = 2; break;
+   46   2      
+   47   2                      case '^' :              
+   48   2                      case 'i' :                                                                      //–È ˝±Í ∂
+   49   2                      case '!' :
+   50   2              case DEGREE_FONT : operator1_level = 3; break;
+   51   2      
+   52   2              case 'f' : operator1_level = 4; break;        //∫Ø ˝±Í ∂
+   53   2      
+   54   2                      case '(' :
+   55   2                      case ')' : operator1_level = 5; break;
+   56   2              default  : return LEVEL_INVALID;
+   57   2              }
+C251 COMPILER V5.60.0,  alg_caculate                                                       27/09/22  13:55:45  PAGE 2   
+
+   58   1              switch(operator2)
+   59   1              {
+   60   2                      case '+' :
+   61   2                      case '-' : operator2_level = 1; break;
+   62   2      
+   63   2                      case '*' :
+   64   2                      case '/' : operator2_level = 2; break;
+   65   2      
+   66   2                      case '^' :
+   67   2                      case 'i' :                                                                      //–È ˝±Í ∂
+   68   2                      case '!' :
+   69   2              case DEGREE_FONT : operator2_level = 3; break;
+   70   2      
+   71   2              case 'f' : operator2_level = 4; break;        //∫Ø ˝±Í ∂
+   72   2      
+   73   2                      case '(' :
+   74   2                      case ')' : operator2_level = 5; break;
+   75   2              default  : return LEVEL_INVALID;
+   76   2              }
+   77   1      
+   78   1              //≈–∂œ¡Ω∏ˆ≤Ÿ◊˜∑˚µƒ”≈œ»º∂πÿœµ
+   79   1              if((operator1_level - operator2_level) > 0)
+   80   1              {
+   81   2                      return LEVEL_BIGGER;
+   82   2              }
+   83   1              else if((operator1_level - operator2_level) < 0)
+   84   1              {
+   85   2                      return LEVEL_SMALLER;
+   86   2              }
+   87   1              else
+   88   1              {
+   89   2                      return LEVEL_SAME;
+   90   2              }
+   91   1      }
+   92          
+   93          /***********************************************************************************
+   94                  π¶ƒ‹£∫≈–∂œ◊÷∑˚µƒ¿‡–Õ
+   95                  –Œ≤Œ£∫c: ‰»Î◊÷∑˚
+   96                  ∑µªÿ£∫À„∑˚      --OPERATOR
+   97                             ˝◊÷  --NUMBER
+   98                            ∑«∑®  --INVALID_TYPE
+   99                  œÍΩ‚£∫≈–∂œ◊÷∑˚¥Æµ±«∞µƒ÷µŒ™ ˝◊÷°¢∑˚∫≈°¢ªπ «∑«∑® ‰»Î
+  100          ***********************************************************************************/
+  101          TYPE_FLAG alg_judge_type(char c)
+  102          {       
+  103   1              //∆’Õ®º∆À„ƒ£ Ω
+  104   1              if(g_chCalcStatus == CALC_NORMAL)
+  105   1              {
+  106   2                      if (c == '+' ||
+  107   2                              c == '-' ||
+  108   2                              c == '*' ||
+  109   2                              c == '/' ||
+  110   2                              c == '^' ||
+  111   2                              c == '(' ||
+  112   2                              c == ')' ||
+  113   2                              c == '!' ||
+  114   2                      c == DEGREE_FONT               //°„∑˚∫≈
+  115   2                      )
+  116   2                      {
+  117   3                              return OPERATOR;
+  118   3                      }
+  119   2                      else if((c>='0' && c<='9') || c=='.')
+  120   2                      {
+  121   3                              return NUMBER;
+  122   3                      }
+  123   2                      else if(alg_const_handle(c) != NO_CONST)    //»ÙŒ™≥£ ˝
+C251 COMPILER V5.60.0,  alg_caculate                                                       27/09/22  13:55:45  PAGE 3   
+
+  124   2                  {
+  125   3                      return CONST_NUM;
+  126   3                  }
+  127   2                      else if(c == 'l' || c == 's' || c == 'c' || c == 't' || c == 'a')       // ◊◊÷ƒ∏ «s,c,t,l£¨‘Ú≈–∂®Œ™∫Ø ˝
+  128   2                      {
+  129   3                          return FUNCTION;
+  130   3                      }
+  131   2                      else
+  132   2                      {
+  133   3                              return INVALID_TYPE;
+  134   3                      }
+  135   2              }
+  136   1              
+  137   1              //∏¥ ˝º∆À„ƒ£ Ω
+  138   1              else if(g_chCalcStatus == CALC_COMPLEX)
+  139   1              {
+  140   2                      if (c == '+' ||
+  141   2                              c == '-' ||
+  142   2                              c == '*' ||
+  143   2                              c == '/' ||
+  144   2                              c == '^' ||
+  145   2                              c == '(' ||
+  146   2                              c == ')' ||
+  147   2                              c == 'i'                                        //–È ˝±Í ∂
+  148   2                      )
+  149   2                      {
+  150   3                              return OPERATOR;
+  151   3                      }
+  152   2                      else if((c>='0' && c<='9') || c=='.')
+  153   2                      {
+  154   3                              return NUMBER;
+  155   3                      }
+  156   2                      else if(alg_const_handle(c) != NO_CONST)    //»ÙŒ™≥£ ˝
+  157   2                  {
+  158   3                      return CONST_NUM;
+  159   3                  }
+  160   2                      else
+  161   2                      {
+  162   3                              return INVALID_TYPE;
+  163   3                      }
+  164   2              }
+  165   1      
+  166   1              return INVALID_TYPE;
+  167   1      }
+  168          
+  169          
+  170          /***********************************************************************************
+  171                  π¶ƒ‹£∫≥£ ˝¥¶¿Ì
+  172                  –Œ≤Œ£∫c: ‰»Î◊÷∑˚
+  173                  ∑µªÿ£∫≥£ ˝µƒ¿‡–Õ
+  174                  œÍΩ‚£∫≥£ ˝∫ÕŒ¥÷™ ˝µƒ≈–∂œ£¨»Áπ˚≈–∂œΩ·π˚Œ™≥£ ˝ªÚŒ¥÷™ ˝£¨‘Ú‘⁄◊™∫Û–Ú±Ì¥Ô Ωπ˝≥Ã÷–ÃÊªª
+  175          ***********************************************************************************/
+  176          uchar alg_const_handle(char c)
+  177          {
+  178   1          switch(c)
+  179   1          {
+  180   2              case 'e'     : return E_FLAG;
+  181   2              case PI_FONT : return PI_FLAG;
+  182   2                      case 'x'         : return X_FLAG;
+  183   2                      case 'y'         : return Y_FLAG;
+  184   2                      case 'z'         : return Z_FLAG;
+  185   2                      case 'A'         : return ANS_FLAG;
+  186   2          }
+  187   1      
+  188   1          return NO_CONST;
+  189   1      }
+C251 COMPILER V5.60.0,  alg_caculate                                                       27/09/22  13:55:45  PAGE 4   
+
+  190          
+  191          
+  192          /***********************************************************************************
+  193                  π¶ƒ‹£∫∫Ø ˝¥¶¿Ì
+  194                  –Œ≤Œ£∫c: ‰»Î◊÷∑˚
+  195                  ∑µªÿ£∫∫Ø ˝µƒ¿‡–Õ
+  196                  œÍΩ‚£∫ ∂±∫Ø ˝√˚£¨¿˝»Ásin£¨cosµ»£¨≤¢‘⁄◊™∫Û–¯±Ì¥Ô Ω÷–£¨∞¥’’πÊ‘Ú∂‘∫Ø ˝√˚Ω¯––◊™ªØ
+  197          ***********************************************************************************/
+  198          uchar alg_func_handle(char *c)
+  199          {
+  200   1          char strTemp[5] = {0,0,0,0,0};      //…˘√˜≤¢≥ı ºªØ“ª∏ˆ”√”⁄¥Ê¥¢∫Ø ˝√˚µƒ¡Ÿ ± ˝◊È
+  201   1      
+  202   1          strTemp[0] = c[0];
+  203   1          strTemp[1] = c[1];                  //≥È»°«∞¡Ω∏ˆ◊÷∑˚
+  204   1          check_if(ln,LN_FLAG);                //ºÏ≤È «∑ÒŒ™À´◊÷∑˚µƒ∫Ø ˝
+  205   1      
+  206   1          strTemp[2] = c[2];                  //≥È»°«∞»˝∏ˆ◊÷∑˚
+  207   1          if('h' != c[3])                     //∑¿÷πÀ´«¯»˝Ω«∫Ø ˝∏…»≈
+  208   1          {
+  209   2              check_if(log,LOG_FLAG);             //ºÏ≤È «∑ÒŒ™»˝◊÷∑˚µƒ∫Ø ˝
+  210   2              check_if(sin,SIN_FLAG);
+  211   2              check_if(cos,COS_FLAG);
+  212   2              check_if(tan,TAN_FLAG);
+  213   2                      check_if(abs,ABS_FLAG);
+  214   2          }
+  215   1      
+  216   1          strTemp[3] = c[3];                  //≥È»°«∞Àƒ∏ˆ◊÷∑˚
+  217   1          //ºÏ≤È «∑ÒŒ™Àƒ∏ˆ◊÷∑˚µƒ∫Ø ˝
+  218   1          check_if(sinh,SINH_FLAG);
+  219   1          check_if(cosh,COSH_FLAG);
+  220   1          check_if(tanh,TANH_FLAG);
+  221   1              check_if(asin,ASIN_FLAG);
+  222   1          check_if(acos,ACOS_FLAG);
+  223   1          check_if(atan,ATAN_FLAG);
+  224   1      
+  225   1          return FUNC_INVALID;
+  226   1      }
+  227          
+  228          
+  229          /***********************************************************************************
+  230                  π¶ƒ‹£∫∏˘æ› ‰»Î ˝◊÷∫Õ≤Ÿ◊˜ ˝º∆À„Ω·π˚
+  231                  –Œ≤Œ£∫eElem1,eElem2     ¡Ω∏ˆLArrayElemΩ·ππ
+  232                            nOperator             À„∑˚
+  233                            eResult               ±£¥ÊΩ·π˚µƒLArrayElem÷∏’Î
+  234                  ∑µªÿ£∫º∆À„≥…π¶  --1
+  235                            º∆À„ ß∞‹      --0
+  236                  œÍΩ‚£∫”√”⁄º∆À„∫Û–Ú±Ì¥Ô Ω£¨µØ≥ˆ≤Ÿ◊˜∑˚∫Õ ˝◊÷£¨º∆À„∫Û—πªÿ∫Û–¯±Ì¥Ô Ω
+  237          ***********************************************************************************/
+  238          LArray_BOOL alg_calc(LArrayElem *eElem1, char nOperator, LArrayElem *eElem2, LArrayElem *eResult)
+  239          {
+  240   1              uchar i;
+  241   1              if(g_chCalcStatus == CALC_NORMAL)
+  242   1              {
+  243   2                      switch (nOperator)
+  244   2                      {
+  245   3                      case '+' :
+  246   3                          eResult->elemValue.dbNum = eElem1->elemValue.dbNum + eElem2->elemValue.dbNum;
+  247   3                          break;
+  248   3              
+  249   3                      case '-' :
+  250   3                          eResult->elemValue.dbNum = eElem1->elemValue.dbNum - eElem2->elemValue.dbNum;
+  251   3                          break;
+  252   3              
+  253   3                      case '*' :
+  254   3                          eResult->elemValue.dbNum = eElem1->elemValue.dbNum * eElem2->elemValue.dbNum;
+  255   3                          break;
+C251 COMPILER V5.60.0,  alg_caculate                                                       27/09/22  13:55:45  PAGE 5   
+
+  256   3              
+  257   3                      case '/' :
+  258   3                          if (0 == eElem2->elemValue.dbNum)
+  259   3                          {
+  260   4                              return LArray_FALSE;
+  261   4                          }
+  262   3              
+  263   3                          eResult->elemValue.dbNum = eElem1->elemValue.dbNum / eElem2->elemValue.dbNum;
+  264   3                          break;
+  265   3                                      
+  266   3                      case '^' :
+  267   3                          if (0 > eElem1->elemValue.dbNum && eElem2->elemValue.dbNum != (uchar)eElem2->elemValue.dbNum
+             -)
+  268   3                          {
+  269   4                              return LArray_FALSE;
+  270   4                          }
+  271   3                          eResult->elemValue.dbNum = pow(eElem1->elemValue.dbNum,eElem2->elemValue.dbNum);
+  272   3                          break;
+  273   3              
+  274   3                      case DEGREE_FONT :
+  275   3                          eResult->elemValue.dbNum = eElem1->elemValue.dbNum * PI / 180;
+  276   3                          break;
+  277   3                              
+  278   3                              case '!' :
+  279   3                                      if (((int)eElem1->elemValue.dbNum != eElem1->elemValue.dbNum) 
+  280   3                                              || eElem1->elemValue.dbNum > 60 || eElem1->elemValue.dbNum < 0 )        //±ÿ–Î «’˝’˚ ˝
+  281   3                          {
+  282   4                              return LArray_FALSE;
+  283   4                          }
+  284   3                                      if(eElem1->elemValue.dbNum == 1 ||eElem1->elemValue.dbNum == 0)
+  285   3                                      {
+  286   4                                              eResult->elemValue.dbNum = 1;
+  287   4                                              break;
+  288   4                                      }
+  289   3                                      eResult->elemValue.dbNum = 1;
+  290   3                                      for(i=1;i<eElem1->elemValue.dbNum+1;i++)
+  291   3                                      {
+  292   4                              eResult->elemValue.dbNum = eResult->elemValue.dbNum  * i;
+  293   4                                      }
+  294   3                          break;
+  295   3                                      
+  296   3                      case 'f' :
+  297   3                          switch((uchar)eElem1->elemValue.dbNum)
+  298   3                          {
+  299   4                              case LN_FLAG    :   eResult->elemValue.dbNum = log(eElem2->elemValue.dbNum);
+  300   4                              CASE LOG_FLAG   :   eResult->elemValue.dbNum = log10(eElem2->elemValue.dbNum);
+  301   4                              CASE SIN_FLAG   :   eResult->elemValue.dbNum = sin(eElem2->elemValue.dbNum);
+  302   4                              CASE COS_FLAG   :   eResult->elemValue.dbNum = cos(eElem2->elemValue.dbNum);
+  303   4                              CASE TAN_FLAG   :   eResult->elemValue.dbNum = tan(eElem2->elemValue.dbNum);
+  304   4                              CASE SINH_FLAG  :   eResult->elemValue.dbNum = sinh(eElem2->elemValue.dbNum);
+  305   4                              CASE COSH_FLAG  :   eResult->elemValue.dbNum = cosh(eElem2->elemValue.dbNum);
+  306   4                              CASE TANH_FLAG  :   eResult->elemValue.dbNum = tanh(eElem2->elemValue.dbNum);
+  307   4                                              CASE ASIN_FLAG  :       eResult->elemValue.dbNum = asin(eElem2->elemValue.dbNum);
+  308   4                              CASE ACOS_FLAG  :       eResult->elemValue.dbNum = acos(eElem2->elemValue.dbNum);
+  309   4                              CASE ATAN_FLAG  :       eResult->elemValue.dbNum = atan(eElem2->elemValue.dbNum);
+  310   4                                              CASE ABS_FLAG   :       eResult->elemValue.dbNum = fabs(eElem2->elemValue.dbNum);
+  311   4              
+  312   4                              break;
+  313   4                          }
+  314   3                          break;
+  315   3                      }
+  316   2              }
+  317   1              
+  318   1              else if(g_chCalcStatus == CALC_COMPLEX)
+  319   1              {
+  320   2                      switch (nOperator)
+C251 COMPILER V5.60.0,  alg_caculate                                                       27/09/22  13:55:45  PAGE 6   
+
+  321   2                      {
+  322   3                              case '+' :
+  323   3                          OPERATOR_COMPLEX(plus,eElem1,eElem2,eResult);
+  324   3                          break;
+  325   3              
+  326   3                      case '-' :
+  327   3                          OPERATOR_COMPLEX(subtract,eElem1,eElem2,eResult);
+  328   3                          break;
+  329   3              
+  330   3                      case '*' :
+  331   3                          OPERATOR_COMPLEX(multiply,eElem1,eElem2,eResult);
+  332   3                          break;
+  333   3              
+  334   3                      case '/' :
+  335   3                          if (0 == complex_mod(eElem2))       //±ª≥˝ ˝µƒƒ£≤ªƒ‹Œ™0
+  336   3                          {
+  337   4                              return LArray_FALSE;
+  338   4                          }
+  339   3                                      OPERATOR_COMPLEX(divide,eElem1,eElem2,eResult);
+  340   3                                      break;
+  341   3                              
+  342   3                              case '^' :
+  343   3                                      if(LArray_FALSE == complex_power(eElem1,eElem2,eResult))
+  344   3                                      {
+  345   4                                              return LArray_FALSE;
+  346   4                                      }
+  347   3                                      break;
+  348   3                              
+  349   3                              case 'i' :                                      //–È ˝…˘√˜
+  350   3                                      eResult->elemValue.dbNum = -(eElem1->dbComplex);
+  351   3                                      eResult->dbComplex = eElem1->elemValue.dbNum;           //Ωªªª–È µ¡Ω≤ø£¨«“–È≤ø∑¥∫≈
+  352   3                                      break;
+  353   3                      }
+  354   2              }
+  355   1              
+  356   1              return LArray_TRUE;
+  357   1      }
+  358          
+  359          
+  360          /***********************************************************************************
+  361              π¶ƒ‹£∫“∆∂Ø±Ì¥Ô Ωµƒµ±«∞÷∏’ÎµΩœ¬“ª∏ˆ‘™Àÿ
+  362              –Œ≤Œ£∫Œﬁ
+  363              ∑µªÿ£∫Œﬁ
+  364              œÍΩ‚£∫±æ∫Ø ˝”√¿¥‘⁄◊™∫Û–Ú±Ì¥Ô Ω÷–£¨≈–∂œ«∞“ª∏ˆ ˝◊÷µƒŒª÷√£¨≤¢“∆∂Ø÷∏’ÎµΩœ¬“ª∏ˆ–Ë“™≈–∂œµƒŒª÷√
+  365          ***********************************************************************************/
+  366          void alg_pmove(char **ppCur)
+  367          {
+  368   1              if(OPERATOR == alg_judge_type((*ppCur)[0]))
+  369   1              {
+  370   2                      *ppCur +=1;
+  371   2              }
+  372   1              else if(CONST_NUM == alg_judge_type((*ppCur)[0]))
+  373   1              {
+  374   2                      if(ANS_FLAG == alg_const_handle((*ppCur)[0]))
+  375   2                              *ppCur +=3;                     //Ans «»˝◊÷
+  376   2                      else 
+  377   2                              *ppCur +=1;
+  378   2              }
+  379   1              else if(FUNCTION == alg_judge_type((*ppCur)[0]))
+  380   1          {
+  381   2              switch(alg_func_handle(*ppCur))
+  382   2              {
+  383   3                  case LN_FLAG  : *ppCur +=2; break;    //∂˛◊÷∫Ø ˝
+  384   3      
+  385   3                  case LOG_FLAG :
+  386   3                  case SIN_FLAG :
+C251 COMPILER V5.60.0,  alg_caculate                                                       27/09/22  13:55:45  PAGE 7   
+
+  387   3                  case COS_FLAG :
+  388   3                  case TAN_FLAG :
+  389   3                              case ABS_FLAG : *ppCur +=3; break;    //»˝◊÷∫Ø ˝
+  390   3      
+  391   3                  case SINH_FLAG:
+  392   3                  case COSH_FLAG:
+  393   3                  case TANH_FLAG: 
+  394   3                              case ASIN_FLAG :
+  395   3                  case ACOS_FLAG :
+  396   3                  case ATAN_FLAG : *ppCur +=4; break;    //Àƒ◊÷∫Ø ˝
+  397   3              }
+  398   2          }
+  399   1              else
+  400   1              {
+  401   2                      while(NUMBER == alg_judge_type((*ppCur)[0]) && '\0' != (*ppCur)[0])
+  402   2                      {
+  403   3                              *ppCur +=1;
+  404   3                      }
+  405   2              }
+  406   1      }
+  407          
+  408          /***********************************************************************************
+  409              π¶ƒ‹£∫Ω´÷––Ú±Ì¥Ô Ω◊™ªªŒ™∫Û–Ú±Ì¥Ô Ω
+  410              –Œ≤Œ£∫pExpression:◊÷∑˚¥Æ–Õ±Ì¥Ô Ω pPostArray:±£¥Ê∫Û–Ú±Ì¥Ô Ωµƒœﬂ–‘±Ì
+  411              ∑µªÿ£∫1:◊™ªª≥…π¶ 2:◊™ªª ß∞‹
+  412              œÍΩ‚£∫◊™∫Û–¯±Ì¥Ô Ωµƒ∫Ø ˝£¨◊™ªªÀµ√˜»Áœ¬£∫
+  413                  £®1£©∑÷≈‰“ª∏ˆ’ª∫Õ“ª∏ˆœﬂ–‘±Ì£¨stack”√”⁄¡Ÿ ±¥Ê¥¢‘ÀÀ„∑˚£¨¥ÀÀ„∑˚‘⁄’ªƒ⁄”√”⁄¡Ÿ ±¥Ê¥¢‘ÀÀ„∑˚£¨¥ÀÀ„∑˚‘⁄’ªƒ⁄◊Ò—≠œ»
+             -»Î∫Û≥ˆµƒ‘≠‘Ú°£œﬂ–‘±Ìll”√”⁄¥Ê¥¢◊™ªªÕÍ≥…∫Ûµƒ∫Û–Ú±Ì¥Ô Ω°£
+  414                  £®2£©¥”÷––Ú±Ì¥Ô ΩÀ„ ı±Ì¥Ô Ω◊÷∑˚¥Æ◊Û∂Àø™ º÷∏ˆ∂¡»°◊÷∑˚c£∫
+  415                                  A.»Ùc « ˝◊÷£¨‘Ú∂¡ÕÍ’˚∏ˆ ˝◊÷£¨◊™ªª≥…∏°µ„ ˝∫Û≤Â»Îllƒ©∂À
+  416                                  B.»Ùc «∑˚∫≈£∫
+  417                                          ¢Ÿ»Ùc «'('£¨‘Ú÷±Ω”—π»Îstack£ª
+  418                                          ¢⁄»Ùc «')'£¨‘ÚΩ´æ‡¿Îstack∂•◊ÓΩ¸µƒ“ª∏ˆ'('÷Æ«∞µƒ‘ÀÀ„∑˚£¨÷∏ˆ≥ˆ’ª£¨≤Â»Îœﬂ–‘±Ìllƒ©∂À£¨¥À ±'()'±ª≈◊∆˙£ª
+  419                                          ¢€»Ùc «‘ÀÀ„∑˚:x
+  420                                                  a.»Ùx «'-'£∫
+  421                                                  ≈–∂œ «∑Ò «◊÷∑˚¥Æµ⁄“ª∏ˆ÷µ£¨ «£¨‘ÚΩ´∫Û√Êµƒ ˝◊÷∑¥∫≈£¨Õ¨ ±∂™∆˙’‚∏ˆ∏∫∫≈
+  422                                                  ≈–∂œ’ª∂• «≤ª «'('£¨ «£¨‘ÚΩ´∫Û√Ê ˝◊÷∑¥∫≈£¨Õ¨ ±∂™∆˙’‚∏ˆ∏∫∫≈
+  423                                          ¢‹»Ùx «≥£¡ø±Í ∂∑˚(e,¶–,...)◊™ªª≥… ˝◊÷≤Â»Îllƒ©∂À
+  424                                          ¢›»Ù «∫Ø ˝£¨‘Ú≥È≥ˆ’˚∏ˆ∫Ø ˝√˚∫Û∆•≈‰°£∆•≈‰Ω·π˚“‘ ˝◊÷–Œ Ω≤Â»Îœﬂ–‘±Ì£¨‘Ÿ≤Â»Î“ª∏ˆ'f'◊ˆ∫Ø ˝±Í ∂
+  425                                          ¢ﬁ»Ù «'°„'∂» ˝À„∑˚£¨‘Ú—π»Î0∫Û—π»Î'd'
+  426                                          ¢ﬂ.»Ù’ª∂• «'('‘Ú÷±Ω”—π’ª
+  427                                          ¢‡.»Ù’ª∂•≤ª «'('‘Ú±»Ωœ”≈œ»º∂£¨x”≈œ»º∂∏ﬂæÕ—π»Î£¨∑Ò‘ÚΩ´stack∂•≤Ÿ◊˜∑˚µØ≥ˆ≤Â»Îœﬂ–‘±Ìƒ©∂À£¨÷±µΩx”≈œ»º∂∏¸∏ﬂ
+             -£¨‘Ÿ—π»Î
+  428                  ‘ÀÀ„∑˚”≈œ»º∂±Ì£∫
+  429                      ¿®∫≈>∫Ø ˝>≥À∑Ω>≥À≥˝>º”ºı£ª◊¢“‚∫Ø ˝∫Õ'°„' «µ•ƒø‘ÀÀ„µƒ°£∏∫∫≈‘⁄◊™∫Û–Ú±Ì¥Ô Ω ±æÕ¥¶¿Ì¡À£¨∂» ˝°¢∫Ø ˝–Ë“™‘⁄
+             -«Û÷µπ˝≥Ã‘Ÿ¥¶¿Ì°£À˘“‘‘⁄
+  430                  ∫Û–Ú±Ì¥Ô Ω«Û÷µµƒ ±∫Ú–Ë“™øº¬«°£
+  431          ***********************************************************************************/
+  432          LArray_BOOL alg_mid_to_post(char *pExpression, LArray *pPostArray)
+  433          {
+  434   1          uchar minus_flag = 1;                 //µ⁄“ª∏ˆ◊÷∑˚±Í÷æ
+  435   1          uchar function_temp;                   //µ±«∞∫Ø ˝◊¥Ã¨÷∏’Î
+  436   1              char *pCur;
+  437   1              LArrayElem eTop;
+  438   1              LArray_BOOL bResult;
+  439   1              LArray laStackOperator;
+  440   1              
+  441   1              //¥¥Ω®À„∑˚’ª
+  442   1              LArray                                          *pStackOperator = &laStackOperator;
+  443   1              LArrayElem                                      pElem_StackOperator[STACK_SIZE/2];
+  444   1              //≥ı ºªØÀ„∑˚’ª
+  445   1              pStackOperator->pElem           = pElem_StackOperator;
+  446   1              pStackOperator->nLength         = 0;
+  447   1              pStackOperator->nTotalSize      = STACK_SIZE/2;
+  448   1              
+  449   1              pCur = pExpression;
+C251 COMPILER V5.60.0,  alg_caculate                                                       27/09/22  13:55:45  PAGE 8   
+
+  450   1              eTop.elemValue.dbNum = 0;
+  451   1              eTop.dbComplex          = 0;
+  452   1              
+  453   1              bResult = LArray_TRUE;
+  454   1              
+  455   1              //±È¿˙À„ ı±Ì¥Ô Ω◊÷∑˚¥Æ
+  456   1              while(pCur[0] != '\0')
+  457   1              {
+  458   2              if (INVALID_TYPE == alg_judge_type(pCur[0]))// ‰»Î≤ª∫œ∑®
+  459   2                      {
+  460   3                              bResult = LArray_FALSE;
+  461   3                              break;
+  462   3                      }
+  463   2      
+  464   2              else if(CONST_NUM == alg_judge_type(pCur[0]))// ‰»ÎŒ™≥£ ˝
+  465   2              {
+  466   3                  eTop.elemType = NUMBER;
+  467   3                  switch(alg_const_handle(pCur[0]))
+  468   3                  {
+  469   4                      case E_FLAG  :  eTop.elemValue.dbNum = E;   break;
+  470   4                      case PI_FLAG :  eTop.elemValue.dbNum = PI;  break;
+  471   4                                      case X_FLAG  :  eTop.elemValue.dbNum = x;  break;
+  472   4                                      case Y_FLAG  :  eTop.elemValue.dbNum = y;  break;
+  473   4                                      case Z_FLAG  :  eTop.elemValue.dbNum = z;  break;
+  474   4                                      case ANS_FLAG:  eTop.elemValue.dbNum = g_ans;  break;
+  475   4                  }
+  476   3                              STACK_PUSH(pPostArray, eTop);
+  477   3              }
+  478   2      
+  479   2                      else if(NUMBER == alg_judge_type(pCur[0]))//≤Ÿ◊˜ ˝÷±Ω” ‰»ÎµΩœﬂ–‘±Ì
+  480   2                      {
+  481   3                              eTop.elemType                   = NUMBER;
+  482   3                              eTop.elemValue.dbNum    = alg_atof(pCur);//strtod(pCur,(char **)NULL);
+  483   3                              STACK_PUSH(pPostArray, eTop);
+  484   3                      }
+  485   2      
+  486   2                      else// ‰»ÎÀ„∑˚ªÚ∫Ø ˝
+  487   2                      {
+  488   3                          if(minus_flag == 1)  //∂‘”⁄’ªŒ™ø’«“ªÚ«∞“ª∏ˆÀ„∑˚Œ™°Æ(°Ø,Àµ√˜ «’˝∏∫∫≈
+  489   3                  {
+  490   4                      if(pCur[0] == '-' || pCur[0] == '+')
+  491   4                      {
+  492   5                          eTop.elemType                       = NUMBER;       //—π»Î0
+  493   5                          eTop.elemValue.dbNum        = 0;
+  494   5                          STACK_PUSH(pPostArray, eTop);
+  495   5                      }
+  496   4                  }
+  497   3                  if(pCur[0] == DEGREE_FONT || pCur[0] == '!') //»Áπ˚À„∑˚ «°„ªÚ!£¨‘Ú–Ë“™‘⁄¥¶¿Ì«∞º”0
+  498   3                  {
+  499   4                      eTop.elemType                   = NUMBER;       //—π»Î0
+  500   4                      eTop.elemValue.dbNum    = 0;
+  501   4                      STACK_PUSH(pPostArray, eTop);
+  502   4                  }                   
+  503   3                              if(pCur[0] == 'i')
+  504   3                              {
+  505   4                                      if(minus_flag == 1 || OPERATOR == alg_judge_type(pCur[-1]))                     //»Áπ˚ «¬˙◊„∏∫∫≈Ãıº˛£¨‘Ú“ª∂®–Ë“™≤π1£¨∑Ò
+             -‘ÚºÏ≤È…œ“ª∏ˆ «≤ª «∑˚∫≈
+  506   4                                      {                                                                                                                                       //¥À¥¶”√¡À∆Êºº“˘«…£¨“™ « «◊÷∑˚¥Æø™ º£¨‘Úª·¬˙◊„∏∫∫≈Ãıº˛£¨ ˝◊È‘ΩΩÁ∑√Œ ≤ªª·÷¥––°£»Áπ˚≤
+             -ª «◊÷∑˚¥Æø™ º£¨‘Ú[-1]≤ªª·µº÷¬‘ΩΩÁ
+  507   5                                              eTop.elemType                   = NUMBER;       //—π»Î1
+  508   5                                              eTop.elemValue.dbNum    = 1;                    //”√”⁄Ω‚æˆ a+iµƒŒ Ã‚
+  509   5                                              STACK_PUSH(pPostArray, eTop);
+  510   5                                      }
+  511   4                                      
+  512   4                      eTop.elemType                   = NUMBER;       //—π»Î0
+  513   4                      eTop.elemValue.dbNum    = 0;
+C251 COMPILER V5.60.0,  alg_caculate                                                       27/09/22  13:55:45  PAGE 9   
+
+  514   4                      STACK_PUSH(pPostArray, eTop);
+  515   4                              }
+  516   3                              
+  517   3                  else if(FUNCTION == alg_judge_type(pCur[0]))         //∫Ø ˝¥¶¿Ì
+  518   3                  {
+  519   4                      eTop.elemType                   = NUMBER;
+  520   4                      eTop.elemValue.dbNum    = alg_func_handle(pCur);       //—π»Î∫Ø ˝¿‡–Õ
+  521   4                      if(FUNC_INVALID == alg_func_handle(pCur))               //∫Ø ˝¥ÌŒÛ‘Ú±Ì¥Ô Ω¥ÌŒÛ
+  522   4                      {
+  523   5                          bResult     = LArray_FALSE;
+  524   5                          break;
+  525   5                      }
+  526   4      
+  527   4                      STACK_PUSH(pPostArray, eTop);
+  528   4                      function_temp = pCur[0];
+  529   4                      pCur[0] = 'f';              //ÃÌº”∫Ø ˝±Í ∂
+  530   4      
+  531   4                  }
+  532   3      
+  533   3                              if(pCur[0] == '(')// ‰»Î'('
+  534   3                              {
+  535   4                                      eTop.elemType                           = OPERATOR;
+  536   4                                      eTop.elemValue.cOperator        = pCur[0];
+  537   4                                      STACK_PUSH(pStackOperator, eTop);
+  538   4                                      minus_flag = 1;                 //‘ –Ì’˝∏∫∫≈
+  539   4                              }
+  540   3                              else if (pCur[0] == ')')// ‰»Î')'
+  541   3                              {
+  542   4                                      //“ª÷±≥ˆ’ª—π»Îœﬂ–‘±Ì÷±µΩ'('
+  543   4                                      while (LArray_TRUE == stack_get_top(pStackOperator, &eTop) &&
+  544   4                                                 eTop.elemValue.cOperator != '(')
+  545   4                                      {
+  546   5                                              stack_pop(pStackOperator, &eTop);
+  547   5                          STACK_PUSH(pPostArray, eTop);
+  548   5                                      }
+  549   4      
+  550   4                                      if (LArray_TRUE == stack_get_top(pStackOperator, &eTop) &&
+  551   4                                              eTop.elemValue.cOperator == '(')
+  552   4                                      {
+  553   5                                              stack_pop(pStackOperator, NULL);//÷±Ω”µØ≥ˆ'('
+  554   5                                      }
+  555   4                                      else
+  556   4                                      {
+  557   5                                              bResult = LArray_FALSE;
+  558   5                                              break;
+  559   5                                      }
+  560   4                              }
+  561   3                              else if (LArray_TRUE == stack_get_top(pStackOperator, &eTop) &&
+  562   3                                               eTop.elemValue.cOperator == '(')//’ª∂•‘™ÀÿŒ™'('‘Úµ±«∞µƒÀ„∑˚—π»ÎÀ„∑˚’ª
+  563   3                              {
+  564   4                                      eTop.elemType                           = OPERATOR;
+  565   4                                      eTop.elemValue.cOperator        = pCur[0];
+  566   4                                      STACK_PUSH(pStackOperator,eTop);
+  567   4                              }
+  568   3                              else if (LArray_FALSE == stack_get_top(pStackOperator, &eTop) ||
+  569   3                                               LEVEL_SMALLER == alg_compare_level(eTop.elemValue.cOperator, pCur[0]))
+  570   3                              {
+  571   4                                      //’ªŒ™ø’ªÚ’ª∂•À„∑˚µƒ”≈œ»º∂–°”⁄µ±«∞ ‰»ÎµƒÀ„∑˚(¥À ±µ±«∞À„∑˚≤ªµ»”⁄())£¨‘ÚΩ´µ±«∞µƒÀ„∑˚—π»ÎÀ„∑˚’ª
+  572   4                                      eTop.elemType                           = OPERATOR;
+  573   4                                      eTop.elemValue.cOperator        = pCur[0];
+  574   4                                      STACK_PUSH(pStackOperator, eTop);
+  575   4                              }
+  576   3                              else
+  577   3                              {
+  578   4      
+  579   4                                      //∂‘”⁄’ª≤ªŒ™ø’«“’ª∂•À„∑˚µƒ”≈œ»º∂¥Û”⁄µ»”⁄µ±«∞ ‰»ÎµƒÀ„∑˚(¥À ±µ±«∞À„∑˚≤ªµ»”⁄()),
+C251 COMPILER V5.60.0,  alg_caculate                                                       27/09/22  13:55:45  PAGE 10  
+
+  580   4                                      //“ª÷±≥ˆ’ª—π»Îœﬂ–‘±Ì÷±µΩ≤ª¬˙◊„’‚∏ˆÃıº˛
+  581   4      
+  582   4                                      while(LArray_TRUE  == stack_get_top(pStackOperator, &eTop) &&
+  583   4                                                eTop.elemValue.cOperator != '(' &&
+  584   4                                                LEVEL_SMALLER != alg_compare_level(eTop.elemValue.cOperator, pCur[0]))
+  585   4                                      {
+  586   5                                              stack_pop(pStackOperator, &eTop);
+  587   5                          STACK_PUSH(pPostArray, eTop);
+  588   5                                      }
+  589   4      
+  590   4                                      //µ±«∞À„∑˚»Î’ª
+  591   4                                      eTop.elemType                           = OPERATOR;
+  592   4                                      eTop.elemValue.cOperator        = pCur[0];
+  593   4                                      STACK_PUSH(pStackOperator, eTop);
+  594   4                              }
+  595   3                      }
+  596   2              if(pCur[0] != '(')
+  597   2                  minus_flag = 0;                     //«Âø’µ⁄“ª∏ˆ◊÷∑˚±Í÷æ
+  598   2              if(pCur[0] == 'f')
+  599   2                  pCur[0] = function_temp;            //«Â≥˝∫Ø ˝±Í ∂
+  600   2                      alg_pmove(&pCur);
+  601   2              }
+  602   1      
+  603   1              //Ω´ £œ¬µƒÀ„∑˚’ª÷–»´≤ø≥ˆ’ªº”»ÎµΩœﬂ–‘±Ì÷–
+  604   1              if (bResult     == LArray_TRUE)
+  605   1              {
+  606   2                      while (LArray_FALSE == ll_arry_is_empty(pStackOperator))
+  607   2                      {
+  608   3                              stack_pop(pStackOperator, &eTop);
+  609   3                  stack_push(pPostArray, eTop);
+  610   3                      }
+  611   2              }
+  612   1      
+  613   1              return bResult;
+  614   1      }
+  615          
+  616          
+  617          /***********************************************************************************
+  618                  π¶ƒ‹£∫Ω´±Ì¥Ô Ωº∆À„≥ˆΩ·π˚
+  619                  –Œ≤Œ£∫pExpression:◊÷∑˚¥Æ–Õ±Ì¥Ô Ω pRealResult: µ ˝≤ø∑÷ pImaginaryResult£∫–È ˝≤ø∑÷
+  620                  ∑µªÿ£∫º∆À„≥…π¶  --1
+  621                            º∆À„ ß∞‹      --0
+  622                  œÍΩ‚£∫ø…“‘±ª∆‰À˚∫Ø ˝µ˜”√£¨ ‰»Î“ª∏ˆ◊÷∑˚¥Æ£¨¿˝»Á"1+1"ø…÷±Ω”¥”result÷–∂¡»°Ω·π˚£¨Ω·π˚∑÷Œ™ µ≤ø∫Õ–È≤ø
+  623                            Ω·π˚£¨»Áπ˚÷ª « µ ˝‘ÀÀ„£¨‘Úø…“‘–È≤ø÷±Ω”¥´NULL£¨µ´ «–Ë“™µ˜’˚g_chCalcStatusµƒ÷µ¿¥…Ë÷√∫Ø ˝π§◊˜
+  624                            ƒ£ Ω
+  625          ***********************************************************************************/
+  626          LArray_BOOL alg_calc_expression(char *pExpression, double *pRealResult, double *pImaginaryResult)
+  627          {
+  628   1              LArrayElem eNum1, eNum2, eResult;
+  629   1              LArray_BOOL     bResult;
+  630   1              uchar i;
+  631   1              LArray laPostArray, laStackNum;
+  632   1      
+  633   1              //¥¥Ω®œﬂ–‘±Ì
+  634   1              LArray                                    *pPostArray = &laPostArray;
+  635   1              LArrayElem                                pElem_PostArry[STACK_SIZE];
+  636   1              //¥¥Ω®À„∑˚≤Ÿ◊˜ ˝’ª
+  637   1              LArray                                    *pStackNum = &laStackNum;
+  638   1              LArrayElem                                pElem_StackNum[(STACK_SIZE-6)/4+3];           //“ÚŒ™÷ª”–5∏ˆ‘ÀÀ„µ»º∂£¨“Ú¥À◊Ó∂‡≥ˆœ÷’ª…œ”–5∏ˆ ˝£¨
+  639   1      
+  640   1      
+  641   1              //œﬂ–‘±Ì≥ı ºªØ
+  642   1              pPostArray->pElem                       = pElem_PostArry;
+  643   1              pPostArray->nLength                     = 0;
+  644   1              pPostArray->nTotalSize          = STACK_SIZE;   
+  645   1              //≥ı ºªØÀ„∑˚≤Ÿ◊˜ ˝’ª
+C251 COMPILER V5.60.0,  alg_caculate                                                       27/09/22  13:55:45  PAGE 11  
+
+  646   1              pStackNum->pElem                        = pElem_StackNum;
+  647   1              pStackNum->nLength                      = 0;
+  648   1              pStackNum->nTotalSize           = (STACK_SIZE-6)/4+3;
+  649   1      
+  650   1              //‘™Àÿ≥ı ºªØ
+  651   1              eResult.elemValue.dbNum = 0;
+  652   1              eResult.dbComplex               = 0;
+  653   1              
+  654   1              bResult = LArray_TRUE;
+  655   1              
+  656   1              //µ√µΩ∫Û–Ú±Ì¥Ô Ω
+  657   1              if(LArray_TRUE == alg_mid_to_post(pExpression, pPostArray))
+  658   1              {
+  659   2                      //±È¿˙œﬂ–‘±Ì
+  660   2                      for (i = 0; i < pPostArray->nLength; i++)
+  661   2                      {
+  662   3                              if (pPostArray->pElem[i].elemType == NUMBER)
+  663   3                              {
+  664   4                                      stack_push(pStackNum, pPostArray->pElem[i]);
+  665   4                              }
+  666   3                              else
+  667   3                              {
+  668   4                                      if (LArray_FALSE == stack_pop(pStackNum, &eNum2) ||
+  669   4                                              LArray_FALSE == stack_pop(pStackNum, &eNum1))
+  670   4                                      {
+  671   5                                              //≥ˆ’ª¥ÌŒÛ( ‰»Î≤ª∫œ∑® ±)
+  672   5                                              bResult = LArray_FALSE;
+  673   5                                              break;
+  674   5                                      }
+  675   4                                      else
+  676   4                                      {
+  677   5                                              if (LArray_FALSE == alg_calc(&eNum1,
+  678   5                                                                                                   pPostArray->pElem[i].elemValue.cOperator,
+  679   5                                                                                                   &eNum2,
+  680   5                                                                                                   &eResult))
+  681   5                                              {
+  682   6                                                      //º∆À„¥ÌŒÛ( ‰»Î≤ª∫œ∑® ±)
+  683   6                                                      bResult = LArray_FALSE;
+  684   6                                                      break;
+  685   6                                              }
+  686   5                                              else
+  687   5                                              {
+  688   6                                                      eResult.elemType = NUMBER;
+  689   6                                                      stack_push(pStackNum, eResult);
+  690   6                                              }
+  691   5                                      }
+  692   4                              }
+  693   3                      }
+  694   2              }
+  695   1              else
+  696   1              {
+  697   2                      bResult = LArray_FALSE;
+  698   2              }
+  699   1      
+  700   1              if (bResult     == LArray_TRUE)
+  701   1              {
+  702   2                      //»Áπ˚≤Ÿ◊˜ ˝’ª≥§∂»≤ªµ»”⁄1‘Ú‘ÀÀ„±Ì¥Ô Ω≤ª∫œ∑®
+  703   2                      if (ll_arry_get_len(pStackNum) != 1)
+  704   2                      {
+  705   3                              bResult = LArray_FALSE;
+  706   3                      }
+  707   2                      else
+  708   2                      {
+  709   3                              stack_get_top(pStackNum, &eResult);
+  710   3                              *pRealResult = eResult.elemValue.dbNum;
+  711   3                              *pImaginaryResult = eResult.dbComplex;
+C251 COMPILER V5.60.0,  alg_caculate                                                       27/09/22  13:55:45  PAGE 12  
+
+  712   3                      }
+  713   2              }
+  714   1              
+  715   1              return bResult;
+  716   1      }
+  717          
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =    ------     ------
+  ecode size           =      4236     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------        638
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =        58     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

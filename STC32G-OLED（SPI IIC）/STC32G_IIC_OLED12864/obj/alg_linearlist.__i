@@ -1,0 +1,1 @@
+"Resource\alg_linearlist.c" XSMALL ROM(HUGE) BROWSE INCDIR(.\Resource;.\ware;.\src;.\middle) DEBUG PRINT(.\obj\alg_linearlist.lst) OBJECT(.\obj\alg_linearlist.obj)

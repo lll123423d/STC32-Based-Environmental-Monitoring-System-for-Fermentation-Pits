@@ -1,0 +1,150 @@
+C251 COMPILER V5.60.0,  alg_linearlist                                                     27/09/22  13:55:45  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE alg_linearlist
+OBJECT MODULE PLACED IN .\obj\alg_linearlist.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE Resource\alg_linearlist.c XSMALL ROM(HUGE) BROWSE INCDIR(.\Resource;.\
+                    -ware;.\src;.\middle) DEBUG PRINT(.\obj\alg_linearlist.lst) OBJECT(.\obj\alg_linearlist.obj) 
+
+stmt  level    source
+
+    1          #include <stdio.h>
+    2          #include <stdlib.h>
+    3          
+    4          #include "alg_linearlist.h"
+    5          
+    6          /***********************************************************************************
+    7                  功能：判断顺序表是否为空
+    8                  形参：*pArray:顺序表指针
+    9                  返回：1-为空
+   10                            0-不为空
+   11                  详解：用于判断栈是否出完
+   12          ***********************************************************************************/
+   13          LArray_BOOL ll_arry_is_empty(LArray *pArray)
+   14          {
+   15   1              return pArray->nLength == 0 ? LArray_TRUE : LArray_FALSE;
+   16   1      }
+   17          
+   18          /***********************************************************************************
+   19                  功能：判断顺序表是否为满
+   20                  形参：*pArray:顺序表指针
+   21                  返回：1-为满
+   22                            0-不为满
+   23                  详解：用于判断栈是否被填满
+   24          ***********************************************************************************/
+   25          LArray_BOOL ll_arry_is_full(LArray *pArray)
+   26          {
+   27   1              return pArray->nLength >= pArray->nTotalSize ? LArray_TRUE : LArray_FALSE;
+   28   1      }
+   29          
+   30          /***********************************************************************************
+   31                  功能：判断顺序表当前长度
+   32                  形参：*pArray:顺序表指针
+   33                  返回：长度:pArray->nLength
+   34                  详解：用于判断压入的位置
+   35          ***********************************************************************************/
+   36          uchar ll_arry_get_len(LArray *pArray)
+   37          {
+   38   1              return pArray->nLength;
+   39   1      }
+   40          
+   41          
+   42          /*******************************栈操作函数*****************************************/
+   43          
+   44          /***********************************************************************************
+   45                  功能：获得当前栈顶元素的值
+   46                  形参：*pArray:输入字符
+   47                            *pElem :返回元素
+   48                  返回：1-成功
+   49                            0-失败
+   50                  详解：下标最大的为栈顶元素      
+   51          ***********************************************************************************/
+   52          LArray_BOOL stack_get_top(LArray *pArray, LArrayElem *pElem)
+   53          {
+   54   1              //判断栈是否为空
+   55   1              if (0 == pArray->nLength)
+   56   1              {
+   57   2                      return LArray_FALSE;
+   58   2              }
+C251 COMPILER V5.60.0,  alg_linearlist                                                     27/09/22  13:55:45  PAGE 2   
+
+   59   1      
+   60   1              //获得当前栈顶的值
+   61   1              *pElem =  pArray->pElem[pArray->nLength - 1];
+   62   1      
+   63   1              return LArray_TRUE;
+   64   1      }
+   65          
+   66          /***********************************************************************************
+   67                  功能：当前栈入栈一个元素
+   68                  形参：*pArray:输入字符
+   69                            *pElem :压入元素
+   70                  返回：1-成功
+   71                            0-失败
+   72                  详解：下标最大的为栈顶元素      
+   73          ***********************************************************************************/
+   74          LArray_BOOL stack_push(LArray *pArray, const LArrayElem elem)
+   75          {
+   76   1              //如果栈满则中中断计算
+   77   1              if (LArray_TRUE == ll_arry_is_full(pArray))
+   78   1              {
+   79   2                      return LArray_FALSE;
+   80   2              }
+   81   1      
+   82   1              //末尾位置插入值
+   83   1              pArray->pElem[pArray->nLength++] = elem;//对于字符串和结构体此处的值传递操作可能要改变一下形式
+   84   1      
+   85   1              return LArray_TRUE;
+   86   1      }
+   87          
+   88          /***********************************************************************************
+   89                  功能：当前栈出栈一个元素        
+   90                  形参：*pArray:输入字符
+   91                            *pElem :返回元素
+   92                  返回：1-成功
+   93                            0-失败
+   94                  详解：下标最大的为栈顶元素      
+   95          ***********************************************************************************/
+   96          LArray_BOOL stack_pop(LArray *pArray, LArrayElem *pElem)
+   97          {
+   98   1              //判断栈是否为空
+   99   1              if (0 == pArray->nLength)
+  100   1              {
+  101   2                      return LArray_FALSE;
+  102   2              }
+  103   1      
+  104   1              //栈顶出栈
+  105   1              if (NULL != pElem)
+  106   1              {
+  107   2                      *pElem = pArray->pElem[pArray->nLength-1];
+  108   2              }
+  109   1              pArray->nLength--;
+  110   1      
+  111   1              return LArray_TRUE;
+  112   1      }
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =    ------     ------
+  ecode size           =       200     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------         10
+  bit size             =    ------     ------
+C251 COMPILER V5.60.0,  alg_linearlist                                                     27/09/22  13:55:45  PAGE 3   
+
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =    ------     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

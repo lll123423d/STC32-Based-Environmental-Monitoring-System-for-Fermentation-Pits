@@ -1,0 +1,620 @@
+C251 COMPILER V5.60.0,  keyboard_device                                                    27/09/22  13:55:48  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE keyboard_device
+OBJECT MODULE PLACED IN .\obj\keyboard_device.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE Resource\keyboard_device.c XSMALL ROM(HUGE) BROWSE INCDIR(.\Resource;.
+                    -\ware;.\src;.\middle) DEBUG PRINT(.\obj\keyboard_device.lst) OBJECT(.\obj\keyboard_device.obj) 
+
+stmt  level    source
+
+    1          #include "stc.h"
+    2          #include <intrins.h>
+    3          #include "keyboard_device.h"
+    4          //#include "lcd_12864.h"
+    5          //#include "eeprom_rw.h"
+    6          #include "mode.h"
+    7          //#include "pwm.h"
+    8          #include "middle.h"
+    9          
+   10                  
+   11          
+   12          uchar shift=0;//shift键
+   13          void keyboard_cursor_flash(void);
+   14          
+   15          extern bit gb_flag;
+   16          extern uchar flash_count;
+   17          extern uchar count;
+   18          extern uchar hang;
+   19          
+   20          extern uint time_out;
+   21          
+   22          uchar code welcome_pic[]={
+   23                  /*--  调入了一幅图像：boeing.bmp  --*/
+   24                  /*--  宽度x高度=128x64  --*/
+   25                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   26                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   27                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   28                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   29                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   30                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   31                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   32                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   33                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   34                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   35                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   36                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   37                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   38                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   39                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   40                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   41                  0x00,0x00,0x07,0xFF,0xFE,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   42                  0x00,0x00,0x7E,0x1F,0xC7,0xF8,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   43                  0x00,0x00,0xFC,0x0F,0xE1,0xFC,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   44                  0x00,0x01,0xFC,0x07,0xE0,0xFE,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   45                  0x00,0x03,0xF8,0x07,0xF0,0x7F,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   46                  0x00,0x03,0xF8,0x07,0xF0,0x7F,0x80,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   47                  0x00,0x03,0xF8,0x07,0xF0,0x3F,0x80,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   48                  0x00,0x03,0xF8,0x07,0xF0,0x3F,0x80,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   49                  0x00,0x03,0xF8,0x07,0xF0,0x3F,0x80,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   50                  0x00,0x03,0xF8,0x07,0xF0,0x3F,0x80,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   51                  0x00,0x03,0xF8,0x0F,0xE0,0x3F,0x80,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   52                  0x00,0x03,0xF9,0x9F,0xE0,0x3F,0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   53                  0x00,0x03,0xF9,0xFF,0xFF,0x3F,0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   54                  0x00,0x03,0xF9,0xFF,0xFF,0xBF,0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   55                  0x00,0x03,0xF9,0x1F,0xE0,0x3F,0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   56                  0x00,0x03,0xF8,0x0F,0xF0,0x3F,0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   57                  0x00,0x03,0xF8,0x07,0xF0,0x3F,0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   58                  0x00,0x03,0xF8,0x07,0xF0,0x3F,0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+C251 COMPILER V5.60.0,  keyboard_device                                                    27/09/22  13:55:48  PAGE 2   
+
+   59                  0x00,0x03,0xF8,0x07,0xF8,0x3F,0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   60                  0x00,0x03,0xF8,0x07,0xF8,0x3F,0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   61                  0x00,0x03,0xF8,0x07,0xF8,0x3F,0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   62                  0x00,0x03,0xF8,0x07,0xF8,0x3F,0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   63                  0x00,0x03,0xF8,0x07,0xF8,0x3F,0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   64                  0x00,0x03,0xF8,0x07,0xF0,0x3F,0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   65                  0x00,0x03,0xF8,0x07,0xF0,0x3F,0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   66                  0x00,0x03,0xFC,0x07,0xE0,0x3F,0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   67                  0x00,0x03,0xFE,0x0F,0xC0,0x3F,0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   68                  0x00,0x03,0xFF,0xFF,0x80,0x7F,0x80,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   69                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   70                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   71                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   72                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   73                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   74                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   75                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   76                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   77                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   78                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   79                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   80                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   81                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   82                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   83                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   84                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   85                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   86                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   87                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   88                  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+   89          };
+   90          
+   91          /* ========= 延时20ms11.0592MHz ========= */
+   92          void delay_20m(void)            //消抖用延时
+   93          {
+   94   1              unsigned char i, j, k;
+   95   1      
+   96   1              i = 1;
+   97   1              j = 216;
+   98   1              k = 35;
+   99   1              do
+  100   1              {
+  101   2                      do
+  102   2                      {
+  103   3                              while (--k);
+  104   3                      } while (--j);
+  105   2              } while (--i);
+  106   1      }
+  107          
+  108          /* ========= 延时2s11.0592MHz ========= */
+  109          void delay_2s(void)                     //退出刷屏用延时
+  110          {
+  111   1              unsigned char i, j, k;
+  112   1      
+  113   1              i = 64;
+  114   1              j = 9;
+  115   1              k = 179;
+  116   1              do
+  117   1              {
+  118   2                      do
+  119   2                      {
+  120   3                              while (--k);
+  121   3                      } while (--j);
+  122   2              } while (--i);
+  123   1      }
+  124          
+C251 COMPILER V5.60.0,  keyboard_device                                                    27/09/22  13:55:48  PAGE 3   
+
+  125          /* ========= 键盘扫描 ========= */
+  126          uchar keyboard(void)
+  127          {       
+  128   1              uchar code keyboard_Scan[]={0xfe,0xfd,0xfb,0xf7,0xef,0xdf,0xbf,0x7f};   //键盘扫描库
+  129   1                                                                                                      //11111110,11111101,11111011,11110111,11101111,11011111,10111111,01111111
+  130   1              uchar i, j, pc, flag = 0;
+  131   1              uchar XScan=0;
+  132   1              uchar in = 0;
+  133   1              uchar test;
+  134   1              while(in == 0)
+  135   1              {
+  136   2      #ifdef KEY_X_IS_HIGH
+  137   2                      KEY_X &= 0x07;                  //清空高5位      0000 0111
+  138   2                      XScan = 0x80;                   //                       1000 0000
+  139   2              //      XScan = 0x08;
+  140   2      #endif
+  141   2      //      #ifdef KEY_X_IS_LOW
+  142   2      //                      KEY_X &= 0xe0;                  //清空低5位      1110 0000
+  143   2      //                      XScan = 0x01;                   //                       0000 0001
+  144   2      //      #endif
+  145   2                      for(i=0;i<5;i++)
+  146   2                      {
+  147   3                              KEY_X &=0x07;
+  148   3      
+  149   3                              test = XScan;
+  150   3                              test = ~test;
+  151   3      
+  152   3                              KEY_X = test & 0xf8 ;
+  153   3                              KEY_X = KEY_X | test;      //KEY_X接高八位
+  154   3      
+  155   3                              KEY_Y = 0xff;                           //置高
+  156   3                              if(0xff != (pc = KEY_Y))        //假如说有按键按下
+  157   3                              {
+  158   4                                      if(0xff != (pc = KEY_Y))        //假如说有按键按下
+  159   4                                      {
+  160   5                                              delay_20m();
+  161   5                                              for(j=0;j<8;j++)
+  162   5                                              {                                                       //将扫描值与扫描按键值比较
+  163   6                                                      if( pc == keyboard_Scan[j] )
+  164   6                                                      {
+  165   7                                                              in = j * 5 + i +1;
+  166   7                                                              flag = 1;
+  167   7                                                      }
+  168   6              
+  169   6                                                      if(flag == 1)
+  170   6                                                      {
+  171   7                                                              while( KEY_Y == keyboard_Scan[j] );             //松手检测
+  172   7                                                              delay_20m();
+  173   7                                                              break;
+  174   7                                                      }
+  175   6                                                      
+  176   6                                              }
+  177   5                                      }
+  178   4                                      if(flag == 1)
+  179   4                                              break;
+  180   4                              }
+  181   3                              XScan >>= 1;                            //左移一位
+  182   3                      }
+  183   2                      
+  184   2                      keyboard_cursor_flash();
+  185   2                      
+  186   2              }
+  187   1              time_out = 0;                           //清空计时
+  188   1              return in;
+  189   1      }
+  190          
+C251 COMPILER V5.60.0,  keyboard_device                                                    27/09/22  13:55:48  PAGE 4   
+
+  191          uchar keyboard_wake(void)
+  192          {       
+  193   1              uchar i, pc, flag = 0;
+  194   1              uchar XScan=0;
+  195   1              uchar in = 0;
+  196   1              uchar test;
+  197   1              
+  198   1      #ifdef KEY_X_IS_HIGH
+  199   1                      KEY_X &= 0x07;                  //清空高5位      0000 0111
+  200   1                      XScan = 0x80;                   //                       1000 0000
+  201   1              //      XScan = 0x08;
+  202   1      #endif
+  203   1      //      #ifdef KEY_X_IS_LOW
+  204   1      //                      KEY_X &= 0xe0;                  //清空低5位      1110 0000
+  205   1      //                      XScan = 0x01;                   //                       0000 0001
+  206   1      //      #endif
+  207   1                      for(i=0;i<5;i++)
+  208   1                      {
+  209   2                              KEY_X &=0x07;
+  210   2      
+  211   2                              test = XScan;
+  212   2                              test = ~test;
+  213   2      
+  214   2                              KEY_X = test & 0xf8 ;
+  215   2                              KEY_X = KEY_X | test;      //KEY_X接高八位
+  216   2      
+  217   2                              KEY_Y = 0xff;                           //置高
+  218   2                              if(0xff != (pc = KEY_Y))        //假如说有按键按下
+  219   2                              {
+  220   3                                      return 1;
+  221   3                              }
+  222   2                              XScan >>= 1;                            //左移一位
+  223   2                      }
+  224   1                      return 0;               
+  225   1      }
+  226          
+  227          /* ========= 光标闪烁 ========= */
+  228          void keyboard_cursor_flash(void)
+  229          {
+  230   1      
+  231   1              if(flash_count>=10)
+  232   1                      {
+  233   2                              if(gb_flag==0)
+  234   2                              {
+  235   3                                      lcd_yline(8*(count-1),16*hang+0,16*hang+15,1);
+*** WARNING C188 IN LINE 235 OF Resource\keyboard_device.c: 'parameter 1': value truncated
+*** WARNING C188 IN LINE 235 OF Resource\keyboard_device.c: 'parameter 2': value truncated
+*** WARNING C188 IN LINE 235 OF Resource\keyboard_device.c: 'parameter 3': value truncated
+  236   3                                      gb_flag=1;
+  237   3                                      }
+  238   2                              else
+  239   2                              {       
+  240   3                                      lcd_yline(8*(count-1),16*hang+0,16*hang+15,0);
+*** WARNING C188 IN LINE 240 OF Resource\keyboard_device.c: 'parameter 1': value truncated
+*** WARNING C188 IN LINE 240 OF Resource\keyboard_device.c: 'parameter 2': value truncated
+*** WARNING C188 IN LINE 240 OF Resource\keyboard_device.c: 'parameter 3': value truncated
+  241   3                                      gb_flag=0;
+  242   3                                      }
+  243   2                              flash_count=0;
+  244   2                      }
+  245   1              //键盘空闲监控
+  246   1              if(byte_read(ADD_TIMEOUT, 0)<time_out/5600)
+  247   1              {
+  248   2                      time_out = 0;
+  249   2                      mode_sleep();
+  250   2              }
+C251 COMPILER V5.60.0,  keyboard_device                                                    27/09/22  13:55:48  PAGE 5   
+
+  251   1      }
+  252          
+  253          uchar keyboard_output()
+  254          {
+  255   1              uchar result = keyboard();
+  256   1              uchar num0=0xff;                
+  257   1              switch( result )
+  258   1              {
+  259   2                      case 1:
+  260   2                              shift=~shift;
+  261   2      
+  262   2                              num0 = 0 ;
+  263   2                              break;
+  264   2                      case 4:
+  265   2                              //上翻
+  266   2                              num0 = 3 ;      
+  267   2                              break;
+  268   2                      case 6:
+  269   2                              num0 = '(';
+  270   2                              break;
+  271   2                      case 7:
+  272   2                              num0 = ')';
+  273   2                              break;
+  274   2                      case 8:
+  275   2                              //地址左移一位
+  276   2                              num0 = 5 ;
+  277   2                              break;
+  278   2                      case 9:
+  279   2                              //下翻
+  280   2                              num0 = 6 ;
+  281   2                              break; 
+  282   2                      case 10:
+  283   2                              //地址右移一位
+  284   2                              num0 = 7 ;
+  285   2                              break;
+  286   2                      case 17:
+  287   2                      //hyp?
+  288   2                              num0 = 14 ;
+  289   2                              break;
+  290   2                      //数字键
+  291   2                      case 36:
+  292   2                              num0='0';
+  293   2                              break;
+  294   2      //              case 31:
+  295   2      //                      num0='1';
+  296   2      //                      break;
+  297   2      //              case 32:
+  298   2      //                      num0='2';
+  299   2      //                      break;
+  300   2      //              case 33:
+  301   2      //                      num0='3';
+  302   2      //                      break;
+  303   2                      case 26:
+  304   2                              num0='4';
+  305   2                              break;
+  306   2                      case 27:
+  307   2                              num0='5';
+  308   2                              break;
+  309   2                      case 28:
+  310   2                              num0='6';
+  311   2                              break;
+  312   2                      case 21:
+  313   2                              num0='7';
+  314   2                              break;
+  315   2                      case 22:
+  316   2                              num0='8';
+C251 COMPILER V5.60.0,  keyboard_device                                                    27/09/22  13:55:48  PAGE 6   
+
+  317   2                              break;
+  318   2                      case 23:
+  319   2                              num0='9';
+  320   2                              break;
+  321   2                      case 37:
+  322   2                              num0='.';
+  323   2                              break;
+  324   2                      //+-x/=
+  325   2                      case 29:
+  326   2                              num0='*';
+  327   2                              break;
+  328   2                      case 30:
+  329   2                              num0='/';
+  330   2                              break;
+  331   2                      case 34:
+  332   2                              num0='+';
+  333   2                              break;
+  334   2                      case 35:
+  335   2                              num0='-';
+  336   2                              break;
+  337   2                      case 40:
+  338   2                              num0='=';
+  339   2                      //等于？
+  340   2                              break;
+  341   2                      
+  342   2                      case 24:
+  343   2                      //删掉上一位，指针指向上一位？
+  344   2                              num0 = 18 ; 
+  345   2                              break;
+  346   2                      case 25:
+  347   2                      //删掉整个字符串，指针指向该行起点？
+  348   2                              num0 = 19 ; 
+  349   2                              break;  
+  350   2                      case 38:
+  351   2                      //ans?
+  352   2                              num0 = 20 ;     
+  353   2                              break;
+  354   2                      case 39:
+  355   2                      //copy?
+  356   2                              num0 = 21 ;
+  357   2                              break;
+  358   2              }
+  359   1      
+  360   1              if(shift==0)
+  361   1              {               
+  362   2                      switch(result)
+  363   2                      {
+  364   3                              case 2:
+  365   3                                      //返回菜单？
+  366   3                                      num0 = 1;
+  367   3                                      break;
+  368   3                              case 3:
+  369   3                                      num0 = 2;
+  370   3                                      break;
+  371   3                              case 5:
+  372   3                                      //清屏，打开背光
+  373   3                                      num0 = 4;
+  374   3                                      break;
+  375   3                              case 11:
+  376   3                                      //lcd_write_str("abs(");
+  377   3                                      num0 = 8;  //绝对值
+  378   3                                      break;
+  379   3                              case 12:
+  380   3                                      //lcd_write_str("^2");
+  381   3                                      num0 = 9;  //平方
+  382   3                                      break;
+C251 COMPILER V5.60.0,  keyboard_device                                                    27/09/22  13:55:48  PAGE 7   
+
+  383   3                              case 13:
+  384   3                                      //lcd_write_str("^(");
+  385   3                                      num0 = '^';  //方
+  386   3                                      break;  
+  387   3                              case 14:
+  388   3                                      //lcd_write_str("^(-1)");
+  389   3                                      num0 = 11;  //倒数
+  390   3                                      break;
+  391   3                              case 15:
+  392   3                                      //lcd_write_str("exp(");
+  393   3                                      num0 = 12;
+  394   3                                      break;
+  395   3                              case 16:
+  396   3                                      //lcd_write_str("10^(");
+  397   3                                      num0 = 13;
+  398   3                                      break;
+  399   3                              case 18:                                
+  400   3                                      //lcd_write_str("sin(");
+  401   3                                      num0 = 15;
+  402   3                                      break;
+  403   3                              case 19:
+  404   3                                      //lcd_write_str("cos(");
+  405   3                                      num0 = 16;
+  406   3                                      break;
+  407   3                              case 20:
+  408   3                                      //lcd_write_str("tan(");
+  409   3                                      num0 = 17;
+  410   3                                      break;
+  411   3                              case 31:
+  412   3                                      //lcd_write_str("1");
+  413   3                                      num0 = '1';
+  414   3                                      break;
+  415   3                              case 32:
+  416   3                                      //lcd_write_str("2");
+  417   3                                      num0 = '2';
+  418   3                                      break;
+  419   3                              case 33:
+  420   3                                      //lcd_write_str("3");
+  421   3                                      num0 = '3';
+  422   3                                      break;
+  423   3                      }
+  424   2                      
+  425   2              }
+  426   1              else 
+  427   1              {
+  428   2                      switch(result)
+  429   2                      {
+  430   3                              case 2:
+  431   3                                      //返回设置？
+  432   3                                      num0 = 23;
+  433   3                                      break;
+  434   3                              case 3:
+  435   3                                      num0 = 'e';
+  436   3                                      break;
+  437   3                              case 5:
+  438   3                                      //清屏，关闭背光
+  439   3                                      //lcd_clear();
+  440   3                                      //关闭背光？
+  441   3                                      num0 = 24;
+  442   3                                      break;
+  443   3                              case 11:
+  444   3                                      num0 = 'i';
+  445   3                                      break;
+  446   3                              case 12:
+  447   3                                      //lcd_write_str("^(1/2)");
+  448   3                                      num0 = 25;
+C251 COMPILER V5.60.0,  keyboard_device                                                    27/09/22  13:55:48  PAGE 8   
+
+  449   3                                      break;
+  450   3                              case 13:
+  451   3                                      //lcd_write_str("^(1/");
+  452   3                                      num0 = 26;
+  453   3                                      break;  
+  454   3                              case 14:
+  455   3                                      //lcd_write_str("!");
+  456   3                                      num0 = '!';
+  457   3                                      break;
+  458   3                              case 15:
+  459   3                                      //lcd_write_str("ln(");
+  460   3                                      num0 = 27;
+  461   3                                      break;
+  462   3                              case 16:
+  463   3                                      //lcd_write_str("log(");
+  464   3                                      num0 = 28;
+  465   3                                      break;
+  466   3                              case 18:
+  467   3                                      //lcd_write_str("asin(");
+  468   3                                      num0 = 29;
+  469   3                                      break;
+  470   3                              case 19:
+  471   3                                      //lcd_write_str("acos(");
+  472   3                                      num0 = 30;
+  473   3                                      break;
+  474   3                              case 20:
+  475   3                                      //lcd_write_str("atan(");
+  476   3                                      num0 = 31;
+  477   3                                      break;
+  478   3                              case 31:
+  479   3                                      //lcd_write_str("x");
+  480   3                                      num0 = 'x';
+  481   3                                      break;
+  482   3                              case 32:
+  483   3                                      //lcd_write_str("y");
+  484   3                                      num0 = 'y';
+  485   3                                      break;
+  486   3                              case 33:
+  487   3                                      //lcd_write_str("z");
+  488   3                                      num0 = 'z';
+  489   3                                      break;
+  490   3                              case 37:
+  491   3                                      num0 = 32;
+  492   3                                      break;
+  493   3                      }
+  494   2              }
+  495   1              if(result != 1)
+  496   1                      shift=0;
+  497   1                      
+  498   1              if(shift == 0)
+  499   1                      bl_bright_change(byte_read(ADD_BRIGHT, 0));     //还原亮度设定
+  500   1              else
+  501   1                      bl_bright_change(byte_read(ADD_SHIFTSIGN, 0));  //shift亮度设定 
+  502   1      
+  503   1              /////////////////////////////////////////////////////////////////////
+  504   1              /////////////////////////////////////////////////////////////////////
+  505   1              /////////////////////////////////////////////////////////////////////////
+  506   1              if(num0==24)                              //on和off
+  507   1              {
+  508   2                      TR0=0;
+  509   2                      lcd_clear();
+  510   2                      lcd_write_pic(0, 0, welcome_pic, 128, 64);              /*波音会徽*/
+  511   2      
+  512   2                      lcd_set_pos(1, 4);
+  513   2                      lcd_write_str("计算器");                /*计算器*/
+  514   2              
+C251 COMPILER V5.60.0,  keyboard_device                                                    27/09/22  13:55:48  PAGE 9   
+
+  515   2                      lcd_set_pos(2, 4);
+  516   2                      lcd_write_str("开心波音");              /*开心波音*/
+  517   2              
+  518   2                      delay_2s();
+  519   2                      lcd_clear();
+  520   2                      lcd_clear_pic();                /*清屏*/
+  521   2                      bl_bright_change(0);    //关灯
+  522   2                      while(num0!=4)
+  523   2              {
+  524   3                              num0 = keyboard_output(); 
+*** WARNING C190 IN LINE 524 OF Resource\keyboard_device.c: 'keyboard_output': recursive call to non-reentrant function
+  525   3              }            
+  526   2                              bl_bright_change(byte_read(ADD_BRIGHT, 0));     //还原亮度设定
+  527   2                      
+  528   2                      reset();                        //复位
+  529   2              }
+  530   1              /////////////////////////////////////////////////////////////////////////
+  531   1      //      else if(num0==23)                              //set
+  532   1      //      {
+  533   1      //              byte_write(ADD_PROG_STATUS, SET ,0);            //写入设置
+  534   1      //              reset();                        //复位
+  535   1      //      }
+  536   1      //                              
+  537   1      //      ////////////////////////////////////////////////////////////////////////
+  538   1      //      else if(num0==1)                              //mode
+  539   1      //      {
+  540   1      //              byte_write(ADD_PROG_STATUS, MODE ,0);           //写入菜单
+  541   1      //              reset();                        //复位
+  542   1      //      }
+  543   1              /////////////////////////////////////////////////////////////////////
+  544   1              /////////////////////////////////////////////////////////////////////
+  545   1              /////////////////////////////////////////////////////////////////////
+  546   1              return num0;
+  547   1      }
+  548          
+  549          void about()
+  550          {
+  551   1                      TR0=0;
+  552   1                      lcd_clear();
+  553   1                      lcd_write_pic(0, 0, welcome_pic, 128, 64);              /*波音会徽*/
+  554   1      
+  555   1                      lcd_set_pos(1, 4);
+  556   1                      lcd_write_str("计算器");                /*计算器*/
+  557   1              
+  558   1                      lcd_set_pos(2, 4);
+  559   1                      lcd_write_str("开心波音");              /*开心波音*/
+  560   1                      while(keyboard_wake());
+  561   1      }
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =      1032     ------
+  ecode size           =      1434     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =         1          3
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+C251 COMPILER V5.60.0,  keyboard_device                                                    27/09/22  13:55:48  PAGE 10  
+
+  hconst size          =        29     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  7 WARNING(S),  0 ERROR(S)

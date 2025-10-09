@@ -1,0 +1,106 @@
+C251 COMPILER V5.60.0,  eeprom                                                             22/03/23  11:38:00  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE eeprom
+OBJECT MODULE PLACED IN .\obj\eeprom.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE ware\eeprom.c XSMALL INTR2 BROWSE INCDIR(.\Resource;.\ware;.\src;.\mid
+                    -dle;.\user) DEBUG PRINT(.\obj\eeprom.lst) OBJECT(.\obj\eeprom.obj) 
+
+stmt  level    source
+
+    1          #include "eeprom.h"
+    2          
+    3          
+    4          void IapIdle()
+    5          {
+    6   1          IAP_CONTR = 0; //关闭 IAP 功能
+    7   1          IAP_CMD = 0; //清除命令寄存器
+    8   1          IAP_TRIG = 0; //清除触发寄存器
+    9   1          IAP_ADDRE = 0x00;
+   10   1          IAP_ADDRH = 0x00;
+   11   1          IAP_ADDRL = 0x00; 
+   12   1      }
+   13          char IapRead(unsigned long addr)
+   14          {
+   15   1          char dat;
+   16   1          IAP_CONTR = 0x80; //使能 IAP
+   17   1          IAP_TPS = 12; //设置等待参数 12MHz
+   18   1          IAP_CMD = 1; //设置 IAP 读命令
+   19   1          IAP_ADDRL = addr; //设置 IAP 低地址
+   20   1          IAP_ADDRH = addr >> 8; //设置 IAP 高地址
+   21   1          IAP_ADDRE = addr >> 16; //设置 IAP 最高地址
+   22   1          IAP_TRIG = 0x5a; //写触发命令(0x5a)
+   23   1          IAP_TRIG = 0xa5; //写触发命令(0xa5)
+   24   1          _nop_();
+   25   1          _nop_();
+   26   1          _nop_();
+   27   1          _nop_();
+   28   1          dat = IAP_DATA; //读 IAP 数据
+   29   1          IapIdle(); //关闭 IAP 功能
+   30   1          return dat;
+   31   1      }
+   32          void IapProgram(unsigned long addr, char dat)
+   33          {
+   34   1          IAP_CONTR = 0x80; //使能 IAP
+   35   1          IAP_TPS = 12; //设置等待参数 12MHz
+   36   1          IAP_CMD = 2; //设置 IAP 写命令
+   37   1          IAP_ADDRL = addr; //设置 IAP 低地址
+   38   1          IAP_ADDRH = addr >> 8; //设置 IAP 高地址
+   39   1          IAP_ADDRE = addr >> 16; //设置 IAP 最高地址
+   40   1          IAP_DATA = dat; //写 IAP 数据
+   41   1          IAP_TRIG = 0x5a; //写触发命令(0x5a)
+   42   1          IAP_TRIG = 0xa5; //写触发命令(0xa5)
+   43   1          _nop_();
+   44   1          _nop_();
+   45   1          _nop_();
+   46   1          _nop_();
+   47   1          IapIdle(); //关闭 IAP 功能
+   48   1      }
+   49          void IapErase(unsigned long addr)
+   50          {
+   51   1          IAP_CONTR = 0x80; //使能 IAP
+   52   1          IAP_TPS = 12; //设置等待参数 12MHz
+   53   1          IAP_CMD = 3; //设置 IAP 擦除命令
+   54   1          IAP_ADDRL = addr; //设置 IAP 低地址
+   55   1          IAP_ADDRH = addr >> 8; //设置 IAP 高地址
+   56   1          IAP_ADDRE = addr >> 16; //设置 IAP 最高地址
+   57   1          IAP_TRIG = 0x5a; //写触发命令(0x5a)
+   58   1          IAP_TRIG = 0xa5; //写触发命令(0xa5)
+C251 COMPILER V5.60.0,  eeprom                                                             22/03/23  11:38:00  PAGE 2   
+
+   59   1          _nop_();
+   60   1          _nop_();
+   61   1          _nop_();
+   62   1          _nop_(); //
+   63   1          IapIdle(); //关闭 IAP 功能
+   64   1      }
+   65          
+   66          
+   67          //IapErase(0x0400);
+   68          //P0 = IapRead(0x0400); //P0=0xff
+   69          //IapProgram(0x0400, 0x12);
+   70          //P1 = IapRead(0x0400); //P1=0x12
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =       141     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------     ------
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =    ------     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

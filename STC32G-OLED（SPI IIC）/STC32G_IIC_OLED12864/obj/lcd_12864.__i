@@ -1,0 +1,1 @@
+"Resource\lcd_12864.c" XSMALL INTR2 BROWSE INCDIR(.\Resource) DEBUG PRINT(.\obj\lcd_12864.lst) TABS (2) OBJECT(.\obj\lcd_12864.obj)

@@ -1,0 +1,1 @@
+"user\nor_cal.c" XSMALL INTR2 BROWSE INCDIR(.\Resource;.\ware;.\src;.\middle;.\user) DEBUG PRINT(.\obj\nor_cal.lst) OBJECT(.\obj\nor_cal.obj)

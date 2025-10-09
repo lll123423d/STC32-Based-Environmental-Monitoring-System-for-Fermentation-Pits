@@ -1,0 +1,1 @@
+"Resource\solve_definite_intergral.c" XSMALL ROM(HUGE) BROWSE INCDIR(.\Resource;.\ware;.\src;.\middle) DEBUG PRINT(.\obj\solve_definite_intergral.lst) OBJECT(.\obj\solve_definite_intergral.obj)

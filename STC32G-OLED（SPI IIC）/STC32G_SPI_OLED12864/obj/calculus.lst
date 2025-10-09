@@ -1,0 +1,507 @@
+C251 COMPILER V5.60.0,  calculus                                                           22/03/23  11:38:02  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE calculus
+OBJECT MODULE PLACED IN .\obj\calculus.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE user\calculus.c XSMALL INTR2 BROWSE INCDIR(.\Resource;.\ware;.\src;.\m
+                    -iddle;.\user) DEBUG PRINT(.\obj\calculus.lst) OBJECT(.\obj\calculus.obj) 
+
+stmt  level    source
+
+    1          #include "calculus.h"
+    2          #include "string.h"
+    3          #include "keyboard.h"
+    4          #include "fun.h"
+    5          #include "menu.h"
+    6          #include "stdlib.h"
+    7          
+    8          uchar hanshu_buff[26]="x^2";//用来存函数表达式 
+    9          double hanshu_a = 1;
+   10          double hanshu_b = 2;
+   11          double hanshu_h = 0.2;
+   12          double hanshu_y = 2;
+   13          
+   14          void calculus_funcWR(u8 keynum)
+   15          {
+   16   1          #define IBlength 26
+   17   1          static u8 addr=0;
+   18   1          u8 result;
+   19   1          static u8 shift_flag;
+   20   1              static char input_buf[IBlength]={"    "};     //输入缓存   
+   21   1          
+   22   1          switch( state )
+   23   1          {
+   24   2              case 0://初始化
+   25   2      //            memset(input_buf,'\0',IBlength);
+   26   2                  Screen_Clear();
+   27   2                  Screen_ShowStr(0,(u8)(0),"右边的函数\xfd是");
+   28   2                  Screen_ShowStr(0,(u8)(2),input_buf);
+   29   2                  Screen_ShowFreshen();
+   30   2                  memset(input_buf,'\0',IBlength);
+   31   2                  addr = 0;
+   32   2                  state++;
+   33   2                  break;
+   34   2           
+   35   2              case 1://等待输入
+   36   2                  Cursor_Blink((u8)(addr*8),4,50); 
+   37   2                  if( keynum>0 )
+   38   2                  {
+   39   3                      if( keynum == 8 )       //左移
+   40   3                      {
+   41   4                          if(addr>=1)
+   42   4                              addr-=1;
+   43   4                      }
+   44   3                      else if( keynum == 10 )     //右移
+   45   3                      {
+   46   4                          if( input_buf[addr]!=0 )
+   47   4                              addr+=1;
+   48   4                      } 
+   49   3                      else if( keynum == 21 )     //清除
+   50   3                      {
+   51   4                          Screen_Clear();     //后期换成清楚最后一位的函数
+   52   4                          String_Delete(&input_buf,IBlength,addr);
+*** WARNING C98 IN LINE 52 OF user\calculus.c: parameter 1: pointer to different objects
+*** WARNING C91 IN LINE 52 OF user\calculus.c: '&': pointer to different objects
+   53   4                          if( addr>0 )
+   54   4                              addr--;
+   55   4                      }                 
+   56   3                      else if( keynum == 22 )     //清屏
+C251 COMPILER V5.60.0,  calculus                                                           22/03/23  11:38:02  PAGE 2   
+
+   57   3                      {
+   58   4                          memset(input_buf,'\0',IBlength);                   
+   59   4                          Screen_Clear();
+   60   4                          addr=0;
+   61   4                      }   
+   62   3                      else if( keynum == 17 )
+   63   3                      {                  
+   64   4                          Screen_Clear();
+   65   4                          Screen_ShowStr(0,(u8)(0),"1.sinh");
+   66   4                          Screen_ShowStr(0,(u8)(2),"2.cosh");
+   67   4                          Screen_ShowStr(0,(u8)(4),"3.tanh");
+   68   4                          state = 5;
+   69   4                      }                   
+   70   3                      else if( keynum == '=' )        //结束函数输入
+   71   3                      {
+   72   4                        //  hanshu_buff = 
+   73   4                          addr = String_length(input_buf);
+   74   4                          input_buf[addr]='\0';
+   75   4                          P_Index.Menu_KeyFunc=0;                    
+   76   4                          Screen_Clear();
+   77   4                          strcpy(hanshu_buff,input_buf);
+   78   4      
+   79   4                      }    
+   80   3                      else if( keynum == 1 )        //其它功能
+   81   3                      {
+   82   4                          shift_flag = !shift_flag;
+   83   4                      }                  
+   84   3                      else
+   85   3                      {
+   86   4                          if( shift_flag )
+   87   4                          {
+   88   5                              keynum += 0x80;
+   89   5                              shift_flag = 0;
+   90   5                          }
+   91   4                          result=String_Insert(&input_buf,IBlength,addr,keynum);
+*** WARNING C98 IN LINE 91 OF user\calculus.c: parameter 1: pointer to different objects
+*** WARNING C91 IN LINE 91 OF user\calculus.c: '&': pointer to different objects
+   92   4                          if( result!=0xff )
+   93   4                          {
+   94   5                              addr += result;
+   95   5                          }                    
+   96   4                      } 
+   97   3                      if( state==1 )
+   98   3                          Screen_ShowStr(0,(u8)(4),&input_buf);
+*** WARNING C98 IN LINE 98 OF user\calculus.c: parameter 3: pointer to different objects
+*** WARNING C91 IN LINE 98 OF user\calculus.c: '&': pointer to different objects
+   99   3                      Screen_ShowFreshen();
+  100   3                      keynum = 0;
+  101   3                  }
+  102   2                  
+  103   2                  break;
+  104   2      
+  105   2      
+  106   2              case 5://特殊功能輸入
+  107   2                  if( keynum>0 )
+  108   2                  {
+  109   3                      if(( keynum=='1' )||( keynum=='2' )||( keynum=='3' ))
+  110   3                      {
+  111   4                          addr +=String_Insert(&input_buf,IBlength,addr,120+keynum-'1');  
+*** WARNING C98 IN LINE 111 OF user\calculus.c: parameter 1: pointer to different objects
+*** WARNING C91 IN LINE 111 OF user\calculus.c: '&': pointer to different objects
+*** WARNING C188 IN LINE 111 OF user\calculus.c: 'parameter 4': value truncated
+  112   4                          state=1;
+  113   4                          Screen_Clear();
+  114   4                          Screen_ShowStr(0,(u8)(4),&input_buf);
+*** WARNING C98 IN LINE 114 OF user\calculus.c: parameter 3: pointer to different objects
+C251 COMPILER V5.60.0,  calculus                                                           22/03/23  11:38:02  PAGE 3   
+
+*** WARNING C91 IN LINE 114 OF user\calculus.c: '&': pointer to different objects
+  115   4                          Screen_ShowFreshen();
+  116   4                      }     
+  117   3                  }                
+  118   2                  break;
+  119   2              
+  120   2          }
+  121   1      }
+  122          
+  123          void calculus_funcWRa(u8 keynum)
+  124          {
+  125   1          #define IBlength 26
+  126   1          static u8 addr=0;
+  127   1              static char input_buf[IBlength]={"    "};     //输入缓存   
+  128   1          
+  129   1          switch( state )
+  130   1          {
+  131   2              case 0://初始化
+  132   2                  Screen_Clear();
+  133   2                  Screen_ShowStr(0,(u8)(0),"a =");
+  134   2                  Screen_ShowNum(0,2,hanshu_a);
+  135   2                  Screen_ShowFreshen();
+  136   2                  memset(input_buf,'\0',IBlength);
+  137   2                  addr = 0;
+  138   2                  state++;
+  139   2                  break;
+  140   2           
+  141   2              case 1://等待输入
+  142   2                  Cursor_Blink((u8)(addr*8),4,50); 
+  143   2                  if( keynum>0 )
+  144   2                  {
+  145   3                      if( keynum == 8 )       //左移
+  146   3                      {
+  147   4                          if(addr>=1)
+  148   4                              addr-=1;
+  149   4                      }
+  150   3                      else if( keynum == 10 )     //右移
+  151   3                      {
+  152   4                          if( input_buf[addr]!=0 )
+  153   4                              addr+=1;
+  154   4                      }  
+  155   3                      else if((( keynum>='0' )&&(keynum<='9'))||( keynum=='.' )||( keynum=='-' ))
+  156   3                      {
+  157   4                          input_buf[addr]=keynum;
+  158   4                          addr++;
+  159   4                      }
+  160   3                      else if( keynum==21 )
+  161   3                      {
+  162   4                          addr--;
+  163   4                          input_buf[addr]=' '; 
+  164   4                      } 
+  165   3                      else if( keynum=='=' )
+  166   3                      {
+  167   4                          hanshu_a= atof(input_buf);
+  168   4                          P_Index.Menu_KeyFunc=0;   
+  169   4                      }
+  170   3                      if( state==1 )
+  171   3                          Screen_ShowStr(0,(u8)(4),&input_buf);
+*** WARNING C98 IN LINE 171 OF user\calculus.c: parameter 3: pointer to different objects
+*** WARNING C91 IN LINE 171 OF user\calculus.c: '&': pointer to different objects
+  172   3      
+  173   3                      Screen_ShowFreshen();
+  174   3                      keynum = 0;
+  175   3                  }
+  176   2                  
+  177   2                  break;
+C251 COMPILER V5.60.0,  calculus                                                           22/03/23  11:38:02  PAGE 4   
+
+  178   2          }
+  179   1      }
+  180          
+  181          void calculus_funcWRb(u8 keynum)
+  182          {
+  183   1          #define IBlength 26
+  184   1          static u8 addr=0;
+  185   1              static char input_buf[IBlength]={"    "};     //输入缓存   
+  186   1          
+  187   1          switch( state )
+  188   1          {
+  189   2              case 0://初始化
+  190   2                  Screen_Clear();
+  191   2                  Screen_ShowStr(0,(u8)(0),"b =");
+  192   2                  Screen_ShowNum(0,2,hanshu_b);
+  193   2                  Screen_ShowFreshen();
+  194   2                  memset(input_buf,'\0',IBlength);
+  195   2                  addr = 0;
+  196   2                  state++;
+  197   2                  break;
+  198   2           
+  199   2              case 1://等待输入
+  200   2                  Cursor_Blink((u8)(addr*8),4,50); 
+  201   2                  if( keynum>0 )
+  202   2                  {
+  203   3                      if( keynum == 8 )       //左移
+  204   3                      {
+  205   4                          if(addr>=1)
+  206   4                              addr-=1;
+  207   4                      }
+  208   3                      else if( keynum == 10 )     //右移
+  209   3                      {
+  210   4                          if( input_buf[addr]!=0 )
+  211   4                              addr+=1;
+  212   4                      }  
+  213   3                      else if((( keynum>='0' )&&(keynum<='9'))||( keynum=='.' )||( keynum=='-' ))
+  214   3                      {
+  215   4                          input_buf[addr]=keynum;
+  216   4                          addr++;
+  217   4                      }
+  218   3                      else if( keynum==21 )
+  219   3                      {
+  220   4                          addr--;
+  221   4                          input_buf[addr]=' '; 
+  222   4                      } 
+  223   3                      else if( keynum=='=' )
+  224   3                      {
+  225   4                          hanshu_b= atof(input_buf);
+  226   4                          P_Index.Menu_KeyFunc=0;   
+  227   4                      }
+  228   3                      if( state==1 )
+  229   3                          Screen_ShowStr(0,(u8)(4),&input_buf);
+*** WARNING C98 IN LINE 229 OF user\calculus.c: parameter 3: pointer to different objects
+*** WARNING C91 IN LINE 229 OF user\calculus.c: '&': pointer to different objects
+  230   3      
+  231   3                      Screen_ShowFreshen();
+  232   3                      keynum = 0;
+  233   3                  }
+  234   2                  
+  235   2                  break;
+  236   2          }
+  237   1      }
+  238          void calculus_funcWRh(u8 keynum)
+  239          {
+  240   1          #define IBlength 26
+  241   1          static u8 addr=0;
+C251 COMPILER V5.60.0,  calculus                                                           22/03/23  11:38:02  PAGE 5   
+
+  242   1              static char input_buf[IBlength]={"    "};     //输入缓存   
+  243   1          
+  244   1          switch( state )
+  245   1          {
+  246   2              case 0://初始化
+  247   2                  Screen_Clear();
+  248   2                  Screen_ShowStr(0,(u8)(0),"h =");
+  249   2                  Screen_ShowNum(0,2,hanshu_h);
+  250   2                  Screen_ShowFreshen();
+  251   2                  memset(input_buf,'\0',IBlength);
+  252   2                  addr = 0;
+  253   2                  state++;
+  254   2                  break;
+  255   2           
+  256   2              case 1://等待输入
+  257   2                  Cursor_Blink((u8)(addr*8),4,50); 
+  258   2                  if( keynum>0 )
+  259   2                  {
+  260   3                      if( keynum == 8 )       //左移
+  261   3                      {
+  262   4                          if(addr>=1)
+  263   4                              addr-=1;
+  264   4                      }
+  265   3                      else if( keynum == 10 )     //右移
+  266   3                      {
+  267   4                          if( input_buf[addr]!=0 )
+  268   4                              addr+=1;
+  269   4                      }  
+  270   3                      else if((( keynum>='0' )&&(keynum<='9'))||( keynum=='.' )||( keynum=='-' ))
+  271   3                      {
+  272   4                          input_buf[addr]=keynum;
+  273   4                          addr++;
+  274   4                      }
+  275   3                      else if( keynum==21 )
+  276   3                      {
+  277   4                          addr--;
+  278   4                          input_buf[addr]=' '; 
+  279   4                      } 
+  280   3                      else if( keynum=='=' )
+  281   3                      {
+  282   4                          hanshu_h= atof(input_buf);
+  283   4                          P_Index.Menu_KeyFunc=0;   
+  284   4                      }
+  285   3                      if( state==1 )
+  286   3                          Screen_ShowStr(0,(u8)(4),&input_buf);
+*** WARNING C98 IN LINE 286 OF user\calculus.c: parameter 3: pointer to different objects
+*** WARNING C91 IN LINE 286 OF user\calculus.c: '&': pointer to different objects
+  287   3      
+  288   3                      Screen_ShowFreshen();
+  289   3                      keynum = 0;
+  290   3                  }
+  291   2                  
+  292   2                  break;
+  293   2          }
+  294   1      }
+  295          
+  296          void calculus_funcWRy(u8 keynum)
+  297          {
+  298   1          #define IBlength 26
+  299   1          static u8 addr=0;
+  300   1              static char input_buf[IBlength]={"    "};     //输入缓存   
+  301   1          
+  302   1          switch( state )
+  303   1          {
+  304   2              case 0://初始化
+  305   2                  Screen_Clear();
+C251 COMPILER V5.60.0,  calculus                                                           22/03/23  11:38:02  PAGE 6   
+
+  306   2                  Screen_ShowStr(0,(u8)(0),"右端点y的值=");
+  307   2                  Screen_ShowNum(0,2,hanshu_y);
+  308   2                  Screen_ShowFreshen();
+  309   2                  memset(input_buf,'\0',IBlength);
+  310   2                  addr = 0;
+  311   2                  state++;
+  312   2                  break;
+  313   2           
+  314   2              case 1://等待输入
+  315   2                  Cursor_Blink((u8)(addr*8),4,50); 
+  316   2                  if( keynum>0 )
+  317   2                  {
+  318   3                      if( keynum == 8 )       //左移
+  319   3                      {
+  320   4                          if(addr>=1)
+  321   4                              addr-=1;
+  322   4                      }
+  323   3                      else if( keynum == 10 )     //右移
+  324   3                      {
+  325   4                          if( input_buf[addr]!=0 )
+  326   4                              addr+=1;
+  327   4                      }  
+  328   3                      else if((( keynum>='0' )&&(keynum<='9'))||( keynum=='.' )||( keynum=='-' ))
+  329   3                      {
+  330   4                          input_buf[addr]=keynum;
+  331   4                          addr++;
+  332   4                      }
+  333   3                      else if( keynum==21 )
+  334   3                      {
+  335   4                          addr--;
+  336   4                          input_buf[addr]=' '; 
+  337   4                      } 
+  338   3                      else if( keynum=='=' )
+  339   3                      {
+  340   4                          hanshu_y= atof(input_buf);
+  341   4                          P_Index.Menu_KeyFunc=0;   
+  342   4                      }
+  343   3                      if( state==1 )
+  344   3                          Screen_ShowStr(0,(u8)(4),&input_buf);
+*** WARNING C98 IN LINE 344 OF user\calculus.c: parameter 3: pointer to different objects
+*** WARNING C91 IN LINE 344 OF user\calculus.c: '&': pointer to different objects
+  345   3      
+  346   3                      Screen_ShowFreshen();
+  347   3                      keynum = 0;
+  348   3                  }
+  349   2                  
+  350   2                  break;
+  351   2          }
+  352   1      }
+  353          
+  354          
+  355          
+  356          void calculus_funcShow(u8 keynum)
+  357          {
+  358   1          static int n=0;
+  359   1          u8 i= 0;
+  360   1          char dat[16];
+  361   1          static u8 addr_str=0;
+  362   1          double x_array[10];//微分方程的解的列表 
+  363   1              double y_array[10];
+  364   1          double temp_0  =0;//临时值 
+  365   1          double temp_1  =0;
+  366   1          
+  367   1          switch( state )
+  368   1          {
+  369   2              case 0://初始化
+C251 COMPILER V5.60.0,  calculus                                                           22/03/23  11:38:02  PAGE 7   
+
+  370   2                  Screen_Clear();
+  371   2                  addr_str = 0;
+  372   2                  n = (int)(hanshu_b-hanshu_a)/hanshu_h;
+  373   2              
+  374   2                  if( hanshu_a>hanshu_b )
+  375   2                      Screen_ShowStr(0,(u8)(0),"a>b,wrong");
+  376   2                  else if( hanshu_h<0 )
+  377   2                      Screen_ShowStr(0,(u8)(0),"h<0,wrong");            
+  378   2                  else if( n<0 )
+  379   2                  {
+  380   3                      Screen_ShowStr(0,(u8)(0),"请尝试缩小(b-a)");  
+  381   3                      Screen_ShowStr(0,(u8)(2),"或者增大h");
+  382   3                  }                
+  383   2                  else
+  384   2                  {
+  385   3                      x_array[0]=hanshu_a;
+  386   3                      y_array[0]=hanshu_y;        
+  387   3                      for(i=0;i<n+1;i++)
+  388   3                      {
+  389   4                      
+  390   4                          x_array[i+1]=x_array[i]+hanshu_h;
+  391   4                          
+  392   4                      //  uchar alg_calc_expression(char *pExpression, double *pRealResult, double *pImaginaryR
+             -esult);
+  393   4                      //  y[i+1]=y[i]+h * g(x[i],y[i]);
+  394   4                          x=x_array[i];
+  395   4                          y=y_array[i];
+  396   4                          alg_calc_expression(hanshu_buff, &temp_0, 0);
+  397   4                          y_array[i+1]=y_array[i] + hanshu_h * temp_0;
+  398   4                      //  y[i+1]=y[i]+h/2*( g( x[i],y[i] ) + g( x[i+1],y[i+1] ) );
+  399   4                          x=x_array[i+1];
+  400   4                          y=y_array[i+1];
+  401   4                          alg_calc_expression(hanshu_buff, &temp_1, 0);
+  402   4                          y_array[i+1]=y_array[i]+hanshu_h/2*( temp_0+ temp_1 );
+  403   4                      }
+  404   3                      i=0;                
+  405   3                  }
+  406   2                  Screen_ShowFreshen();
+  407   2      
+  408   2                  state++;
+  409   2                  keynum = 4;
+  410   2                  //break;
+  411   2           
+  412   2              case 1://等待输入
+  413   2                  if( keynum>0 )
+  414   2                  {
+  415   3                      if(( keynum==4 )&&( addr_str>0 ))
+  416   3                      {
+  417   4                          addr_str--;
+  418   4                            
+  419   4                      }
+  420   3                      else if(( keynum==9 )&&( addr_str<n))
+  421   3                      {
+  422   4                          addr_str++;
+  423   4      
+  424   4                      }  
+  425   3                      //P_Index.Menu_KeyFunc=0;   
+  426   3                      Screen_Clear();
+  427   3                      sprintf(dat,"x[%d]=",addr_str);
+  428   3                      Screen_ShowStr(0,(u8)(0),dat);
+  429   3                      Screen_ShowNum(0,2,x_array[addr_str]);
+  430   3                      sprintf(dat,"y[%d]=",addr_str);
+  431   3                      Screen_ShowStr(0,(u8)(4),dat);
+  432   3                      Screen_ShowNum(0,6,y_array[addr_str]);                
+  433   3                      keynum = 0;
+  434   3                      Screen_ShowFreshen();
+C251 COMPILER V5.60.0,  calculus                                                           22/03/23  11:38:02  PAGE 8   
+
+  435   3                  }
+  436   2                  
+  437   2                  break;
+  438   2          }
+  439   1      }
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =      2084     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =       181        104
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =       367     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  19 WARNING(S),  0 ERROR(S)

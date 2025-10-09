@@ -1,0 +1,1 @@
+"user\set.c" XSMALL INTR2 BROWSE INCDIR(.\Resource;.\ware;.\src;.\middle;.\user) DEBUG PRINT(.\obj\set.lst) OBJECT(.\obj\set.obj)

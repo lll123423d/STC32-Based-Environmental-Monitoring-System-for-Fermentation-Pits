@@ -1,0 +1,98 @@
+L251 LINKER/LOCATER V4.66.93.0                                                          10/07/2025  00:40:21  PAGE 1
+
+
+L251 LINKER/LOCATER V4.66.93.0, INVOKED BY:
+C:\KEIL_V5\C251\BIN\L251.EXE .\Objects\test.obj TO .\Objects\project PRINT (.\Listings\project.map) CASE CLASSES (EDATA 
+>> (0X0-0XFFF), HDATA (0X0-0XFFF))
+
+
+CPU MODE:     251 SOURCE MODE
+MEMORY MODEL: TINY
+
+
+INPUT MODULES INCLUDED:
+  .\Objects\test.obj (test)
+         COMMENT TYPE 0: C251 V5.60.0
+  C:\KEIL_V5\C251\LIB\C2ST.LIB (?C_START)
+         COMMENT TYPE 0: A251 V4.69.6.0
+
+
+ACTIVE MEMORY CLASSES OF MODULE:  .\Objects\project (test)
+
+BASE        START       END         USED      MEMORY CLASS
+==========================================================
+000000H     000000H     000FFFH     000100H   EDATA
+000000H     000000H     000FFFH               HDATA
+FF0000H     FF0000H     FFFFFFH     00001BH   CODE
+000000H     FF0000H     FFFFFFH     000002H   HCONST
+000000H     000000H     00007FH     000008H   DATA
+
+
+MEMORY MAP OF MODULE:  .\Objects\project (test)
+
+
+START     STOP      LENGTH    ALIGN  RELOC    MEMORY CLASS   SEGMENT NAME
+=========================================================================
+000000H   000007H   000008H   ---    AT..     DATA           "REG BANK 0"
+000008H   000107H   000100H   BYTE   UNIT     EDATA          ?STACK
+000108H   FEFFFFH   FEFEF8H   ---    ---      **GAP**
+FF0000H   FF0002H   000003H   ---    OFFS..   CODE           ?CO?start251?4
+FF0003H   FF0015H   000013H   BYTE   UNIT     CODE           ?C_C51STARTUP
+FF0016H   FF0018H   000003H   BYTE   UNIT     CODE           ?C_C51STARTUP?3
+FF0019H   FF001AH   000002H   BYTE   INSEG    CODE           ?PR?MAIN?TEST
+FF001BH   FF001CH   000002H   BYTE   UNIT     HCONST         ?HC?TEST
+
+
+
+OVERLAY MAP OF MODULE:   .\Objects\project (test)
+
+
+FUNCTION/MODULE              BIT_GROUP   DATA_GROUP 
+--> CALLED FUNCTION/MODULE  START  STOP  START  STOP
+====================================================
+?C_C51STARTUP               ----- -----  ----- -----
+
+*** NEW ROOT **************
+
+?C_C51STARTUP?3             ----- -----  ----- -----
+  +--> main/test
+
+main/test                   ----- -----  ----- -----
+
+
+
+PUBLIC SYMBOLS OF MODULE:  .\Objects\project (test)
+
+
+      VALUE       CLASS    TYPE      PUBLIC SYMBOL NAME
+      =================================================
+      000000FFH   NUMBER   ---       ?C?CODESEG
+L251 LINKER/LOCATER V4.66.93.0                                                        10/07/2025  00:40:21  PAGE 2
+
+
+      00FF0000H   CODE     ---       ?C?STARTUP
+      00000001H   NUMBER   ---       ?C?XDATASEG
+      00FF0000H   CODE     ---       ?C_STARTUP
+      00FF001BH   HCONST   ---       aa
+      00FF0019H   CODE     ---       main
+
+
+
+SYMBOL TABLE OF MODULE:  .\Objects\project (test)
+
+      VALUE       REP       CLASS    TYPE      SYMBOL NAME
+      ====================================================
+      ---         MODULE    ---      ---       test
+      00FF0019H   PUBLIC    CODE     ---       main
+      00FF001BH   PUBLIC    HCONST   ---       aa
+
+      00FF0019H   BLOCK     CODE     ---       LVL=0
+      00FF0019H   LINE      CODE     ---       #3
+      ---         BLOCKEND  ---      ---       LVL=0
+
+      ---         MODULE    ---      ---       ?C_START
+      00FF0000H   PUBLIC    CODE     ---       ?C?STARTUP
+      00FF0000H   PUBLIC    CODE     ---       ?C_STARTUP
+
+Program Size: data=8.0 edata+hdata=256 xdata=0 const=2 code=27
+L251 RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)

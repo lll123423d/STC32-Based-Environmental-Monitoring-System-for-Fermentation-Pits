@@ -1,0 +1,54 @@
+C251 COMPILER V5.60.0,  SPI                                                                28/09/25  18:56:54  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE SPI
+OBJECT MODULE PLACED IN .\Objects\SPI.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE sys\SPI.c XSMALL BROWSE INCDIR(.\sys;.\sys;.\Usr;.\Hardware) DEBUG PRI
+                    -NT(.\Listings\SPI.lst) OBJECT(.\Objects\SPI.obj) 
+
+stmt  level    source
+
+    1          #include "SPI.h"
+    2          
+    3          void SPI_Init(void)                             //初始化
+    4          {
+    5   1              P_SW1 = (P_SW1 & ~(3<<2)) | (1<<2);     //IO口切换. 0: P1.2/P5.4 P1.3 P1.4 P1.5, 1: P2.2 P2.3 P2.4 P2.5,
+             - 2: P5.4 P4.0 P4.1 P4.3, 3: P3.5 P3.4 P3.3 P3.2
+    6   1              SPCTL = 0X90;           //模式配置 ssig==1 忽略SS
+    7   1              SPCTL |= 0X40;
+    8   1              SPI_SCK = 0;                    //引脚初始化
+    9   1              SPI_MOSI=1;
+   10   1              SPSTAT = 0xC0;  // 写1清除SPIF和WCOL标志位
+   11   1      }
+   12          
+   13          void SPI_WriteByte(unsigned char dat)           //写入一个字节
+   14                  {
+   15   1                      SPDAT = dat;
+   16   1                      while(SPIF == 0);
+   17   1                      SPSTAT = 0xC0;  // 写1清除SPIF和WCOL标志位
+   18   1              }
+   19          
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =        36     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------     ------
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =    ------     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

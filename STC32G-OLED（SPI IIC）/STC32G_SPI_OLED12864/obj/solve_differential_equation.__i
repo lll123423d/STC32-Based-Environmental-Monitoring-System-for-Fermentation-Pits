@@ -1,0 +1,1 @@
+"Resource\solve_differential_equation.c" XSMALL ROM(HUGE) BROWSE INCDIR(.\Resource;.\ware;.\src;.\middle) DEBUG PRINT(.\obj\solve_differential_equation.lst) OBJECT(.\obj\solve_differential_equation.obj)

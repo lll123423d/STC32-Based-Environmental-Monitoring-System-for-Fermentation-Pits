@@ -1,0 +1,180 @@
+C251 COMPILER V5.60.0,  main                                                               06/10/25  21:35:13  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE main
+OBJECT MODULE PLACED IN .\obj\main.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE src\main.c XSMALL INTR2 BROWSE INCDIR(.\Resource;.\ware;.\src;.\middle
+                    -;.\user) DEBUG PRINT(.\obj\main.lst) OBJECT(.\obj\main.obj) 
+
+stmt  level    source
+
+    1          /*-----------------------------------------------------------------------------------------
+    2          
+    3          * 时钟选择 22.1184MHZ
+    4          * 这里用的屠龙刀+OLED12864测试
+    5          * 有任何问题欢迎加Q群 884047237 交流
+    6          * 屏幕可以去飞哥的店铺购买：https://KCER001.taobao.com 
+    7          
+    8          -----------------------------------------------------------------------------------------*/
+    9          #include <STC32G.H>
+   10          
+   11          #include "stc.h"
+   12          #include "oled.h"
+   13          #include "pic.h"
+   14          
+   15          #define  DELAY_TIME   2000
+   16          
+   17          void sys_init()
+   18          {
+   19   1          WTST = 0;  //设置程序指令延时参数，赋值为0可将CPU执行指令的速度设置为最快
+   20   1          EAXFR = 1; //扩展寄存器(XFR)访问使能
+   21   1          CKCON = 0; //提高访问XRAM速度
+   22   1      
+   23   1          P0M1 = 0x00;   P0M0 = 0x00;   //设置为准双向口
+   24   1          P1M1 = 0x00;   P1M0 = 0x00;   //设置为准双向口
+   25   1          P2M1 = 0x00;   P2M0 = 0x00;   //设置为准双向口
+   26   1          P3M1 = 0x00;   P3M0 = 0x00;   //设置为准双向口
+   27   1          P4M1 = 0x00;   P4M0 = 0x00;   //设置为准双向口
+   28   1          P5M1 = 0x00;   P5M0 = 0x00;   //设置为准双向口
+   29   1          P6M1 = 0x00;   P6M0 = 0x00;   //设置为准双向口
+   30   1          P7M1 = 0x00;   P7M0 = 0x00;   //设置为准双向口
+   31   1      }
+   32          
+   33          
+   34          
+   35          void main(void)
+   36          {
+   37   1          u8 i;
+   38   1          float dat= -3.145;
+   39   1          sys_init();                         //系统初始化
+   40   1          EA = 1;                             //开总中断
+   41   1              OLED_Init();                        //OLED初始化
+   42   1      
+   43   1          while (1)
+   44   1          {
+   45   2      //-----------------------------------------显示图片-----------------------------------------   
+   46   2              OLED_BuffClear();                                                       //清除全部缓存
+   47   2              OLED_BuffShowBMP(0,0,128,8,OLED12864_IMG);                              //显示LOGO图片
+*** WARNING C91 IN LINE 47 OF src\main.c: '&': pointer to different objects
+   48   2                      OLED_BuffShow();                                                        //将缓存写入显示屏显示
+   49   2              delay_ms(DELAY_TIME);                                                   //延时  
+   50   2      
+   51   2      //-----------------------------------------显示字符-----------------------------------------   
+   52   2                      OLED_BuffClear();                                                       //清除全部缓存
+   53   2                      OLED_BuffShowString(0,0,"HEELO ,WELCOME TO USE STC32&OLED12864!",0);      //显示数据
+   54   2                      OLED_BuffShow();                                                        //将缓存写入显示屏显示
+   55   2              delay_ms(DELAY_TIME);                                                   //延时  
+   56   2              
+   57   2      //-----------------------------------------显示汉字-----------------------------------------   
+C251 COMPILER V5.60.0,  main                                                               06/10/25  21:35:13  PAGE 2   
+
+   58   2                      OLED_BuffClear();                                                       //清除全部缓存
+   59   2                      OLED_BuffShowString(0,0,"你好,欢迎使用STC 驱\xfd动OLED12864的历程",0);      //显示数据
+   60   2                      OLED_BuffShow();                                                        //将缓存写入显示屏显示
+   61   2              delay_ms(DELAY_TIME);                                                   //延时         
+   62   2              
+   63   2      //-----------------------------------------显示点-----------------------------------------   
+   64   2                      OLED_BuffClear();                                                       //清除全部缓存
+   65   2                      OLED_BuffShowString(32,0,"画点测试");                                    //显示数据
+*** WARNING C96 IN LINE 65 OF src\main.c: 'OLED_BuffShowString': too few actual parameters
+   66   2                      OLED_BuffShow();                                                        //将缓存写入显示屏显示  
+   67   2              for( i=0;i<64;i++ )                                                     //循环64次
+   68   2              {
+   69   3                  OLED_BuffShowPoint(i*2,25);                                         //显示一个点
+*** WARNING C188 IN LINE 69 OF src\main.c: 'parameter 1': value truncated
+   70   3                  OLED_BuffShow();                                                    //刷新显示
+   71   3                  delay_ms(50);                                                       //延时
+   72   3              }
+   73   2              
+   74   2      //-----------------------------------------显示线-----------------------------------------   
+   75   2                      OLED_BuffClear();                                                       //清除全部缓存
+   76   2                      OLED_BuffShowString(32,0,"画线测试");                                    //显示数据
+*** WARNING C96 IN LINE 76 OF src\main.c: 'OLED_BuffShowString': too few actual parameters
+   77   2                      OLED_BuffShow();                                                        //将缓存写入显示屏显示  
+   78   2              for( i=0;i<6;i++ )                                                      //循环6次
+   79   2              {
+   80   3                  OLED_BuffShowLine(4,16+8*i,124,16+8*i);                             //显示横着6条线
+*** WARNING C188 IN LINE 80 OF src\main.c: 'parameter 2': value truncated
+*** WARNING C188 IN LINE 80 OF src\main.c: 'parameter 4': value truncated
+   81   3                  OLED_BuffShow();                                                    //刷新显示
+   82   3                  delay_ms(100);
+   83   3              }        
+   84   2              for( i=0;i<16;i+=1 )                                                    //循环16次
+   85   2              {
+   86   3                  OLED_BuffShowLine(8*i+4,16,8*i+4,56);                               //显示16条数线
+*** WARNING C188 IN LINE 86 OF src\main.c: 'parameter 1': value truncated
+*** WARNING C188 IN LINE 86 OF src\main.c: 'parameter 3': value truncated
+   87   3                  OLED_BuffShow();                                                    //刷新显示
+   88   3                  delay_ms(100);
+   89   3              }  
+   90   2      
+   91   2      //-----------------------------------------显示圆-----------------------------------------   
+   92   2                      OLED_BuffClear();                                                       //清除全部缓存
+   93   2                      OLED_BuffShowString(32,0,"画圆测试");                                    //显示数据
+*** WARNING C96 IN LINE 93 OF src\main.c: 'OLED_BuffShowString': too few actual parameters
+   94   2                      OLED_BuffShow();                                                        //将缓存写入显示屏显示  
+   95   2              for( i=0;i<6;i++ )                                                      //循环6次
+   96   2              {
+   97   3                 OLED_BuffShowCircle(64,40,5+i*3);                                    //画一个圆    
+*** WARNING C188 IN LINE 97 OF src\main.c: 'parameter 3': value truncated
+   98   3                  OLED_BuffShow();                                                    //刷新显示
+   99   3                  delay_ms(250);
+  100   3              }         
+  101   2      
+  102   2      //-----------------------------------------显示32大字-----------------------------------------   
+  103   2                      OLED_BuffClear();                                                       //清除全部缓存
+  104   2                      OLED_BuffShowString(32,0,"大字测试");                                    //显示数据
+*** WARNING C96 IN LINE 104 OF src\main.c: 'OLED_BuffShowString': too few actual parameters
+  105   2              OLED_BuffShowChar32(24,3,1,0);                                          //显示数字1
+  106   2              OLED_BuffShowChar32(40,3,0,0);                                          //显示数字0
+  107   2              OLED_BuffShowChar32(56,3,10,0);                                         //显示：
+  108   2              OLED_BuffShowChar32(72,3,5,0);                                          //显示数字5
+  109   2              OLED_BuffShowChar32(88,3,5,0);                                          //显示数字5
+  110   2                      OLED_BuffShow();                                                        //将缓存写入显示屏显示  
+  111   2              delay_ms(DELAY_TIME);                                                   //延时   
+  112   2      
+  113   2      //-----------------------------------------反显测试-----------------------------------------   
+C251 COMPILER V5.60.0,  main                                                               06/10/25  21:35:13  PAGE 3   
+
+  114   2                      OLED_BuffClear();                                                       //清除全部缓存
+  115   2                      OLED_BuffShowString(32,0,"反显测试",0);                                  //显示数据
+  116   2              OLED_BuffShowString(16,2,"  这是正\xfd显  ",0);                          //显示数据
+  117   2              OLED_BuffShowString(16,4,"  这是反显  ",1);                              //显示数据
+  118   2                      OLED_BuffShow();                                                        //将缓存写入显示屏显示
+  119   2              delay_ms(DELAY_TIME); 
+  120   2      
+  121   2      //-----------------------------------------变量显示-----------------------------------------   
+  122   2              OLED_BuffClear();                                                       //清除全部缓存
+  123   2              OLED_BuffShowString(32,0,"变量显示",0);                                  //显示数据
+  124   2              OLED_BuffShowNum(0,2,-25169,0) ;                                        //显示数据
+  125   2              OLED_BuffShowNum02F(0,4,3.14159,0);                                     //显示数据
+  126   2              OLED_BuffShowNum02F(0,6,dat,1);                                         //显示数据
+  127   2              OLED_BuffShow();                                                        //将缓存写入显示屏显示
+  128   2              delay_ms(DELAY_TIME);   
+  129   2                      
+  130   2          }
+  131   1      }
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =      2652     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------     ------
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =       156     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  11 WARNING(S),  0 ERROR(S)

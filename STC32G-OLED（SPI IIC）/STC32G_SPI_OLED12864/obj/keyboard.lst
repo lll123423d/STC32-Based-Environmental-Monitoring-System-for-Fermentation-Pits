@@ -1,0 +1,148 @@
+C251 COMPILER V5.60.0,  keyboard                                                           22/03/23  11:38:01  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE keyboard
+OBJECT MODULE PLACED IN .\obj\keyboard.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE keyboard.c XSMALL INTR2 BROWSE INCDIR(.\Resource;.\ware;.\src;.\middle
+                    -;.\user) DEBUG PRINT(.\obj\keyboard.lst) OBJECT(.\obj\keyboard.obj) 
+
+stmt  level    source
+
+    1          #include "keyboard.h"
+    2          #include "string.h"
+    3          
+    4          //code uchar sinh[] ="sinh(";
+    5          //code uchar cosh[] ="cosh(";
+    6          //code uchar tanh[] ="tanh(";
+    7          
+    8          u8 String_length(char* str)
+    9          {
+   10   1          u8 i;
+   11   1          for(i=0;i<30;i++)
+   12   1          {
+   13   2              if( str[i]=='\0' )
+   14   2                  return i;
+   15   2          }
+   16   1          return 0xff;
+   17   1      }
+   18          //×Ö·û´®²åÈëº¯”µ
+   19          u8 String_Insert(char* str,u8 leng,u8 addr,u8 keynuml)
+   20          {
+   21   1          u8 i=0;
+   22   1          u8 ins_lth ;        //²åÈëµÄ×Ö·û³¤¶È
+   23   1          char str1[7];
+   24   1          memset(str1,'\0',7);
+   25   1          if(( keynuml>='*' )&&( keynuml<='9' ) )
+   26   1          {
+   27   2              str1[0] = (char)keynuml;
+   28   2          }
+   29   1          else 
+   30   1          {
+   31   2              switch( keynuml )
+   32   2              {
+   33   3                  case 0x83:str1[0] ='e';break;
+   34   3                  case 0x06:str1[0] ='(';break;
+   35   3                  case 0x07:str1[0] =')';break;
+   36   3                  case 0x8B:str1[0] ='i';break;
+   37   3                  case 0x8e:str1[0] ='!';break;
+   38   3                  case (0x80+'1'):str1[0] ='x';break;
+   39   3                  case (0x80+'2'):str1[0] ='y';break;
+   40   3                  case (0x80+'3'):str1[0] ='z';break;
+   41   3                  case 0X0D:str1[0] ='^';break;
+   42   3                  case 18:strcpy(str1,"sin(");break;
+   43   3                  //case 18:str1[0] ='s';str1[1] ='i';break;//str1[1] ='i';str1[2] ='n';str1[3] ='(';
+   44   3                  case 19:strcpy(str1,"cos(");break;
+   45   3                  case 20:strcpy(str1,"tan(");break; 
+   46   3                  case 12:strcpy(str1,"^2");break; 
+   47   3                  case 15:strcpy(str1,"e^(");break; 
+   48   3                  case 0x8f:strcpy(str1,"ln(");break;
+   49   3                  case 23:strcpy(str1,"Ans");break;
+   50   3                  case 11:strcpy(str1,"abs(");break;
+   51   3                  case 16:strcpy(str1,"10^(");break;
+   52   3                  case 0x90:strcpy(str1,"log(");break;
+   53   3                  case (0x80+18):strcpy(str1,"asin(");break;
+   54   3                  case (0x80+19):strcpy(str1,"acos(");break;
+   55   3                  case (0x80+20):strcpy(str1,"atan(");break; 
+   56   3                  case (0x80+12):strcpy(str1,"^(1/2)");break;
+   57   3                  case (0x80+13):strcpy(str1,"^(1/");break;
+   58   3                  case (14):strcpy(str1,"^(-1)");break; 
+C251 COMPILER V5.60.0,  keyboard                                                           22/03/23  11:38:01  PAGE 2   
+
+   59   3                  
+   60   3                  case (120):strcpy(str1,"sinh(");break;  
+   61   3                  case (121):strcpy(str1,"cosh(");break;  
+   62   3                  case (122):strcpy(str1,"tanh(");break;            
+   63   3                  
+   64   3                  default:break;
+   65   3              }            
+   66   2          }
+   67   1          ins_lth = String_length(str1);
+   68   1          
+   69   1          if(( ins_lth<7 )&&( ins_lth>0 ))
+   70   1          {
+   71   2              for( i=leng;i>(addr);i-- )
+   72   2              {
+   73   3                  str[i] = str[i-ins_lth];
+   74   3              }
+   75   2              
+   76   2              for( i=0;i<ins_lth;i++ )
+   77   2              {
+   78   3                  str[addr+i] = str1[i];
+   79   3              }
+   80   2              return ins_lth;
+   81   2          }
+   82   1          else
+   83   1          {
+   84   2             ins_lth = 0; 
+   85   2             return 0xff;  
+   86   2          }  
+   87   1      }
+   88          
+   89          
+   90          //×Ö·û´®„h³ýº¯”µ
+   91          void String_Delete(char *str,u8 length,u8 addr)
+   92          {
+   93   1          u8 i;
+   94   1          if( addr>0 )
+   95   1          {
+   96   2              for( i=addr;i<(length-1);i++ )
+   97   2              {
+   98   3                  str[i-1] = str[i];
+   99   3              }  
+  100   2              str[length] = '\0'; 
+  101   2          }    
+  102   1      }
+  103              
+  104          //×Ö·û´®Çå¿Õ
+  105          void String_Clear(char *str,u8 length)
+  106          {
+  107   1          memset(str,0,length);
+  108   1      }
+  109          
+  110          
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =      1048     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------         11
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+C251 COMPILER V5.60.0,  keyboard                                                           22/03/23  11:38:01  PAGE 3   
+
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =        99     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

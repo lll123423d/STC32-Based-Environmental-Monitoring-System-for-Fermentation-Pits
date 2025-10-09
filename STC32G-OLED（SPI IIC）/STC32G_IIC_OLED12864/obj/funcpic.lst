@@ -1,0 +1,439 @@
+C251 COMPILER V5.60.0,  funcpic                                                            22/03/23  11:38:01  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE funcpic
+OBJECT MODULE PLACED IN .\obj\funcpic.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE user\funcpic.c XSMALL INTR2 BROWSE INCDIR(.\Resource;.\ware;.\src;.\mi
+                    -ddle;.\user) DEBUG PRINT(.\obj\funcpic.lst) OBJECT(.\obj\funcpic.obj) 
+
+stmt  level    source
+
+    1          #include "funcpic.h"
+    2          #include "menu.h"
+    3          #include "stdlib.h"
+    4          #include "keyboard.h"
+    5          #include "fun.h"
+    6          
+    7          double fUNC_X0=63;
+    8          double fUNC_Y0=31;
+    9          double fUNC_KX=1;
+   10          double fUNC_KY=1;
+   11          
+   12          u8 funcstr[26];
+   13          u8 funcstrlength;
+   14          u8 funcstraddr;
+   15          u8 shift_flagf;
+   16          void FuncPic_SetX0(u8 keynum)
+   17          {
+   18   1          static keynum_last;
+   19   1          switch( state )
+   20   1          {
+   21   2              case 0://初始化
+   22   2                  Screen_Clear();
+   23   2                  Screen_ShowStr(0,0,"Now X0 is");
+   24   2                  Screen_ShowNum(0,2,(double)fUNC_X0);
+   25   2                  Screen_ShowStr(0,4,"end with '='");
+   26   2                  Screen_ShowStr(0,6,"new=");
+   27   2                  Screen_ShowFreshen();
+   28   2                  state = 1;
+   29   2                  funcstrlength  =  0;
+   30   2                  memset(funcstr,'\0',12);
+   31   2                  break;
+   32   2           
+   33   2              case 1://等待输入
+   34   2                  if( keynum>0 )
+   35   2                  {
+   36   3                      if(( keynum>='1' )&&( keynum<='9' ))
+   37   3                      {
+   38   4                          funcstr[funcstrlength]=keynum;
+   39   4                          funcstrlength++;
+   40   4                          Screen_ShowStr(32,6,funcstr);
+   41   4                          Screen_ShowFreshen();
+   42   4                      }
+   43   3                      else if( keynum == '=' )
+   44   3                      {
+   45   4                          if( funcstrlength>0 )
+   46   4                              fUNC_X0= atof(funcstr);   
+   47   4                          P_Index.Menu_KeyFunc=0;                    
+   48   4                          Screen_Clear();                    
+   49   4                      } 
+   50   3                  }
+   51   2                  break; 
+   52   2          }    
+   53   1      }
+   54          
+   55          void FuncPic_SetY0(u8 keynum)
+   56          {
+   57   1          static keynum_last;
+   58   1          switch( state )
+C251 COMPILER V5.60.0,  funcpic                                                            22/03/23  11:38:01  PAGE 2   
+
+   59   1          {
+   60   2              case 0://初始化
+   61   2                  Screen_Clear();
+   62   2                  Screen_ShowStr(0,0,"Now Y0 is");
+   63   2                  Screen_ShowNum(0,2,(double)fUNC_Y0);
+   64   2                  Screen_ShowStr(0,4,"end with '='");
+   65   2                  Screen_ShowStr(0,6,"new=");
+   66   2                  Screen_ShowFreshen();
+   67   2                  funcstrlength  =  0;
+   68   2                  memset(funcstr,'\0',12);        
+   69   2                  state = 1;
+   70   2      
+   71   2                  break;
+   72   2           
+   73   2              case 1://等待输入
+   74   2                  if( keynum>0 )
+   75   2                  {
+   76   3                      if(( keynum>='1' )&&( keynum<='9' ))
+   77   3                      {
+   78   4                          funcstr[funcstrlength]=keynum;
+   79   4                          funcstrlength++;
+   80   4                          Screen_ShowStr(32,6,funcstr);
+   81   4                          Screen_ShowFreshen();
+   82   4                      }
+   83   3                      else if( keynum == '=' )
+   84   3                      {
+   85   4                          if( funcstrlength>0 )
+   86   4                              fUNC_Y0= atof(funcstr);   
+   87   4                          P_Index.Menu_KeyFunc=0;                    
+   88   4                          Screen_Clear();                    
+   89   4                      } 
+   90   3                  }
+   91   2                  break; 
+   92   2          }    
+   93   1      }
+   94          
+   95          void FuncPic_SetKX(u8 keynum)
+   96          {
+   97   1          static keynum_last;
+   98   1          switch( state )
+   99   1          {
+  100   2              case 0://初始化
+  101   2                  Screen_Clear();
+  102   2                  Screen_ShowStr(0,0,"Now KX is");
+  103   2                  Screen_ShowNum(0,2,(double)fUNC_KX);
+  104   2                  Screen_ShowStr(0,4,"end with '='");
+  105   2                  Screen_ShowStr(0,6,"new=");
+  106   2                  Screen_ShowFreshen();
+  107   2                  funcstrlength  =  0;
+  108   2                  memset(funcstr,'\0',12);
+  109   2                  state = 1;
+  110   2      
+  111   2                  break;
+  112   2           
+  113   2              case 1://等待输入
+  114   2                  if( keynum>0 )
+  115   2                  {
+  116   3                      if(( keynum>='1' )&&( keynum<='9' ))
+  117   3                      {
+  118   4                          funcstr[funcstrlength]=keynum;
+  119   4                          funcstrlength++;
+  120   4                          Screen_ShowStr(32,6,funcstr);
+  121   4                          Screen_ShowFreshen();
+  122   4                      }
+  123   3                      else if( keynum == '=' )
+  124   3                      {
+C251 COMPILER V5.60.0,  funcpic                                                            22/03/23  11:38:01  PAGE 3   
+
+  125   4                          if( funcstrlength>0 )
+  126   4                              fUNC_KX= atof(funcstr);   
+  127   4                          P_Index.Menu_KeyFunc=0;                    
+  128   4                          Screen_Clear();                    
+  129   4                      } 
+  130   3                  }
+  131   2                  break; 
+  132   2          }    
+  133   1      }
+  134          
+  135          
+  136          void FuncPic_SetKY(u8 keynum)
+  137          {
+  138   1          static keynum_last;
+  139   1          switch( state )
+  140   1          {
+  141   2              case 0://初始化
+  142   2                  Screen_Clear();
+  143   2                  Screen_ShowStr(0,0,"Now KY is");
+  144   2                  Screen_ShowNum(0,2,(double)fUNC_KY);
+  145   2                  Screen_ShowStr(0,4,"end with '='");
+  146   2                  Screen_ShowStr(0,6,"new=");
+  147   2                  Screen_ShowFreshen();
+  148   2                  funcstrlength  =  0;
+  149   2                  memset(funcstr,'\0',12);
+  150   2                  state = 1;
+  151   2      
+  152   2                  break;
+  153   2           
+  154   2              case 1://等待输入
+  155   2                  if( keynum>0 )
+  156   2                  {
+  157   3                      if(( keynum>='1' )&&( keynum<='9' ))
+  158   3                      {
+  159   4                          funcstr[funcstrlength]=keynum;
+  160   4                          funcstrlength++;
+  161   4                          Screen_ShowStr(32,6,funcstr);
+  162   4                          Screen_ShowFreshen();
+  163   4                      }
+  164   3                      else if( keynum == '=' )
+  165   3                      {
+  166   4                          if( funcstrlength>0 )
+  167   4                              fUNC_KY= atof(funcstr);   
+  168   4                          P_Index.Menu_KeyFunc=0;                    
+  169   4                          Screen_Clear();                    
+  170   4                      } 
+  171   3                  }
+  172   2                  break; 
+  173   2          }    
+  174   1      }
+  175          
+  176          void FuncPic_Write(u8 keynum)
+  177          {
+  178   1          u8 result;
+  179   1          static keynum_last;
+  180   1          switch( state )
+  181   1          {
+  182   2              case 0://初始化
+  183   2                  Screen_Clear();
+  184   2                  Screen_ShowStr(0,0,"输入函数\xfd表达式");
+  185   2                  Screen_ShowStr(0,2,"F(x)=");
+  186   2                  Screen_ShowFreshen();
+  187   2                  funcstrlength  =  0;
+  188   2                  funcstraddr = 0;
+  189   2                  memset(funcstr,'\0',26);
+  190   2                  state = 1;
+C251 COMPILER V5.60.0,  funcpic                                                            22/03/23  11:38:01  PAGE 4   
+
+  191   2      
+  192   2                  break;
+  193   2           
+  194   2              case 1://等待输入
+  195   2      a:          Cursor_Blink((u8)(funcstraddr*8),4,50); 
+  196   2              
+  197   2                  if( keynum>0 )
+  198   2                  {
+  199   3                      if( keynum == 8 )           //光标向前
+  200   3                      {
+  201   4                          if(funcstraddr>=1)
+  202   4                              funcstraddr-=1;
+  203   4                      }
+  204   3                      else if( keynum == 10 )     //光标向后
+  205   3                      {
+  206   4                          if( funcstr[funcstraddr]!='\0' )
+  207   4                              funcstraddr+=1;
+  208   4                      } 
+  209   3                      else if( keynum == 21 )     //清除显示
+  210   3                      {
+  211   4                          Screen_Clear();
+  212   4                          Screen_ShowStr(0,0,"输入函数\xfd表达式");
+  213   4                          Screen_ShowStr(0,2,"F(x)=");                    
+  214   4                          String_Delete(&funcstr,26,funcstraddr);
+*** WARNING C98 IN LINE 214 OF user\funcpic.c: parameter 1: pointer to different objects
+*** WARNING C91 IN LINE 214 OF user\funcpic.c: '&': pointer to different objects
+  215   4                          if( funcstraddr>0 )
+  216   4                              funcstraddr--;
+  217   4                      }                 
+  218   3                      else if( keynum == 22 )
+  219   3                      {
+  220   4                          memset(funcstr,'\0',26);                 
+  221   4                          Screen_Clear();
+  222   4                          Screen_ShowStr(0,0,"输入函数\xfd表达式");
+  223   4                          Screen_ShowStr(0,2,"F(x)=");    
+  224   4                          funcstraddr=0;
+  225   4                      }                     
+  226   3                      else if( keynum == '=' )        //計算結果
+  227   3                      {
+  228   4                          Screen_Clear();
+  229   4                          state = 2;
+  230   4                      }  
+  231   3                      else if( keynum == 1 )        //其它功能
+  232   3                      {
+  233   4                          shift_flagf = !shift_flagf;
+  234   4                      }                     
+  235   3                      else
+  236   3                      {
+  237   4                          if( shift_flagf )
+  238   4                          {
+  239   5                              keynum += 0x80;
+  240   5                              shift_flagf = 0;
+  241   5                          }                   
+  242   4                          result=String_Insert(&funcstr,26,funcstraddr,keynum);
+*** WARNING C98 IN LINE 242 OF user\funcpic.c: parameter 1: pointer to different objects
+*** WARNING C91 IN LINE 242 OF user\funcpic.c: '&': pointer to different objects
+  243   4                          if( result!=0xff )
+  244   4                          {
+  245   5                              funcstraddr += result;
+  246   5                          }                    
+  247   4                      } 
+  248   3                      if( state==1 )
+  249   3                          Screen_ShowStr(0,(u8)(4),&funcstr);
+*** WARNING C98 IN LINE 249 OF user\funcpic.c: parameter 3: pointer to different objects
+*** WARNING C91 IN LINE 249 OF user\funcpic.c: '&': pointer to different objects
+  250   3                      Screen_ShowFreshen();
+C251 COMPILER V5.60.0,  funcpic                                                            22/03/23  11:38:01  PAGE 5   
+
+  251   3                      keynum = 0;
+  252   3                  }
+  253   2                  break; 
+  254   2              case 2://初始化
+  255   2                      if(0 == alg_calc_expression(funcstr, NULL, NULL))
+  256   2                      {       
+  257   3                          Screen_ShowStr(0,(u8)(0),"1输入错误");
+  258   3                      }
+  259   2                      else
+  260   2                      {
+  261   3                          //Screen_ShowStr(0,(u8)(0),"2输入正确");
+  262   3                          P_Index.Menu_KeyFunc=0;     
+  263   3                      } 
+  264   2                      Screen_ShowFreshen();
+  265   2                      
+  266   2                      state = 3;
+  267   2                  break; 
+  268   2              case 3://初始化
+  269   2      
+  270   2      
+  271   2                  break;                    
+  272   2          }    
+  273   1      }
+*** WARNING C47 IN LINE 195 OF user\funcpic.c: 'a': unreferenced label
+  274          
+  275          void display(char *temp1)    //显示函数图像函数
+  276          {
+  277   1          uchar i;
+  278   1          int c;
+  279   1      //    double x,y,z;
+  280   1          
+  281   1          Screen_Clear();
+  282   1          
+  283   1          if((fUNC_X0<=127)&&(fUNC_X0>=0)) 
+  284   1          {
+  285   2              Screen_ShowLine(fUNC_X0,0,fUNC_X0,63);
+  286   2              if((fUNC_X0<=63)&&(fUNC_X0>=2))
+  287   2              {
+  288   3                  Screen_ShowPoint(fUNC_X0-1,1);
+  289   3                  Screen_ShowPoint(fUNC_X0-2,2);
+  290   3              }
+  291   2              if((fUNC_X0<=61)&&(fUNC_X0>=0))
+  292   2              {
+  293   3                  Screen_ShowPoint(fUNC_X0+1,1);
+  294   3                  Screen_ShowPoint(fUNC_X0+2,2);
+  295   3              }
+  296   2              for(i=0;i<=63;i++)
+  297   2              {
+  298   3                  c=i-fUNC_Y0;
+  299   3                  if(c<0) c=-c;
+  300   3                  if(c%10==0)
+  301   3                  {
+  302   4                      if(fUNC_X0==0)
+  303   4                          Screen_ShowLine(0,i,1,i);//lcd_xline(0,1,i);
+  304   4                      else if(fUNC_X0==127)
+  305   4                          Screen_ShowLine(126,i,127,i);//lcd_xline(126,127,i);
+  306   4                      else 
+  307   4                          Screen_ShowLine(fUNC_X0-1,i,fUNC_X0+1,i);//lcd_xline(fUNC_X0-1,fUNC_X0+1,i);
+  308   4                  }
+  309   3              }
+  310   2          }
+  311   1          
+  312   1          if((fUNC_Y0>=0)&&(fUNC_Y0<=63))
+  313   1          {
+  314   2              Screen_ShowLine(0,fUNC_Y0,127,fUNC_Y0);//lcd_xline(0,127,fUNC_Y0);
+  315   2              if((fUNC_Y0<=63)&&(fUNC_Y0>=2))
+C251 COMPILER V5.60.0,  funcpic                                                            22/03/23  11:38:01  PAGE 6   
+
+  316   2              {
+  317   3                  Screen_ShowPoint(126,fUNC_Y0-1);             
+  318   3                  Screen_ShowPoint(125,fUNC_Y0-2);
+  319   3              }
+  320   2              if((fUNC_Y0<=61)&&(fUNC_Y0>=0))
+  321   2              {
+  322   3                  Screen_ShowPoint(126,fUNC_Y0+1);
+  323   3                  Screen_ShowPoint(125,fUNC_Y0+2);
+  324   3              }
+  325   2              for(i=0;i<=127;i++)
+  326   2              {
+  327   3                  c=i-fUNC_X0;
+  328   3                  if(c<0) 
+  329   3                      c=-c;
+  330   3                  if(c%10==0)
+  331   3                  {
+  332   4                      if(fUNC_Y0==0)
+  333   4                          Screen_ShowLine(i,0,i,1);//lcd_yline(i,0,1,1);
+  334   4                      else if(fUNC_Y0==63)
+  335   4                          Screen_ShowLine(i,62,i,63);//lcd_yline(i,62,63,1);
+  336   4                      else 
+  337   4                          Screen_ShowLine(i,fUNC_Y0-1,i,fUNC_Y0-1);//lcd_yline(i,fUNC_Y0-1,fUNC_Y0+1,1);
+  338   4                  }
+  339   3              }
+  340   2          }
+  341   1          for(i=0;i<=127;i++)
+  342   1          {
+  343   2              x=(i-fUNC_X0)*fUNC_KX;
+  344   2              alg_calc_expression(temp1, &y, 0);
+  345   2              ////////////********************
+  346   2              y *= fUNC_KY;
+  347   2              y=(fUNC_Y0-y);
+  348   2              if((y<=63)&&(y>=0))
+  349   2                  Screen_ShowPoint(i,y);
+  350   2          }
+  351   1          Screen_ShowFreshen();
+  352   1      }
+  353              
+  354          void FuncPic_ShowPic(u8 keynum)
+  355          {
+  356   1          static keynum_last;
+  357   1          
+  358   1          switch( state )
+  359   1          {
+  360   2              case 0://初始化
+  361   2                  Screen_Clear();
+  362   2                  display(funcstr);
+  363   2                  state = 1;
+  364   2                  break;
+  365   2           
+  366   2              case 1://等待输入
+  367   2                  if( keynum>0 )
+  368   2                  {
+  369   3                      switch( keynum )
+  370   3                      {
+  371   4                          case '1':   fUNC_KY = fUNC_KY*2; break;
+  372   4                          case '2':   fUNC_KY = fUNC_KY/2; break;
+  373   4                          case '4':   fUNC_KX = fUNC_KX*2; break;
+  374   4                          case '5':   fUNC_KX = fUNC_KX/2; break;  
+  375   4                          case 4:     fUNC_Y0 = fUNC_Y0+10; break;   //上
+  376   4                          case 9:     fUNC_Y0 = fUNC_Y0-10; break;   //下
+  377   4                          case 8:     fUNC_X0 = fUNC_X0+10; break;   //左
+  378   4                          case 10:    fUNC_X0 = fUNC_X0-10; break;                      
+  379   4                      }
+  380   3                      state = 0;
+  381   3                  }
+C251 COMPILER V5.60.0,  funcpic                                                            22/03/23  11:38:01  PAGE 7   
+
+  382   2                  break; 
+  383   2          }    
+  384   1      }
+  385          
+  386          
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =      2395     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =        57          3
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =       121     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  7 WARNING(S),  0 ERROR(S)

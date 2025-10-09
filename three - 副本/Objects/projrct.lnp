@@ -1,0 +1,11 @@
+".\Objects\main.obj",
+".\Objects\dth11.obj",
+".\Objects\fontoled.obj",
+".\Objects\oled.obj",
+".\Objects\SPI.obj",
+".\Objects\system.obj",
+".\Objects\USTAR1.obj" 
+TO ".\Objects\projrct" 
+PRINT(".\Listings\projrct.map") CASE 
+CLASSES (EDATA (0x0-0xFFF), 
+HDATA (0x0-0xFFF)) 

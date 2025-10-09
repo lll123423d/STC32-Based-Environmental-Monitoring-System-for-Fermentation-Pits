@@ -1,0 +1,407 @@
+C251 COMPILER V5.60.0,  erchengfa                                                          27/09/22  13:55:46  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE erchengfa
+OBJECT MODULE PLACED IN .\obj\erchengfa.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE Resource\erchengfa.c XSMALL ROM(HUGE) BROWSE INCDIR(.\Resource;.\ware;
+                    -.\src;.\middle) DEBUG PRINT(.\obj\erchengfa.lst) OBJECT(.\obj\erchengfa.obj) 
+
+stmt  level    source
+
+    1          #include "stc.h"
+    2          #include "usb.h"
+    3          #include <stdio.h>
+    4          #include <math.h>
+    5          #include "middle.h"
+    6          #include "keyboard_device.h"
+    7          
+    8          
+    9          extern uchar num0;
+   10          
+   11          void er_n(int *n)
+   12          {
+   13   1              uchar d=0;
+   14   1              uchar i=0;
+   15   1              char temp[16];
+   16   1              lcd_clear();
+   17   1              lcd_set_pos(0,0);//lcd_write_cmd(0x80); 
+   18   1              lcd_write_str("Now n=");
+   19   1              sprintf(temp,"%d",*n);
+   20   1              lcd_write_str(temp);
+   21   1              lcd_set_pos(0,1);//lcd_write_cmd(0x90);
+   22   1              lcd_write_str("end with '='");
+   23   1              lcd_set_pos(0,2);//lcd_write_cmd(0x88);
+   24   1              lcd_write_str("    (2<=n<=25)");
+   25   1              lcd_set_pos(0,3);//lcd_write_cmd(0x98);
+   26   1              lcd_write_str("new=");
+   27   1              for(d=0;d<16;d++)
+   28   1              temp[d]=0;
+   29   1              d=0;
+   30   1              while(1)
+   31   1              {
+   32   2                      num0=0xff;
+   33   2                      num0=keyboard_output();
+   34   2                      if((num0<=0x39)&&(num0>=0x30)&&(d<16))
+   35   2                              {
+   36   3                                      temp[d]=num0;
+   37   3                                      lcd_set_pos(4,3);lcd_write_dat(num0);//lcd_write_dat(num0);
+   38   3                                      num0=0xff;
+   39   3                                      d++;
+   40   3                                      }
+   41   2                      else if((num0=='=')||(num0==19))
+   42   2                              {       
+   43   3                                      num0=0xff;
+   44   3                                      sscanf(temp,"%d",n);
+   45   3                                      break;
+   46   3                                      }
+   47   2                      else if(num0==18)
+   48   2                      {
+   49   3                              num0=0xff;
+   50   3                              if(d>0)
+   51   3                                      d--;
+   52   3                              temp[d]=0;
+   53   3                              lcd_set_pos(3,2);
+   54   3                              lcd_write_str("            ");
+   55   3                              //lcd_set_pos(3,2);
+   56   3                              for(i=0;i<d;i++)
+   57   3                  {
+   58   4                      lcd_set_pos((uchar)(3+i),2);
+C251 COMPILER V5.60.0,  erchengfa                                                          27/09/22  13:55:46  PAGE 2   
+
+   59   4                      lcd_write_dat(temp[i]);//lcd_write_dat(temp[i]);
+   60   4                  }           
+   61   3                      }
+   62   2              }
+   63   1      }
+   64          
+   65          void er_num(int n,double (*a)[25],int *count2,uchar *symbol1)
+   66          {
+   67   1              uchar d=0;
+   68   1              uchar i=0;
+   69   1              char temp[16];
+   70   1              for(d=0;d<16;d++)
+   71   1                      temp[d]=0;
+   72   1              d=0;
+   73   1              lcd_clear();
+   74   1              lcd_set_pos(0,0);//lcd_write_cmd(0x80);
+   75   1              if((*count2)%2==1)
+   76   1              {       
+   77   2                      lcd_write_str("now data x");
+   78   2                      sprintf(temp,"%d",((*count2)+1)/2);
+   79   2                      }
+   80   1              else if((*count2)%2==0)
+   81   1              {
+   82   2                      lcd_write_str("now data y");
+   83   2                      sprintf(temp,"%d",(*count2)/2);
+   84   2                      }
+   85   1              lcd_write_str(temp);
+   86   1              lcd_set_pos(0,1);//lcd_write_cmd(0x90);
+   87   1              if((*count2)%2==1)
+   88   1                      sprintf(temp,"%g",a[((*count2)-1)/2][0]);
+   89   1              else if((*count2)%2==0)
+   90   1                      sprintf(temp,"%g",a[((*count2)/2)-1][1]);
+   91   1              lcd_write_str(temp);
+   92   1              lcd_write_cmd(0x88);
+   93   1              lcd_write_dat(0x1e);   //上
+   94   1              lcd_write_str(":上  ");
+   95   1              lcd_write_dat(0x1f);   //下
+   96   1              lcd_write_str(":下");
+   97   1              lcd_write_cmd(0x98);
+   98   1              lcd_write_str("new=");
+   99   1              while(1)
+  100   1              {
+  101   2      
+  102   2                      num0=0xff;
+  103   2                      num0=keyboard_output();
+  104   2                      
+  105   2                      if(num0==3)
+  106   2                      {
+  107   3                              num0=0xff;
+  108   3                              if(d!=0)
+  109   3                              {
+  110   4                                      if((*count2)%2==1)
+  111   4                                              sscanf(temp,"%g",&a[((*count2)-1)/2][0]);
+  112   4                                      else if((*count2)%2==0)
+  113   4                                              sscanf(temp,"%g",&a[(*count2)/2-1][1]);
+  114   4                                      }
+  115   3                              (*count2)=(*count2)-1;
+  116   3                              if((*count2)<1)
+  117   3                                      (*count2)=1;
+  118   3                      
+  119   3                              }
+  120   2                      else if((num0==6)||(num0=='='))
+  121   2                      {       
+  122   3                              num0=0xff;
+  123   3                              if(d!=0)
+  124   3                              {
+C251 COMPILER V5.60.0,  erchengfa                                                          27/09/22  13:55:46  PAGE 3   
+
+  125   4                                      if((*count2)%2==1)
+  126   4                                              sscanf(temp,"%g",&a[((*count2)-1)/2][0]);
+  127   4                                      else if((*count2)%2==0)
+  128   4                                              sscanf(temp,"%g",&a[(*count2)/2-1][1]);
+  129   4                                      }
+  130   3                                      (*count2)=(*count2)+1;
+  131   3                                      if((*count2)>2*n)
+  132   3                                              (*count2)=2*n;
+  133   3                      
+  134   3                              }
+  135   2                              
+  136   2                      else if(num0==18)
+  137   2                      {
+  138   3                              num0=0xff;
+  139   3                              if(d>0)
+  140   3                                      d--;
+  141   3                              temp[d]=0;
+  142   3                              lcd_set_pos(3,2);
+  143   3                              lcd_write_str("            ");
+  144   3                              lcd_set_pos(3,2);
+  145   3                              for(i=0;i<d;i++)
+  146   3                                      lcd_write_dat(temp[i]);
+  147   3      
+  148   3                      }
+  149   2                              
+  150   2                              
+  151   2                      else if(((num0<=0x39)&&(num0>=0x30))||(num0=='.')||(num0=='-'))
+  152   2                      {
+  153   3                              lcd_write_dat(num0);
+  154   3                              temp[d]=num0;
+  155   3                              num0=0xff;
+  156   3                              d++;
+  157   3      
+  158   3                              }
+  159   2                              
+  160   2                              
+  161   2                      else if(num0==19)
+  162   2                      {
+  163   3                              num0=0xff;
+  164   3                              *symbol1=1;
+  165   3                              break;
+  166   3      
+  167   3                              }
+  168   2                              
+  169   2                      else num0=0xff;
+  170   2                      }
+  171   1              }
+  172                  
+  173                  
+  174                  
+  175                  void er_cal(double *s,int n,double (*a)[25])
+  176                  {
+  177   1              /////////s[0]:x总和 s[1]:x的平均 s[2]:y的总和 s[3]:y的平均 s[4]:x*y的总和 s[5]:x*y的平均 
+  178   1              /////////s[6]:x^2的总和 s[7]:x^2的平均 s[8]:y^2的总和 s[9]:y^2的平均 
+  179   1              /////////s[10]:a s[11]:b s[12]:Lxx s[13]:Lyy s[14]:Lxy  s[15]:R
+  180   1              
+  181   1                      uchar i;
+  182   1                      for(i=0;i<16;i++)
+  183   1                              s[i]=0;
+  184   1                      for(i=0;i<n;i++)
+  185   1                      {
+  186   2                              s[0]=s[0]+a[i][0];
+  187   2                              s[2]=s[2]+a[i][1];
+  188   2                              s[4]=s[4]+(a[i][0])*(a[i][1]);
+  189   2                              s[6]=s[6]+pow(a[i][0],2);
+  190   2                              s[8]=s[8]+pow(a[i][1],2);
+C251 COMPILER V5.60.0,  erchengfa                                                          27/09/22  13:55:46  PAGE 4   
+
+  191   2                              }
+  192   1                      for(i=0;i<5;i++)
+  193   1                              s[2*i+1]=s[2*i]/n;
+  194   1                      
+  195   1                      s[10]=(s[5]-(s[1]*s[3]))/(s[7]-pow(s[1],2));
+  196   1                      s[11]=s[3]-s[10]*s[1];
+  197   1                      
+  198   1                      s[12]=s[7]-pow(s[1],2);
+  199   1                      s[13]=s[9]-pow(s[3],2);
+  200   1                      s[14]=s[5]-s[1]*s[3];
+  201   1                      
+  202   1                      s[15]=s[14]/(pow(s[13]*s[12],0.5));
+  203   1              
+  204   1                      }
+  205                          
+  206                  void er_result(uchar count,double *s)
+  207                  {       
+  208   1                      char temp[16];
+  209   1                      uchar m,i,j;
+  210   1                      lcd_clear();
+  211   1                      for(m=0;m<4;m++)
+  212   1                      {
+  213   2                              i=m+count;
+  214   2                              lcd_set_pos(m,0);
+  215   2                              if(i%2==1)
+  216   2                              {
+  217   3                                      j=(i+1)/2;
+  218   3                                              switch (j) 
+  219   3                                              {
+  220   4                                                      case 1:
+  221   4                                                              lcd_write_str("1.x 总和：");
+  222   4                                                              break;
+  223   4                                                      case 2:
+  224   4                                                              lcd_write_str("2.x 平均数：");
+  225   4                                                              break;
+  226   4                                                      case 3:
+  227   4                                                              lcd_write_str("3.y 总和:");
+  228   4                                                              break;
+  229   4                                                      case 4:
+  230   4                                                              lcd_write_str("4.y 平均数:");
+  231   4                                                              break;
+  232   4                                                      case 5:
+  233   4                                                              lcd_write_str("5.xy总和:");
+  234   4                                                              break;
+  235   4                                                      case 6:
+  236   4                                                              lcd_write_str("6.xy平均数:");
+  237   4                                                              break;
+  238   4                                                      case 7:
+  239   4                                                              lcd_write_str("7.x^2 总和:");
+  240   4                                                              break;
+  241   4                                                      case 8:
+  242   4                                                              lcd_write_str("8.x^2 平均数:");
+  243   4                                                              break;
+  244   4                                                      case 9:
+  245   4                                                              lcd_write_str("9.y^2 总和:");
+  246   4                                                              break;
+  247   4                                                      case 10:
+  248   4                                                              lcd_write_str("10.y^2平均数:");
+  249   4                                                              break;
+  250   4                                                      case 11:
+  251   4                                                              lcd_write_str("11. a: ");
+  252   4                                                              break;
+  253   4                                                      case 12:
+  254   4                                                              lcd_write_str("12. b:");
+  255   4                                                              break;
+  256   4                                                      case 13:
+C251 COMPILER V5.60.0,  erchengfa                                                          27/09/22  13:55:46  PAGE 5   
+
+  257   4                                                              lcd_write_str("13. Lxx:");
+  258   4                                                              break;
+  259   4                                                      case 14:
+  260   4                                                              lcd_write_str("14. Lyy:");
+  261   4                                                              break;
+  262   4                                                      case 15:
+  263   4                                                              lcd_write_str("14. Lxy:");
+  264   4                                                              break;
+  265   4                                                      case 16:
+  266   4                                                              lcd_write_str("14. R:");
+  267   4                                                              break;
+  268   4                                                      }
+  269   3                                      }
+  270   2                              else if(i%2==0)
+  271   2                              {
+  272   3                                              sprintf(temp,"%g",s[i/2-1]);
+  273   3                                              lcd_write_str(temp);
+  274   3                                      }
+  275   2                              }  
+  276   1                      }  
+  277                  
+  278                  
+  279                  
+  280                  void er_display(double *s)
+  281                  {
+  282   1                      uchar count4=1;
+  283   1                      num0=0xff;
+  284   1                      while(1)
+  285   1                      {
+  286   2                              er_result(count4,s);
+  287   2                              num0=keyboard_output();
+  288   2                              if(num0==6)
+  289   2                              {
+  290   3                                      num0=0xff;
+  291   3                                      count4++;
+  292   3                                      if(count4>29)
+  293   3                                              count4=29;
+  294   3                                      }
+  295   2                              else if(num0==3)
+  296   2                              {
+  297   3                                      num0=0xff;
+  298   3                                      count4--;
+  299   3                                      if(count4<1)
+  300   3                                              count4=1;
+  301   3                                      }
+  302   2                              else if(num0==19)
+  303   2                              {
+  304   3                                      num0=0xff;
+  305   3                                      break;
+  306   3                                      }
+  307   2                              }
+  308   1                      }
+  309                                  
+  310                                  
+  311                          void er_menu()
+  312                          {
+  313   1              
+  314   1                              uchar symbol1=0;
+  315   1                              uchar i,j;
+  316   1                              double a[25][2];
+  317   1                              double s[16];
+  318   1                              int n=1;
+  319   1                              int count2=1;
+  320   1                              for(i=0;i<25;i++)
+  321   1                                      for(j=0;j<2;j++)
+  322   1                                              a[i][j]=0;
+C251 COMPILER V5.60.0,  erchengfa                                                          27/09/22  13:55:46  PAGE 6   
+
+  323   1                              num0=0xff;
+  324   1                              while(1)
+  325   1                              {
+  326   2                                      lcd_clear();
+  327   2                                      lcd_write_cmd(0x80);
+  328   2                                      lcd_write_str("1.输入数据个数");
+  329   2                                      lcd_write_cmd(0x90);
+  330   2                                      lcd_write_str("2.输入数据");
+  331   2                                      lcd_write_cmd(0x88);
+  332   2                                      lcd_write_str("3.计算");
+  333   2                                      lcd_write_cmd(0x98);
+  334   2                                      lcd_write_str("0.返回");
+  335   2                                      num0=keyboard_output();
+  336   2                                      if(num0=='1')
+  337   2                                      {
+  338   3                                              num0=0xff;
+  339   3                                              er_n(&n);
+  340   3                                              }
+  341   2                                      else if(num0=='2')
+  342   2                                      {
+  343   3                                              num0=0xff;
+  344   3                                              while(symbol1==0)
+  345   3                                                      er_num(n,a,&count2,&symbol1);
+  346   3                                              symbol1=0;
+  347   3                                              }
+  348   2                                      else if(num0=='3')
+  349   2                                      {
+  350   3                                              num0=0xff;
+  351   3                                              er_cal(s,n,a);
+  352   3                                              er_display(s);
+  353   3                                              }
+  354   2                                      else if(num0=='0')
+  355   2                                      {
+  356   3                                              num0=0xff;
+  357   3                                              break;
+  358   3                                              }
+  359   2                                      }
+  360   1                              }
+  361                          
+  362                                  
+  363                  
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =    ------     ------
+  ecode size           =      2850     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------        343
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =       292     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

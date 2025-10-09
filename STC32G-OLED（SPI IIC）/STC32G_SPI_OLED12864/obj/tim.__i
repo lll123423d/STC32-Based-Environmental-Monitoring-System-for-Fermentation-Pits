@@ -1,0 +1,1 @@
+"ware\tim.c" XSMALL INTR2 BROWSE INCDIR(.\Resource;.\ware;.\src;.\middle;.\user) DEBUG PRINT(.\obj\tim.lst) OBJECT(.\obj\tim.obj)

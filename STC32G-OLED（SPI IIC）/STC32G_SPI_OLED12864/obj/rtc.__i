@@ -1,0 +1,1 @@
+"ware\rtc.c" XSMALL INTR2 BROWSE INCDIR(.\Resource;.\ware;.\src;.\middle;.\user) DEBUG PRINT(.\obj\rtc.lst) OBJECT(.\obj\rtc.obj)

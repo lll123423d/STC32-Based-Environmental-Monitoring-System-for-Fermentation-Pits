@@ -1,0 +1,37 @@
+C251 COMPILER V5.60.0,  test                                                               07/10/25  00:40:21  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE test
+OBJECT MODULE PLACED IN .\Objects\test.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE test.c INTR2 BROWSE DEBUG PRINT(.\Listings\test.lst) OBJECT(.\Objects\
+                    -test.obj) 
+
+stmt  level    source
+
+    1          const unsigned char far aa[] = {0x00, 0x00};
+    2          
+    3          void main(void) { while (1); }
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =         2     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------     ------
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =         2     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

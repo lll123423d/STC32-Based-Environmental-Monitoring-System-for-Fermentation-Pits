@@ -1,0 +1,637 @@
+C251 COMPILER V5.60.0,  oled                                                               06/10/25  21:35:13  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE oled
+OBJECT MODULE PLACED IN .\obj\oled.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE ware\oled.c XSMALL INTR2 BROWSE INCDIR(.\Resource;.\ware;.\src;.\middl
+                    -e;.\user) DEBUG PRINT(.\obj\oled.lst) OBJECT(.\obj\oled.obj) 
+
+stmt  level    source
+
+    1          #include "oled.h"
+    2          #include "font.h"
+    3          #include "stc.h"
+    4          #include "spi.h"
+    5          #include "string.h"
+    6          
+    7          unsigned char xdata ShowBUFF[8][128];                           //OLED全局缓存
+    8          
+    9          
+   10          //========================================================================
+   11          // 函数名称: delay
+   12          // 函数功能: OLED驱动用的延时
+   13          // 入口参数: 无
+   14          // 函数返回: 无
+   15          // 当前版本: VER1.0
+   16          // 修改日期: 2023 - 6 - 7
+   17          // 当前作者: ZCF
+   18          // 其他备注:
+   19          //========================================================================
+   20          void delay(void)
+   21          {
+   22   1          int xdata i;
+   23   1          
+   24   1          for (i=0; i<100; i++);
+   25   1      }
+   26          
+   27          //========================================================================
+   28          // 函数名称: delay_ms
+   29          // 函数功能: ms延时函数
+   30          // 入口参数: 无
+   31          // 函数返回: 无
+   32          // 当前版本: VER1.0
+   33          // 修改日期: 2023 - 6 - 7
+   34          // 当前作者: ZCF
+   35          // 其他备注:
+   36          //========================================================================
+   37          void delay_ms(u16 ms)
+   38          {
+   39   1           u16 xdata i;
+   40   1           do{
+   41   2                i = MAIN_Fosc / 6000;
+   42   2                while(--i);   //6T per loop
+   43   2           }while(--ms);
+   44   1      }
+   45          
+   46          //========================================================================
+   47          // 函数名称: OLED_WR_Byte
+   48          // 函数功能: OLED地址/数据写入函数
+   49          // 入口参数: @dat:数据    @cmd:命令
+   50          // 函数返回: 无
+   51          // 当前版本: VER1.0
+   52          // 修改日期: 2023 - 6 - 7
+   53          // 当前作者: ZCF
+   54          // 其他备注:
+   55          //========================================================================
+   56          void OLED_WR_Byte(u8 dat,u8 cmd)
+   57          {
+   58   1          u8 udat[1] ;
+C251 COMPILER V5.60.0,  oled                                                               06/10/25  21:35:13  PAGE 2   
+
+   59   1          udat[0] = dat;
+   60   1          if(cmd)
+   61   1          {
+   62   2              OLED_DC = 1;
+   63   2          }
+   64   1          else
+   65   1          {
+   66   2              OLED_DC = 0;
+   67   2          }
+   68   1          OLED_CS = 0;
+   69   1          SPI_WriteByte(dat);
+   70   1          delay();
+   71   1          OLED_CS = 1;
+   72   1          OLED_DC = 1;
+   73   1      }
+   74          
+   75          //========================================================================
+   76          // 函数名称: OLED_Init
+   77          // 函数功能: OLED初始化函数
+   78          // 入口参数: 无
+   79          // 函数返回: 无
+   80          // 当前版本: VER1.0
+   81          // 修改日期: 2023 - 6 - 7
+   82          // 当前作者: ZCF
+   83          // 其他备注:
+   84          //========================================================================
+   85          void OLED_Init(void)
+   86          {
+   87   1          SPI_init();
+   88   1           delay_ms(100);
+   89   1          OLED_REST = 1;
+   90   1          delay_ms(200);
+   91   1          OLED_REST=0;//复位
+   92   1          delay_ms(200);
+   93   1          OLED_REST = 1;
+   94   1      
+   95   1          OLED_WR_Byte(0xAE,OLED_CMD);//--turn off oled panel
+   96   1          OLED_WR_Byte(0x00,OLED_CMD);//---set low column address
+   97   1          OLED_WR_Byte(0x10,OLED_CMD);//---set high column address
+   98   1          OLED_WR_Byte(0x40,OLED_CMD);//--set start line address  Set Mapping RAM Display Start Line (0x00~0x3F
+             -)
+   99   1          OLED_WR_Byte(0x81,OLED_CMD);//--set contrast control register
+  100   1          OLED_WR_Byte(0xCF,OLED_CMD);// Set SEG Output Current Brightness
+  101   1          OLED_WR_Byte(0xA1,OLED_CMD);//--Set SEG/Column Mapping     0xa0左右反置 0xa1正常
+  102   1          OLED_WR_Byte(0xC8,OLED_CMD);//Set COM/Row Scan Direction   0xc0上下反置 0xc8正常
+  103   1          OLED_WR_Byte(0xA6,OLED_CMD);//--set normal display
+  104   1          OLED_WR_Byte(0xA8,OLED_CMD);//--set multiplex ratio(1 to 64)
+  105   1          OLED_WR_Byte(0x3f,OLED_CMD);//--1/64 duty
+  106   1          OLED_WR_Byte(0xD3,OLED_CMD);//-set display offset   Shift Mapping RAM Counter (0x00~0x3F)
+  107   1          OLED_WR_Byte(0x00,OLED_CMD);//-not offset
+  108   1          OLED_WR_Byte(0xd5,OLED_CMD);//--set display clock divide ratio/oscillator frequency
+  109   1          OLED_WR_Byte(0x80,OLED_CMD);//--set divide ratio, Set Clock as 100 Frames/Sec
+  110   1          OLED_WR_Byte(0xD9,OLED_CMD);//--set pre-charge period
+  111   1          OLED_WR_Byte(0xF1,OLED_CMD);//Set Pre-Charge as 15 Clocks & Discharge as 1 Clock
+  112   1          OLED_WR_Byte(0xDA,OLED_CMD);//--set com pins hardware configuration
+  113   1          OLED_WR_Byte(0x12,OLED_CMD);
+  114   1          OLED_WR_Byte(0xDB,OLED_CMD);//--set vcomh
+  115   1          OLED_WR_Byte(0x40,OLED_CMD);//Set VCOM Deselect Level
+  116   1          OLED_WR_Byte(0x20,OLED_CMD);//-Set Page Addressing Mode (0x00/0x01/0x02)
+  117   1          OLED_WR_Byte(0x00,OLED_CMD);//
+  118   1          OLED_WR_Byte(0x8D,OLED_CMD);//--set Charge Pump enable/disable
+  119   1          OLED_WR_Byte(0x14,OLED_CMD);//--set(0x10) disable
+  120   1          OLED_WR_Byte(0xA4,OLED_CMD);// Disable Entire Display On (0xa4/0xa5)
+  121   1          OLED_WR_Byte(0xA6,OLED_CMD);// Disable Inverse Display On (0xa6/a7) 
+  122   1          OLED_WR_Byte(0xAF,OLED_CMD);
+  123   1          
+C251 COMPILER V5.60.0,  oled                                                               06/10/25  21:35:13  PAGE 3   
+
+  124   1          OLED_DisplayOn();
+  125   1      }
+  126          
+  127          
+  128          //========================================================================
+  129          // 函数名称: OLED_Set_Pos
+  130          // 函数功能: OLED设置显示位置
+  131          // 入口参数: @x:x坐标     @y:y坐标
+  132          // 函数返回: 无
+  133          // 当前版本: VER1.0
+  134          // 修改日期: 2023 - 6 - 7
+  135          // 当前作者: ZCF
+  136          // 其他备注:
+  137          //========================================================================
+  138          void OLED_Set_Pos(unsigned char x, unsigned char y) 
+  139          { 
+  140   1              OLED_WR_Byte((u8)(0xb0+y),OLED_CMD);
+  141   1              OLED_WR_Byte(((x&0xf0)>>4)|0x10,OLED_CMD);
+  142   1              OLED_WR_Byte((x&0x0f)|0x01,OLED_CMD); 
+  143   1      }   
+  144          
+  145          
+  146          //========================================================================
+  147          // 函数名称: OLED_DrawBMP
+  148          // 函数功能: OLED显示图片
+  149          // 入口参数: @x0:x起点  @y0:y起点    @x1:x终点   @y1:y终点  @BMP：显示数组
+  150          // 函数返回: 无
+  151          // 当前版本: VER1.0
+  152          // 修改日期: 2023 - 6 - 7
+  153          // 当前作者: ZCF
+  154          // 其他备注:
+  155          //========================================================================
+  156          void OLED_DrawBMP(unsigned char x0, unsigned char y0,unsigned char x1, unsigned char y1,unsigned char BMP
+             -[])
+  157          {       
+  158   1          unsigned int xdata j=0;
+  159   1          unsigned char xdata x,y;
+  160   1      
+  161   1          for(y=y0;y<(y1+y0);y++)
+  162   1          {
+  163   2              OLED_Set_Pos(x0,y);
+  164   2              for(x=0;x<x1;x++)
+  165   2              {      
+  166   3                  OLED_WR_Byte(BMP[j++],OLED_DATA);           
+  167   3              }
+  168   2          }
+  169   1      } 
+  170          
+  171          //========================================================================
+  172          // 函数名称: OLED_DisplayOn
+  173          // 函数功能: OLED开显示
+  174          // 入口参数: 无
+  175          // 函数返回: 无
+  176          // 当前版本: VER1.0
+  177          // 修改日期: 2023 - 6 - 7
+  178          // 当前作者: ZCF
+  179          // 其他备注:
+  180          //========================================================================
+  181          void OLED_DisplayOn(void)     //开显示
+  182          {
+  183   1          OLED_WR_Byte(0x8D,OLED_CMD);//电荷泵使能
+  184   1          OLED_WR_Byte(0x14,OLED_CMD);//开启电荷泵
+  185   1          OLED_WR_Byte(0xAF,OLED_CMD);//点亮屏幕       
+  186   1      }
+  187            
+  188          //========================================================================
+C251 COMPILER V5.60.0,  oled                                                               06/10/25  21:35:13  PAGE 4   
+
+  189          // 函数名称: OLED_DisplayOff
+  190          // 函数功能: OLED关显示
+  191          // 入口参数: 无
+  192          // 函数返回: 无
+  193          // 当前版本: VER1.0
+  194          // 修改日期: 2023 - 6 - 7
+  195          // 当前作者: ZCF
+  196          // 其他备注:
+  197          //========================================================================
+  198          void OLED_DisplayOff(void)     //关显示
+  199          {
+  200   1          OLED_WR_Byte(0x8D,OLED_CMD);//电荷泵使能
+  201   1          OLED_WR_Byte(0x10,OLED_CMD);//关闭电荷泵
+  202   1          OLED_WR_Byte(0xAF,OLED_CMD);//关闭屏幕        
+  203   1      }
+  204          
+  205          //========================================================================
+  206          // 函数名称: OLED_LightSet
+  207          // 函数功能: OLED亮度设置
+  208          // 入口参数: @num： 0-255
+  209          // 函数返回: 无
+  210          // 当前版本: VER1.0
+  211          // 修改日期: 2023 - 6 - 7
+  212          // 当前作者: ZCF
+  213          // 其他备注:
+  214          //========================================================================
+  215          void OLED_LightSet(unsigned char num)     //亮度设置
+  216          {
+  217   1          OLED_WR_Byte(0x81,OLED_CMD);//
+  218   1          OLED_WR_Byte(num,OLED_CMD);//  
+  219   1          OLED_WR_Byte(0xDB,OLED_CMD);//--set vcomh
+  220   1          OLED_WR_Byte(0x20,OLED_CMD);//Set VCOM Deselect Level   
+  221   1      }
+  222          
+  223          
+  224          //========================================================================
+  225          // 函数名称: OLED_BuffClear
+  226          // 函数功能: OLED清空缓存
+  227          // 入口参数: 无
+  228          // 函数返回: 无
+  229          // 当前版本: VER1.0
+  230          // 修改日期: 2023 - 6 - 7
+  231          // 当前作者: ZCF
+  232          // 其他备注: 写入的是缓存，需要电调用OLED_BuffShow才能显示出来
+  233          //========================================================================
+  234          void OLED_BuffClear(void)     //清屏
+  235          {
+  236   1          memset(ShowBUFF,0,128*8);
+  237   1      }
+  238          
+  239          //========================================================================
+  240          // 函数名称: OLED_BuffShow
+  241          // 函数功能: OLED刷新显示
+  242          // 入口参数: 无
+  243          // 函数返回: 无
+  244          // 当前版本: VER1.0
+  245          // 修改日期: 2023 - 6 - 7
+  246          // 当前作者: ZCF
+  247          // 其他备注:
+  248          //========================================================================
+  249          void OLED_BuffShow(void)     
+  250          {
+  251   1          u8 xdata i,n;
+  252   1      
+  253   1          for(i=0;i<8;i++)
+  254   1          {
+C251 COMPILER V5.60.0,  oled                                                               06/10/25  21:35:13  PAGE 5   
+
+  255   2             OLED_WR_Byte(0xb0+i,OLED_CMD); //设置行起始地址
+*** WARNING C188 IN LINE 255 OF ware\oled.c: 'parameter 1': value truncated
+  256   2             OLED_WR_Byte(0x00,OLED_CMD);   //设置低列起始地址
+  257   2             OLED_WR_Byte(0x10,OLED_CMD);   //设置高列起始地址
+  258   2      
+  259   2             for(n=0;n<128;n++)
+  260   2               OLED_WR_Byte(ShowBUFF[i][n],OLED_DATA);
+  261   2          }
+  262   1      }
+  263          
+  264          //========================================================================
+  265          // 函数名称: OLED_BuffShowPoint
+  266          // 函数功能: OLED显示一个点
+  267          // 入口参数: @x：x起点   @y:y起点
+  268          // 函数返回: 无
+  269          // 当前版本: VER1.0
+  270          // 修改日期: 2023 - 6 - 7
+  271          // 当前作者: ZCF
+  272          // 其他备注: 写入的是缓存，需要电调用OLED_BuffShow才能显示出来
+  273          //========================================================================
+  274          void OLED_BuffShowPoint(unsigned char x,unsigned char y)     //OLED显示一个点
+  275          {
+  276   1          ShowBUFF[y/8][x] |= 1<<(y%8);
+  277   1      }
+  278          
+  279          //========================================================================
+  280          // 函数名称: OLED_BuffShowPoint
+  281          // 函数功能: OLED显示一条线
+  282          // 入口参数: @x1：x起点  @y1：y起点  @x2：x终点   @y2：y终点
+  283          // 函数返回: 无
+  284          // 当前版本: VER1.0
+  285          // 修改日期: 2023 - 6 - 7
+  286          // 当前作者: ZCF
+  287          // 其他备注: 写入的是缓存，需要电调用OLED_BuffShow才能显示出来
+  288          //========================================================================
+  289          void OLED_BuffShowLine( unsigned char x1, unsigned char y1, unsigned char x2,unsigned char y2)
+  290          {
+  291   1          unsigned char x,y;
+  292   1          if( x1>x2 )
+  293   1          {
+  294   2              x=x1;x1=x2;x2=x;
+  295   2              y=y1;y1=y2;y2=y;
+  296   2          }
+  297   1          if(x1!=x2)
+  298   1          {
+  299   2              for( x = x1; x <= x2; x++ )
+  300   2              {
+  301   3                  if( y2>y1 )
+  302   3                      OLED_BuffShowPoint(x, (unsigned char)(y1+(u16)(y2-y1)*(u16)x/(u16)(x2-x1)));
+  303   3                  else
+  304   3                      OLED_BuffShowPoint(x, (unsigned char)(y1-(u16)(y1-y2)*(u16)x/(u16)(x2-x1)));
+  305   3              }        
+  306   2          }
+  307   1          else
+  308   1          {
+  309   2              if( y1>y2 )
+  310   2              {
+  311   3                  for( y = y2; y <= y1; y++ )
+  312   3                     OLED_BuffShowPoint(x1, y); 
+  313   3              }
+  314   2              else
+  315   2              {
+  316   3                  for( y = y1; y <= y2; y++ )
+  317   3                     OLED_BuffShowPoint(x1, y);             
+  318   3              }
+  319   2          }
+C251 COMPILER V5.60.0,  oled                                                               06/10/25  21:35:13  PAGE 6   
+
+  320   1      }
+  321          
+  322          //========================================================================
+  323          // 函数名称: OLED_BuffShowRectangle
+  324          // 函数功能: OLED显示一个矩形
+  325          // 入口参数: @x1：x起点  @y1：y起点  @x2：x终点   @y2：y终点
+  326          // 函数返回: 无
+  327          // 当前版本: VER1.0
+  328          // 修改日期: 2023 - 6 - 7
+  329          // 当前作者: ZCF
+  330          // 其他备注: 写入的是缓存，需要电调用OLED_BuffShow才能显示出来
+  331          //========================================================================
+  332          void OLED_BuffShowRectangle(u8 x1, u8 y1, u8 x2, u8 y2)
+  333          {
+  334   1          OLED_BuffShowLine(x1, y1, x2, y1);
+  335   1          OLED_BuffShowLine(x1, y1, x1, y2);
+  336   1          OLED_BuffShowLine(x1, y2, x2, y2);
+  337   1          OLED_BuffShowLine(x2, y1, x2, y2);
+  338   1      }
+  339          
+  340          //========================================================================
+  341          // 函数名称: OLED_BuffShowCircle
+  342          // 函数功能: OLED显示一个圆形
+  343          // 入口参数: @x：x点  @y：y点  @r:半径
+  344          // 函数返回: 无
+  345          // 当前版本: VER1.0
+  346          // 修改日期: 2023 - 6 - 7
+  347          // 当前作者: ZCF
+  348          // 其他备注: 写入的是缓存，需要电调用OLED_BuffShow才能显示出来
+  349          //========================================================================
+  350          void OLED_BuffShowCircle(u8 x, u8 y, u8 r)
+  351          {
+  352   1          int a, b;
+  353   1          int di;
+  354   1          a = 0;
+  355   1          b = r;
+  356   1          di = 3 - (r << 1);       //判断下个点位置的标志
+  357   1       
+  358   1          while (a <= b)
+  359   1          {
+  360   2              OLED_BuffShowPoint(x + a, y - b);        //5
+*** WARNING C188 IN LINE 360 OF ware\oled.c: 'parameter 1': value truncated
+*** WARNING C188 IN LINE 360 OF ware\oled.c: 'parameter 2': value truncated
+  361   2              OLED_BuffShowPoint(x + b, y - a);        //0
+*** WARNING C188 IN LINE 361 OF ware\oled.c: 'parameter 1': value truncated
+*** WARNING C188 IN LINE 361 OF ware\oled.c: 'parameter 2': value truncated
+  362   2              OLED_BuffShowPoint(x + b, y + a);        //4
+*** WARNING C188 IN LINE 362 OF ware\oled.c: 'parameter 1': value truncated
+*** WARNING C188 IN LINE 362 OF ware\oled.c: 'parameter 2': value truncated
+  363   2              OLED_BuffShowPoint(x + a, y + b);        //6
+*** WARNING C188 IN LINE 363 OF ware\oled.c: 'parameter 1': value truncated
+*** WARNING C188 IN LINE 363 OF ware\oled.c: 'parameter 2': value truncated
+  364   2              OLED_BuffShowPoint(x - a, y + b);        //1
+*** WARNING C188 IN LINE 364 OF ware\oled.c: 'parameter 1': value truncated
+*** WARNING C188 IN LINE 364 OF ware\oled.c: 'parameter 2': value truncated
+  365   2              OLED_BuffShowPoint(x - b, y + a);
+*** WARNING C188 IN LINE 365 OF ware\oled.c: 'parameter 1': value truncated
+*** WARNING C188 IN LINE 365 OF ware\oled.c: 'parameter 2': value truncated
+  366   2              OLED_BuffShowPoint(x - a, y - b);        //2
+*** WARNING C188 IN LINE 366 OF ware\oled.c: 'parameter 1': value truncated
+*** WARNING C188 IN LINE 366 OF ware\oled.c: 'parameter 2': value truncated
+  367   2              OLED_BuffShowPoint(x - b, y - a);        //7
+*** WARNING C188 IN LINE 367 OF ware\oled.c: 'parameter 1': value truncated
+*** WARNING C188 IN LINE 367 OF ware\oled.c: 'parameter 2': value truncated
+  368   2              a++;
+  369   2       
+C251 COMPILER V5.60.0,  oled                                                               06/10/25  21:35:13  PAGE 7   
+
+  370   2              //使用Bresenham算法画圆
+  371   2              if (di < 0)di += 4 * a + 6;
+  372   2              else
+  373   2              {
+  374   3                  di += 10 + 4 * (a - b);
+  375   3                  b--;
+  376   3              }
+  377   2          }
+  378   1      }
+  379          
+  380          //========================================================================
+  381          // 函数名称: OLED_BuffShowChar
+  382          // 函数功能: OLED显示一个8*16的字符
+  383          // 入口参数: @x：x点  @y：y点  @asc:字符   @mode：0正显  1反显
+  384          // 函数返回: 无
+  385          // 当前版本: VER1.0
+  386          // 修改日期: 2023 - 6 - 7
+  387          // 当前作者: ZCF
+  388          // 其他备注: 写入的是缓存，需要电调用OLED_BuffShow才能显示出来
+  389          //========================================================================
+  390          void OLED_BuffShowChar(unsigned char x,unsigned char y,char asc, u8 mode)     //OLED显示一个8*16字符
+  391          {
+  392   1          unsigned char j,k;
+  393   1          for( j=0;j<2;j++ )
+  394   1          {
+  395   2              for( k=0;k<8;k++ )
+  396   2              {
+  397   3                  if(mode==0)            
+  398   3                      ShowBUFF[j+y][x+k]=Ascll_16[(asc-' ')*2][j*8+k];
+  399   3                  else
+  400   3                      ShowBUFF[j+y][x+k]=~Ascll_16[(asc-' ')*2][j*8+k];
+  401   3              }
+  402   2          }    
+  403   1      }
+  404          
+  405          //========================================================================
+  406          // 函数名称: OLED_BuffShowGBK
+  407          // 函数功能: OLED显示汉字
+  408          // 入口参数: @x：x点  @y：y点  @gbk:汉字   @mode：0正显  1反显
+  409          // 函数返回: 无
+  410          // 当前版本: VER1.0
+  411          // 修改日期: 2023 - 6 - 7
+  412          // 当前作者: ZCF
+  413          // 其他备注: 写入的是缓存，需要电调用OLED_BuffShow才能显示出来
+  414          //          用到的汉字需要自己取模放到字库里，字库多的话，这里这个循环变量要放大
+  415          //========================================================================
+  416          void OLED_BuffShowGBK(unsigned char x,unsigned char y,char *gbk,u8 mode)     //OLED显示一个16*16汉字
+  417          {
+  418   1          unsigned char i;
+  419   1          unsigned char j,k;
+  420   1          for( i=0;i<200;i++ )
+  421   1          {
+  422   2              if(( gbk[0]== GBK16[i].gbn_bum[0] )&&( gbk[1]== GBK16[i].gbn_bum[1] ))
+  423   2              {
+  424   3                  for( j=0;j<2;j++ )
+  425   3                  {
+  426   4                      for( k=0;k<16;k++ )
+  427   4                      {
+  428   5                          if( mode ==0 )
+  429   5                              ShowBUFF[j+y][x+k]=GBK16[i].gbk_font[j*16+k];
+  430   5                          else
+  431   5                              ShowBUFF[j+y][x+k]=~GBK16[i].gbk_font[j*16+k];
+  432   5                      }
+  433   4                  }
+  434   3                  break;
+  435   3              }
+C251 COMPILER V5.60.0,  oled                                                               06/10/25  21:35:13  PAGE 8   
+
+  436   2          }    
+  437   1      }
+  438          
+  439          //========================================================================
+  440          // 函数名称: OLED_BuffShowString
+  441          // 函数功能: OLED显示字符串。汉字字符均可
+  442          // 入口参数: @x：x点  @y：y点  @s字符串   @mode：0正显  1反显
+  443          // 函数返回: 无
+  444          // 当前版本: VER1.0
+  445          // 修改日期: 2023 - 6 - 7
+  446          // 当前作者: ZCF
+  447          // 其他备注: 写入的是缓存，需要电调用OLED_BuffShow才能显示出来
+  448          //          用到的汉字需要自己取模放到字库里，字库多的话，这里这个循环变量要放大
+  449          //========================================================================
+  450          void OLED_BuffShowString(unsigned char x,unsigned char y,char *s,u8 mode)
+  451          {
+  452   1          char s_num[2];
+  453   1              while(*s != '\0')       //字符串不为空，循环
+  454   1              {
+  455   2              if ((unsigned char)*s < 0x80)     //根据输入数据的大小判断是字符还是汉字，
+  456   2              {
+  457   3                  OLED_BuffShowChar(x,y,*s,mode);
+  458   3                  x+=8;
+  459   3                  s++;
+  460   3              }
+  461   2              else
+  462   2              {
+  463   3                  s_num[0] = *s ;
+  464   3                  s_num[1] = *(s+1) ;
+  465   3                  OLED_BuffShowGBK(x,y,s_num,mode);
+  466   3                  x+=16;
+  467   3                  s+=2;
+  468   3              }
+  469   2                      if(x>127)
+  470   2              {
+  471   3                  x=0;
+  472   3                  y+=2;
+  473   3              }
+  474   2              }       
+  475   1      }
+  476          
+  477          //========================================================================
+  478          // 函数名称: OLED_BuffShowNum
+  479          // 函数功能: OLED显示整形变量
+  480          // 入口参数: @x：x点  @y：y点  @num：整形变量   @mode：0正显  1反显
+  481          // 函数返回: 无
+  482          // 当前版本: VER1.0
+  483          // 修改日期: 2023 - 6 - 7
+  484          // 当前作者: ZCF
+  485          // 其他备注: 写入的是缓存，需要电调用OLED_BuffShow才能显示出来
+  486          //========================================================================
+  487          void OLED_BuffShowNum(u8 x,u8 y,long num,u8 mode)
+  488          {
+  489   1          u8 xdata str[10];
+  490   1          memset(str,0,10);
+  491   1          sprintf(str,"%ld",num);
+  492   1          OLED_BuffShowString(x,y,(u8*)str);
+*** WARNING C96 IN LINE 492 OF ware\oled.c: 'OLED_BuffShowString': too few actual parameters
+  493   1      }
+*** WARNING C47 IN LINE 487 OF ware\oled.c: 'mode': unreferenced parameter
+  494          
+  495          //========================================================================
+  496          // 函数名称: OLED_BuffShowNum02F
+  497          // 函数功能: OLED显示一个两位小数变量
+  498          // 入口参数: @x：x点  @y：y点  @num：小数变量   @mode：0正显  1反显
+  499          // 函数返回: 无
+C251 COMPILER V5.60.0,  oled                                                               06/10/25  21:35:13  PAGE 9   
+
+  500          // 当前版本: VER1.0
+  501          // 修改日期: 2023 - 6 - 7
+  502          // 当前作者: ZCF
+  503          // 其他备注: 写入的是缓存，需要电调用OLED_BuffShow才能显示出来
+  504          //========================================================================
+  505          void OLED_BuffShowNum02F(u8 x,u8 y,float num,u8 mode)
+  506          {
+  507   1          u8 xdata str[10];
+  508   1          memset(str,0,10);
+  509   1          sprintf(str,"%.2f",num);
+  510   1          OLED_BuffShowString(x,y,(u8*)str,mode);
+  511   1      }
+  512          
+  513          //========================================================================
+  514          // 函数名称: OLED_BuffShowChar32
+  515          // 函数功能: OLED显示16*32的字符
+  516          // 入口参数: @x：x点  @y：y点  @num：显示第几个字符   @mode：0正显  1反显
+  517          // 函数返回: 无
+  518          // 当前版本: VER1.0
+  519          // 修改日期: 2023 - 6 - 7
+  520          // 当前作者: ZCF
+  521          // 其他备注: 写入的是缓存，需要电调用OLED_BuffShow才能显示出来
+  522          //          用到的需要自己取模哦
+  523          //========================================================================
+  524          void OLED_BuffShowChar32(unsigned char  x,unsigned char  y,u8 num, u8 mode)     
+  525          {
+  526   1          unsigned char j,k;
+  527   1          for( j=0;j<4;j++ )
+  528   1          {
+  529   2              for( k=0;k<16;k++ )
+  530   2              {
+  531   3                  if( mode==0 )
+  532   3                      ShowBUFF[j+y][x+k]=lib_num1632[num][j*16+k];
+  533   3                  else
+  534   3                      ShowBUFF[j+y][x+k]=~lib_num1632[num][j*16+k];
+  535   3              }
+  536   2          }            
+  537   1      }
+  538          
+  539          
+  540          //========================================================================
+  541          // 函数名称: OLED_BuffShowBMP
+  542          // 函数功能: OLED缓存写入图片
+  543          // 入口参数: @x0:x起点  @y0:y起点    @x1:x终点   @y1:y终点  @BMP：显示数组
+  544          // 函数返回: 无
+  545          // 当前版本: VER1.0
+  546          // 修改日期: 2023 - 6 - 7
+  547          // 当前作者: ZCF
+  548          // 其他备注:
+  549          //========================================================================
+  550          void OLED_BuffShowBMP(unsigned char x0, unsigned char y0,unsigned char x1, unsigned char y1,unsigned char
+             - BMP[])
+  551          {       
+  552   1          unsigned int xdata num=0;
+  553   1          u8 k,j;
+  554   1          
+  555   1          for( j=0;j<y1;j++ )
+  556   1          {
+  557   2              for( k=0;k<x1;k++ )
+  558   2              {
+  559   3                  ShowBUFF[j+y0][x0+k]=BMP[num++];
+  560   3              }
+  561   2          }  
+  562   1      } 
+  563           
+
+C251 COMPILER V5.60.0,  oled                                                               06/10/25  21:35:13  PAGE 10  
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =      5233     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =      1024         23
+  xdata-const size     =    ------     ------
+  edata size           =    ------         23
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =         9     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  19 WARNING(S),  0 ERROR(S)

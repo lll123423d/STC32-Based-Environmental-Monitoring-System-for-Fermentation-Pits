@@ -1,0 +1,421 @@
+C251 COMPILER V5.60.0,  mode                                                               27/09/22  13:55:46  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE mode
+OBJECT MODULE PLACED IN .\obj\mode.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE Resource\mode.c XSMALL ROM(HUGE) BROWSE INCDIR(.\Resource;.\ware;.\src
+                    -;.\middle) DEBUG PRINT(.\obj\mode.lst) OBJECT(.\obj\mode.obj) 
+
+stmt  level    source
+
+    1          #include <stdlib.h>
+    2          #include <stdio.h>
+    3          //#include "STC12C5A60S2.h"
+    4          #include "mode.h"
+    5          #include "keyboard_input.h"
+    6          #include "keyboard_device.h"
+    7          #include "alg_caculate.h"
+    8          #include "alg_linearlist.h"
+    9          //#include "lcd_12864.h"
+   10          //#include "eeprom_rw.h"
+   11          #include "normal_complex_caculate.h"
+   12          #include "function_pic.h"
+   13          #include "matrix.h"
+   14          #include "solve_equation.h"
+   15          #include "take_the_differential.h"
+   16          #include "statistics.h"
+   17          //#include "pwm.h"
+   18          #include "solve_differential_equation.h"
+   19          //#include "time.h"
+   20          //#include "change_units.h"
+   21          #include "middle.h"
+   22          
+   23          #define CASE break;case
+   24          
+   25          uint time_out = 0;              //节电超时
+   26          
+   27          void mode_real_calculate(void);
+   28          void mode_complex_calculate(void);
+   29          void mode_change(void);
+   30          void mode_set(void);
+   31          void mode_sleep(void);
+   32          
+   33          uchar mode_choose(void)
+   34          {
+   35   1              switch(keyboard_output())
+   36   1              {
+   37   2                      case '0': return 0;     //选择0
+   38   2      
+   39   2                      CASE '1': return 1;     //选择1
+   40   2      
+   41   2                      CASE '2': return 2;     //选择2
+   42   2      
+   43   2                      CASE '3': return 3;     //选择3
+   44   2      
+   45   2                      CASE '4': return 4;     //选择4
+   46   2      
+   47   2                      CASE '5': return 5;     //选择5
+   48   2      
+   49   2                      CASE '6': return 6;     //选择6
+   50   2      
+   51   2                      CASE '7': return 7;     //选择7
+   52   2      
+   53   2                      CASE '8': return 8;     //选择8
+   54   2      
+   55   2                      CASE '9': return 9;     //选择9
+   56   2                                      
+   57   2                      CASE 3 : return 10;     //上
+   58   2                      
+C251 COMPILER V5.60.0,  mode                                                               27/09/22  13:55:46  PAGE 2   
+
+   59   2                      CASE 6 : return 11; //下
+   60   2                      
+   61   2              }
+   62   1              return 13;                      //输入错误
+   63   1      }
+   64          
+   65          void mode_select(void)
+   66          {
+   67   1              uchar chProgramStatus;
+   68   1              close_cursor();         //关光标
+   69   1      
+   70   1              chProgramStatus = byte_read(ADD_PROG_STATUS, 0);
+   71   1              time_out = byte_read(ADD_TIMEOUT, 0);                                   //读取超时设定
+   72   1              
+   73   1              switch(chProgramStatus)
+   74   1              {
+   75   2                      case NORMAL             : normal_calculate();
+   76   2                      case COMPLEX            : complex_calculate();
+   77   2                      case MATRIX                     : ju_main();
+   78   2                      case DRAW_PIC           : draw_pic();
+   79   2                      case SOLVE_EQUATION : solve_equation();
+   80   2              //      case TAKE_DIFFER        : run_the_differential();
+   81   2                      case STASTISTICS        : sta_menu1();
+   82   2                      case MODE                       : mode_change();
+   83   2                      case SET                        : mode_set();
+   84   2                      case DIFFER_EQUATION: solve_differential_equation();
+   85   2              //      case CHANGE_UNITS   : change_units();
+   86   2      
+   87   2              }
+   88   1      }
+   89          
+   90          void mode_change(void)
+   91          {
+   92   1              uchar m;
+   93   1              uchar count1 = 1;
+   94   1              uchar out = 0;
+   95   1              uchar chStatus;
+   96   1              
+   97   1              while(1)
+   98   1              {
+   99   2                      close_cursor();
+  100   2                      lcd_clear();
+  101   2      
+  102   2                      if(count1>4)
+  103   2                              count1=4;
+  104   2                      else if(count1<1)
+  105   2                              count1=1;
+  106   2                      for(m=0;m<4;m++)
+  107   2                              {
+  108   3                                      lcd_set_pos(m,0);       
+  109   3                                      switch (m+count1)
+  110   3                                              {
+  111   4                                                      case 1:
+  112   4                                                              lcd_write_str("1.普通计算");break;
+  113   4                                                      case 2:
+  114   4                                                              lcd_write_str("2.复数计算");break;
+  115   4                                                      case 3:
+  116   4                                                              lcd_write_str("3.矩阵运算");break;
+  117   4                                                      case 4:
+  118   4                                                              lcd_write_str("4.函数图像");break;
+  119   4                                                      case 5:
+  120   4                                                              lcd_write_str("5.解方程");break;
+  121   4                                                      case 6:
+  122   4                                                              lcd_write_str("6.统计");break;
+  123   4                                                      case 7:
+  124   4                                                              lcd_write_str("7.一阶常微分方程");break;
+C251 COMPILER V5.60.0,  mode                                                               27/09/22  13:55:46  PAGE 3   
+
+  125   4      //                                              case 8:
+  126   4      //                                                      lcd_write_str("8.一阶常微分方程");break;
+  127   4                                      //              case 9:
+  128   4                                      //                      lcd_write_str("9.单位转化");break;
+  129   4                                                      }
+  130   3                                      }       
+  131   2      
+  132   2                      switch(mode_choose())
+  133   2                      {
+  134   3                              case 1 : chStatus = NORMAL;                             out = 1;        break;
+  135   3                              case 2 : chStatus = COMPLEX;                    out = 1;        break;
+  136   3                              case 3 : chStatus = MATRIX;                             out = 1;        break;
+  137   3                              case 4 : chStatus = DRAW_PIC;                   out = 1;        break;
+  138   3                              case 5 : chStatus = SOLVE_EQUATION;             out = 1;        break;
+  139   3                              case 6 : chStatus = STASTISTICS;                out = 1;        break;
+  140   3                              case 7 : chStatus = DIFFER_EQUATION;    out = 1;        break;
+  141   3                              case 10 : count1--;break;
+  142   3                              case 11 : count1++;break;
+  143   3                      }
+  144   2                      if(out == 1)
+  145   2                              break;
+  146   2              }
+  147   1              
+  148   1              byte_write(ADD_PROG_STATUS, chStatus,0);                //写入当前指针
+  149   1              bl_bright_change(byte_read(ADD_BRIGHT, 0));                     //读取亮度
+  150   1              
+  151   1              reset();                //软复位
+  152   1      }
+  153          
+  154          void mode_set(void)
+  155          {
+  156   1              uchar m;
+  157   1              uchar count1 = 1;
+  158   1              uchar out = 0;
+  159   1              
+  160   1              uchar set_value;
+  161   1              
+  162   1              while(1)
+  163   1              {
+  164   2                      close_cursor();
+  165   2                      lcd_clear();
+  166   2      
+  167   2                      if(count1>3)
+  168   2                              count1=3;
+  169   2                      else if(count1<1)
+  170   2                              count1=1;
+  171   2                      for(m=0;m<4;m++)
+  172   2                              {
+  173   3                                      lcd_set_pos(m,0);       
+  174   3                                      switch (m+count1)
+  175   3                                              {
+  176   4                                                      case 1:
+  177   4                                                              lcd_write_str("1.屏幕亮度");break;
+  178   4                                                      case 2:
+  179   4                                                              lcd_write_str("2.shift 提示");break;
+  180   4                                                      case 3:
+  181   4                                                              lcd_write_str("3.节电选项");break;
+  182   4                                                      case 4:
+  183   4                                                              lcd_write_str("4.日期设置");break;
+  184   4                                                      case 5:
+  185   4                                                              lcd_write_str("5.时钟设置");break;
+  186   4                                                      case 6:
+  187   4                                                              lcd_write_str("6.关于");break;
+  188   4      //                                              case 7:
+  189   4      //                                                      lcd_write_str("7.返回");break;
+  190   4                                                      }
+C251 COMPILER V5.60.0,  mode                                                               27/09/22  13:55:46  PAGE 4   
+
+  191   3                                      }       
+  192   2                      
+  193   2                      
+  194   2                      switch(mode_choose())
+  195   2                      {
+  196   3                              case 10 : count1--;break;
+  197   3                              case 11 : count1++;break;                               //移动屏幕
+  198   3                              
+  199   3                              case 1 : 
+  200   3                                              
+  201   3                                              while(1)
+  202   3                                              {
+  203   4                                                      lcd_clear();
+  204   4                                                      lcd_inverse(1, 5, 1);                                                   //反白
+  205   4                                                      lcd_set_pos(1,0);
+  206   4                                                      lcd_write_str("屏幕亮度");
+  207   4                                                      
+  208   4                                                      set_value = byte_read(ADD_BRIGHT, 0);                   //读亮度
+  209   4                                                      bl_bright_change(set_value);
+  210   4                                                      
+  211   4                                                      lcd_set_pos(1,5);
+  212   4                                                      lcd_write_dat((uchar)(set_value+'0'));
+  213   4                                                      
+  214   4                                                      if(set_value > 1)
+  215   4                                                      {
+  216   5                                                              lcd_set_pos(2,5);
+  217   5                                                              lcd_write_dat(0x19);                                    //下箭头
+  218   5                                                      }
+  219   4                                                      if(set_value < 5)
+  220   4                                                      {
+  221   5                                                              lcd_set_pos(0,5);
+  222   5                                                              lcd_write_dat(0x18);                                    //上箭头
+  223   5                                                      }
+  224   4                                                      switch(keyboard())
+  225   4                                                      {
+  226   5                                                              case 4  :       if(set_value < 5)//上
+  227   5                                                                                              set_value ++;
+  228   5                                                                                      break;
+  229   5                                                                                      
+  230   5                                                              case 9  :       if(set_value>1)//下
+  231   5                                                                                              set_value --;
+  232   5                                                                                      break;
+  233   5                                                              case 25 :                       //AC
+  234   5                                                              case 40 :       out = 1;//=
+  235   5                                                                                      break;
+  236   5                                                      }
+  237   4                                                      byte_write(ADD_BRIGHT, set_value, 0);                   //写亮度
+  238   4                                                      if(out == 1)
+  239   4                                                      {
+  240   5                                                              out = 0;
+  241   5                                                              break;
+  242   5                                                      }
+  243   4                                                              
+  244   4                                              }
+  245   3      
+  246   3                                              lcd_clear_pic();                                                                //清反白
+  247   3                                              break;
+  248   3      
+  249   3                              case 2 : 
+  250   3                                              while(1)
+  251   3                                              {
+  252   4                                                      lcd_clear();
+  253   4                                                      lcd_inverse(1, 6, 1);                                                   //反白
+  254   4                                                      lcd_set_pos(1,0);
+  255   4                                                      lcd_write_str(" shift提示");
+  256   4                                                      lcd_set_pos(3,1);
+C251 COMPILER V5.60.0,  mode                                                               27/09/22  13:55:46  PAGE 5   
+
+  257   4                                                      lcd_write_str("通过改变亮度");
+  258   4                                                      
+  259   4                                                      set_value = byte_read(ADD_SHIFTSIGN, 0);                        //读亮度
+  260   4                                                      bl_bright_change(set_value);
+  261   4                                                      
+  262   4                                                      lcd_set_pos(1,6);
+  263   4                                                      lcd_write_dat((uchar)(set_value+'0'));
+  264   4                                                      
+  265   4                                                      if(set_value > 1)
+  266   4                                                      {
+  267   5                                                              lcd_set_pos(2,6);
+  268   5                                                              lcd_write_dat(0x19);                                    //下箭头
+  269   5                                                      }
+  270   4                                                      if(set_value < 5)
+  271   4                                                      {
+  272   5                                                              lcd_set_pos(0,6);
+  273   5                                                              lcd_write_dat(0x18);                                    //上箭头
+  274   5                                                      }
+  275   4                                                      switch(keyboard())
+  276   4                                                      {
+  277   5                                                              case 4  :       if(set_value < 5)//上
+  278   5                                                                                              set_value ++;
+  279   5                                                                                      break;
+  280   5                                                                                      
+  281   5                                                              case 9  :       if(set_value>1)//下
+  282   5                                                                                              set_value --;
+  283   5                                                                                      break;
+  284   5                                                              case 25 :                       //AC
+  285   5                                                              case 40 :       out = 1;//=
+  286   5                                                      }
+  287   4                                                      
+  288   4                                                      byte_write(ADD_SHIFTSIGN, set_value, 0);                        //写亮度
+  289   4                                                      
+  290   4                                                      if(out == 1)
+  291   4                                                      {
+  292   5                                                              out = 0;
+  293   5                                                              break;
+  294   5                                                      }
+  295   4                                                              
+  296   4                                              }
+  297   3                                              bl_bright_change(byte_read(ADD_BRIGHT, 0));                     //还原原来亮度
+  298   3                                              lcd_clear_pic();                                                                //清反白
+  299   3                                              break;
+  300   3                                              
+  301   3                              case 3 : 
+  302   3                                              while(1)
+  303   3                                              {
+  304   4                                                      lcd_clear();
+  305   4                                                      lcd_inverse(2, 4, 1);                                                   //反白
+  306   4                                                      lcd_set_pos(0,0);
+  307   4                                                      lcd_write_str("节电模式");
+  308   4                                                      lcd_set_pos(2,1);
+  309   4                                                      lcd_write_str("无操作");
+  310   4                                                      lcd_set_pos(2,5);
+  311   4                                                      lcd_write_str("分钟后");
+  312   4                                                      
+  313   4                                                      set_value = byte_read(ADD_TIMEOUT, 0);                  //读时间
+  314   4                                                      
+  315   4                                                      lcd_set_pos(2,4);
+  316   4                                                      lcd_write_dat((uchar)(set_value+'0'));
+  317   4                                                      
+  318   4                                                      if(set_value > 1)
+  319   4                                                      {
+  320   5                                                              lcd_set_pos(3,4);
+  321   5                                                              lcd_write_dat(0x19);                                    //下箭头
+  322   5                                                      }
+C251 COMPILER V5.60.0,  mode                                                               27/09/22  13:55:46  PAGE 6   
+
+  323   4                                                      if(set_value < 9)
+  324   4                                                      {
+  325   5                                                              lcd_set_pos(1,4);
+  326   5                                                              lcd_write_dat(0x18);                                    //上箭头
+  327   5                                                      }
+  328   4                                                      switch(keyboard())
+  329   4                                                      {
+  330   5                                                              case 4  :       if(set_value < 9)//上
+  331   5                                                                                              set_value ++;
+  332   5                                                                                      break;
+  333   5                                                                                      
+  334   5                                                              case 9  :       if(set_value>1)//下
+  335   5                                                                                              set_value --;
+  336   5                                                                                      break;
+  337   5                                                              case 25 :                       //AC
+  338   5                                                              case 40 :       out = 1;//=
+  339   5                                                                                      break;
+  340   5                                                      }
+  341   4                                                      
+  342   4                                                      byte_write(ADD_TIMEOUT, set_value, 0);                  //写时间
+  343   4                                                      if(out == 1)
+  344   4                                                      {
+  345   5                                                              out = 0;
+  346   5                                                              break;
+  347   5                                                      }
+  348   4                                                              
+  349   4                                              }
+  350   3                                              lcd_clear_pic();                                                                //清反白
+  351   3                                              break;
+  352   3                              case 4 : general_dateset();                     out = 1;        break;
+  353   3                              case 5 : general_timeset();                     out = 1;        break;
+  354   3                              
+  355   3                              case 6 : about();                                       out = 1;        break;
+  356   3      //                      case 7 : chProgramStatus = STASTISTICS;         out = 1;        break;
+  357   3      //                      case 10 : count1--;break;
+  358   3      //                      case 11 : count1++;break;
+  359   3                      }
+  360   2              }
+  361   1      }
+  362          
+  363          void mode_sleep(void)   //低功耗模式
+  364          {
+  365   1              close_cursor();
+  366   1              lcd_clear();
+  367   1              bl_bright_change(1); //降低亮度
+  368   1              page_time();
+  369   1      }
+  370          
+  371          
+  372          void reset(void)
+  373          {
+  374   1              IAP_CONTR = 0x20;                       //送0x20，软复位到程序区
+  375   1      }
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =    ------     ------
+  ecode size           =      1469     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =         2     ------
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+C251 COMPILER V5.60.0,  mode                                                               27/09/22  13:55:46  PAGE 7   
+
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =       200     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

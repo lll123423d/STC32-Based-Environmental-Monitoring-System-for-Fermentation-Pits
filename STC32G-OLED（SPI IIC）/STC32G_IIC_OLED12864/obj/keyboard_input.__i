@@ -1,0 +1,1 @@
+"Resource\keyboard_input.c" XSMALL ROM(HUGE) BROWSE INCDIR(.\Resource;.\ware;.\src;.\middle) DEBUG PRINT(.\obj\keyboard_input.lst) OBJECT(.\obj\keyboard_input.obj)

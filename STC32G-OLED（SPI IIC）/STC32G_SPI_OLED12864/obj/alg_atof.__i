@@ -1,0 +1,1 @@
+"Resource\alg_atof.c" XSMALL ROM(HUGE) BROWSE INCDIR(.\Resource;.\ware;.\src;.\middle) DEBUG PRINT(.\obj\alg_atof.lst) OBJECT(.\obj\alg_atof.obj)

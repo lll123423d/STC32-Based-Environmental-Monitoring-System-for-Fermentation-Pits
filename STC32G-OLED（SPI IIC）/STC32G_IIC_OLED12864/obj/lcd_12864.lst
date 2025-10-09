@@ -1,0 +1,416 @@
+C251 COMPILER V5.60.0,  lcd_12864                                                          25/09/22  11:34:21  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE lcd_12864
+OBJECT MODULE PLACED IN .\obj\lcd_12864.obj
+COMPILER INVOKED BY: G:\APP\c251\C251\BIN\C251.EXE Resource\lcd_12864.c XSMALL INTR2 BROWSE INCDIR(.\Resource) DEBUG PRI
+                    -NT(.\obj\lcd_12864.lst) TABS(2) OBJECT(.\obj\lcd_12864.obj) 
+
+stmt  level    source
+
+    1          #include "STC12C5A60S2.h"
+    2          #include <intrins.h>
+    3          #include "lcd_12864.h"
+    4          #include "eeprom_rw.h"
+    5          #include "pwm.h"
+    6          
+    7          /*
+    8          **内部函数
+    9          */
+   10          void lcd_delay_1u(void);
+   11          void lcd_delay_4m(void); 
+   12          void lcd_busy_check(void);
+   13          void lcd_write_dat(uchar dat);
+   14          void lcd_write_cmd(uchar cmd);
+   15          
+   16          
+   17          /* ========= 延时1us@11.0592MHz ========= */
+   18          void lcd_delay_1u(void)
+   19          {
+   20   1        _nop_();
+   21   1      }
+   22          
+   23          /* ========= 延时4ms@11.0592MHz ========= */
+   24          void lcd_delay_4m(void)
+   25          {
+   26   1        unsigned char i, j;
+   27   1      
+   28   1        _nop_();
+   29   1        _nop_();
+   30   1        _nop_();
+   31   1        i = 44;
+   32   1        j = 3;
+   33   1        do
+   34   1        {
+   35   2          while (--j);
+   36   2        } while (--i);
+   37   1      }
+   38          
+   39          
+   40          /* ========= 写命令 ========= */
+   41          void lcd_write_cmd(uchar cmd)
+   42          {
+   43   1        lcd_busy_check();     /*读忙*/
+   44   1        rw = 0;           /*选择写入*/
+   45   1        rs = 0;           /*并行指令信号*/
+   46   1        lcd_delay_1u();       /*延时*/
+   47   1        port = cmd; 
+   48   1        e = 1;            /*并行传输使能*/
+   49   1        lcd_delay_1u();       /*延时*/
+   50   1        e = 0;            /*送码*/
+   51   1        lcd_delay_1u();       /*延时*/
+   52   1      }
+   53          
+   54          /* ========= 写数据 ========= */
+   55          void lcd_write_dat(uchar dat)
+   56          {
+   57   1        lcd_busy_check();     /*读忙*/
+   58   1        rw = 0;           /*选择写入*/
+C251 COMPILER V5.60.0,  lcd_12864                                                          25/09/22  11:34:21  PAGE 2   
+
+   59   1        rs = 1;           /*并行数据信号*/
+   60   1        lcd_delay_1u();       /*延时*/
+   61   1        port = dat;
+   62   1        e = 1;            /*并行传输使能*/
+   63   1        lcd_delay_1u();       /*延时*/
+   64   1        e = 0;            /*送码*/
+   65   1        lcd_delay_1u();       /*延时*/
+   66   1      }
+   67          
+   68          /* ========= 初始化显示屏 ======== */
+   69          void lcd_init(void)
+   70          {
+   71   1        uchar i;
+   72   1        
+   73   1        P1M1 = 0x00;
+   74   1        P1M0 = 0x10;        //P1.4推挽输出，其余P1正常输出
+   75   1        for(i=0;i<80;i++)
+   76   1          lcd_delay_1u();         /*等待*/
+   77   1        lcd_write_cmd(0x30);    /*函数设置*/
+   78   1        
+   79   1        for(i=0;i<80;i++)
+   80   1          lcd_delay_1u();         /*等待*/
+   81   1        lcd_write_cmd(0x30);    /*函数设置*/
+   82   1        
+   83   1        for(i=0;i<80;i++)
+   84   1          lcd_delay_1u();         /*等待*/
+   85   1        lcd_write_cmd(0x0c);    /*功能选择*/
+   86   1        
+   87   1        for(i=0;i<80;i++)
+   88   1          lcd_delay_1u();         /*等待*/
+   89   1        lcd_write_cmd(0x01);    /*清除显示*/
+   90   1        
+   91   1        for(i=0;i<80;i++)
+   92   1          lcd_delay_1u();         /*等待*/
+   93   1        lcd_write_cmd(0x06);    /*模式设置*/
+   94   1        
+   95   1      }
+   96          ////////////////////////////////////
+   97          
+   98          
+   99          
+  100          
+  101          /* ========= 忙检测 ======== */
+  102          void lcd_busy_check(void)
+  103          {
+  104   1        uchar i = 255;
+  105   1        port = 0xff;        /*数据口置高*/
+  106   1        rs = 0;
+  107   1        rw = 1;           /*读取状态*/
+  108   1        e  = 1;             /*使能LCD*/
+  109   1        while((i--) && (port & 0x80) == 0x80);  /*检测数据口最高位状态，为0空闲*/
+  110   1        e = 0; 
+  111   1      }
+  112          
+  113          /* ========= 设定显示位置 ======== */
+  114          void lcd_set_pos(uchar x,uchar y)
+  115          {
+  116   1        uchar pos;
+  117   1        if(x==0) x=0x80;
+  118   1        if(x==1) x=0x90;
+  119   1        if(x==2) x=0x88;
+  120   1        if(x==3) x=0x98;
+  121   1        pos=x+y;
+  122   1        
+  123   1        lcd_write_cmd(pos);     /*地址*/
+  124   1      }
+C251 COMPILER V5.60.0,  lcd_12864                                                          25/09/22  11:34:21  PAGE 3   
+
+  125          
+  126          /* ========= 显示字符串 ======== */
+  127          void lcd_write_str(uchar *s)
+  128          {
+  129   1        while(*s != '\0')
+  130   1        {
+  131   2          lcd_write_dat(*s);
+  132   2          s++;
+  133   2        }
+  134   1      
+  135   1      }
+  136          
+  137          /* ========= 在任意位置开始显示图画 ======== */
+  138          void lcd_write_pic(uchar X,uchar Y,uchar *tu,uchar wide,uchar high)
+  139          {               /*X确定水平地址,Y确定开始行,（0x80-0x87）,tu是点阵字模数据*/
+  140   1        uint y,z;
+  141   1        lcd_write_cmd(0x34);    /*打开扩展指令集*/
+  142   1        lcd_write_cmd(0x36);    /*绘图显示关*/
+  143   1        
+  144   1        if(wide % 8 == 0)
+  145   1          wide = wide / 8;
+  146   1        else
+  147   1          wide = wide / 8 + 1;
+  148   1        
+  149   1        for(y=0;y<high;y++)
+  150   1        {
+  151   2          if(Y+y > 31)                /*上下屏地址转换*/
+  152   2          {
+  153   3            lcd_write_cmd(0x80+Y+y-32);     /*先写Y轴坐标*/
+*** WARNING C188 IN LINE 153 OF Resource\lcd_12864.c: 'parameter 1': value truncated
+  154   3            lcd_write_cmd(0x88+X);        /*再写X轴坐标  ,(0x88-0x8f)*/
+*** WARNING C188 IN LINE 154 OF Resource\lcd_12864.c: 'parameter 1': value truncated
+  155   3          }                   /*这里X只需写（0-7）*/
+  156   2          else
+  157   2          {
+  158   3            lcd_write_cmd(0x80+Y+y);      /*先写Y轴坐标*/
+*** WARNING C188 IN LINE 158 OF Resource\lcd_12864.c: 'parameter 1': value truncated
+  159   3            lcd_write_cmd(0x80+X);        /*再写X轴坐标  ,(0x80-0x87)*/
+*** WARNING C188 IN LINE 159 OF Resource\lcd_12864.c: 'parameter 1': value truncated
+  160   3          }
+  161   2          
+  162   2          for(z=0;z<wide;z++)             /*根据列宽逐行写入数据*/
+  163   2          {                     /*宽占几字节，就写几字节*/
+  164   3            lcd_write_dat(tu[y*wide+z]);    /*每行写入wide个字节数据*/
+  165   3          }     
+  166   2          
+  167   2        }
+  168   1        
+  169   1        lcd_write_cmd(0x30);              /*回到基本指令集*/
+  170   1      }
+  171          
+  172          
+  173          /* ========= 绘图清屏 ======== */
+  174          void lcd_clear_pic(void)
+  175          {
+  176   1        uchar i,j,k;
+  177   1        lcd_write_cmd(0x34);              /*打开扩展指令集*/
+  178   1        lcd_write_cmd(0x36);              /*绘图开*/
+  179   1        
+  180   1        for(i=0;i<2;i++)
+  181   1        {
+  182   2          for(j=0;j<32;j++)
+  183   2          {
+  184   3            lcd_write_cmd(0x80+j);          /*写Y坐标*/
+*** WARNING C188 IN LINE 184 OF Resource\lcd_12864.c: 'parameter 1': value truncated
+  185   3            lcd_delay_1u();
+C251 COMPILER V5.60.0,  lcd_12864                                                          25/09/22  11:34:21  PAGE 4   
+
+  186   3            lcd_delay_1u();
+  187   3            lcd_delay_1u();
+  188   3            if(i==0)
+  189   3              {lcd_write_cmd(0x80);lcd_delay_1u();}     /*写X坐标*/
+  190   3            else
+  191   3              {lcd_write_cmd(0x88);lcd_delay_1u();}     /*下半屏*/
+  192   3            for(k=0;k<16;k++)
+  193   3            {
+  194   4              lcd_write_dat(0x00);
+  195   4              lcd_delay_1u();
+  196   4              lcd_delay_1u();
+  197   4              lcd_delay_1u();
+  198   4              }
+  199   3          }
+  200   2        }
+  201   1        lcd_write_cmd(0x30);              /*回到基本指令集*/
+  202   1      }
+  203          
+  204          
+  205          /* ========= 显示反白 ======== */
+  206          void lcd_inverse(uchar X, uchar Y, uchar wide)    /*y取0-3，x取0-7，wide为反白宽度*/
+  207          {
+  208   1        uchar i,j,flag = 0;
+  209   1        lcd_clear_pic();        /*清空所有图形显示*/
+  210   1        if(X > 1)
+  211   1        {
+  212   2          flag = 0x08;
+  213   2          X -= 2;
+  214   2        }
+  215   1        lcd_write_cmd(0x34);      /*打开扩展指令集*/
+  216   1        lcd_write_cmd(0x36);      /*绘图开*/
+  217   1        
+  218   1        for(i=0;i<16;i++)
+  219   1        {
+  220   2          lcd_write_cmd(0x80 + (X << 4) + i);
+*** WARNING C188 IN LINE 220 OF Resource\lcd_12864.c: 'parameter 1': value truncated
+  221   2          lcd_write_cmd(0x80 + flag + Y);   /*写位置*/
+*** WARNING C188 IN LINE 221 OF Resource\lcd_12864.c: 'parameter 1': value truncated
+  222   2          for(j=0;j<wide;j++)         /*写亮*/
+  223   2          {
+  224   3            lcd_write_dat(0xff);
+  225   3            lcd_write_dat(0xff);
+  226   3          }
+  227   2          lcd_delay_1u();
+  228   2        }
+  229   1        lcd_write_cmd(0x30);          /*回基本指令集*/
+  230   1      }
+  231          
+  232          /* ========= 清屏 ======== */
+  233          void lcd_clear(void)
+  234          {
+  235   1        lcd_write_cmd(0x01);
+  236   1        lcd_delay_4m(); /*延时4ms等待完成*/
+  237   1      
+  238   1      }
+  239          
+  240          
+  241          /*********读字节******************/ 
+  242          uchar lcd_read_data()    //读数据  
+  243          {
+  244   1          uchar read;
+  245   1          lcd_busy_check(); 
+  246   1          rs=1;
+  247   1          rw=1;
+  248   1          e=0;
+  249   1          lcd_delay_1u(); 
+C251 COMPILER V5.60.0,  lcd_12864                                                          25/09/22  11:34:21  PAGE 5   
+
+  250   1          e=1;
+  251   1          lcd_delay_1u(); 
+  252   1          read=port;
+  253   1        e=0;
+  254   1          lcd_delay_1u(); 
+  255   1        
+  256   1        lcd_delay_1u(); 
+  257   1        return read;
+  258   1      }
+  259          
+  260          
+  261          
+  262          /************清单个点****************/
+  263          void lcd_clear_point(uchar x,uchar y)     //x（0~127） y（0~63）
+  264          {
+  265   1      
+  266   1        uint bt=0,read=0;
+  267   1        uchar x_adr,y_adr,h_bit,l_bit;
+  268   1        y_adr=0x80+y%32;        
+  269   1          if(y>31) 
+  270   1              x_adr=0x88+x/16;        
+  271   1          else
+  272   1              x_adr=0x80+x/16;    
+  273   1          bt=0x7fff>>(x%16); 
+  274   1          lcd_write_cmd(0x34);
+  275   1          lcd_write_cmd(0x34);
+  276   1          lcd_write_cmd(y_adr);
+  277   1          lcd_write_cmd(x_adr);
+  278   1          lcd_read_data();        
+  279   1          read=lcd_read_data();     
+  280   1          read<<=8;
+  281   1          read|=lcd_read_data();
+  282   1          bt=bt&read;
+  283   1          h_bit=bt>>8;
+  284   1          l_bit=bt;
+  285   1          lcd_write_cmd(y_adr);     
+  286   1          lcd_write_cmd(x_adr);
+  287   1          lcd_write_dat(h_bit);
+  288   1          lcd_write_dat(l_bit);
+  289   1          lcd_write_cmd(0x36); 
+  290   1          lcd_write_cmd(0x30);      
+  291   1      
+  292   1      
+  293   1      }
+  294          
+  295          
+  296          /************亮单个点******************/
+  297          void lcd_put_point(uchar x,uchar y)     //x（0~127） y（0~63）
+  298          {
+  299   1        uint bt=0,read=0;
+  300   1        uchar x_adr,y_adr,h_bit,l_bit;
+  301   1        y_adr=0x80+y%32;        
+  302   1          if(y>31) 
+  303   1              x_adr=0x88+x/16;        
+  304   1          else
+  305   1              x_adr=0x80+x/16;    
+  306   1          bt=0x8000>>(x%16); 
+  307   1          lcd_write_cmd(0x34);
+  308   1          lcd_write_cmd(0x34);
+  309   1          lcd_write_cmd(y_adr);
+  310   1          lcd_write_cmd(x_adr);
+  311   1          lcd_read_data();        
+  312   1          read=lcd_read_data();     
+  313   1          read<<=8;
+  314   1          read|=lcd_read_data();
+  315   1          bt=bt|read;
+C251 COMPILER V5.60.0,  lcd_12864                                                          25/09/22  11:34:21  PAGE 6   
+
+  316   1          h_bit=bt>>8;
+  317   1          l_bit=bt;
+  318   1          lcd_write_cmd(y_adr);     
+  319   1          lcd_write_cmd(x_adr);
+  320   1          lcd_write_dat(h_bit);
+  321   1          lcd_write_dat(l_bit);
+  322   1          lcd_write_cmd(0x36); 
+  323   1          lcd_write_cmd(0x30);            
+  324   1      }
+  325          
+  326          
+  327          /*****************画水平线**********************/
+  328          void lcd_xline(uchar x1,uchar x2,uchar y1)    //x1~x2 y1 的直线 
+  329          {
+  330   1        uchar a;
+  331   1        if(x1>x2)
+  332   1        {
+  333   2          a=x1;
+  334   2          x1=x2;
+  335   2          x2=a;
+  336   2          }
+  337   1      
+  338   1        for(;x1<=x2;x1++)
+  339   1          lcd_put_point(x1,y1);
+  340   1      }
+  341          
+  342          
+  343          /******************画竖直线**********************/
+  344          void lcd_yline(uchar x1,uchar y1,uchar y2,uchar color)  //y1~y2 x1 的直线 color=1亮 color=0 暗
+  345          {
+  346   1        uchar a;
+  347   1        if(y1>y2)
+  348   1        {
+  349   2          a=y1;
+  350   2          y1=y2;
+  351   2          y2=a;
+  352   2        }
+  353   1        if(color==1)
+  354   1        for(;y1<=y2;y1++)
+  355   1        lcd_put_point(x1,y1);
+  356   1        else 
+  357   1        for(;y1<=y2;y1++) 
+  358   1        lcd_clear_point(x1,y1);
+  359   1      
+  360   1      }
+  361          
+  362          
+  363          
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =      1191     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------         14
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+C251 COMPILER V5.60.0,  lcd_12864                                                          25/09/22  11:34:21  PAGE 7   
+
+  hconst size          =    ------     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  7 WARNING(S),  0 ERROR(S)

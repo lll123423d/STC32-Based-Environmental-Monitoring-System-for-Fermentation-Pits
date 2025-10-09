@@ -1,0 +1,1 @@
+"ole.c" XSMALL BROWSE INCDIR(.\sys;.\sys;.\Usr;.\Hardware) DEBUG PRINT(.\Listings\ole.lst) OBJECT(.\Objects\ole.obj)

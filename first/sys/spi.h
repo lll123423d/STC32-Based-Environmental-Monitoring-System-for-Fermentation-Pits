@@ -2,15 +2,16 @@
 #define __SPI_H
 
 #include <STC32G.H>
+/*------------------------------------------引脚选择----------------------*/
+    //注意：这里SPI的引脚选择要通过P_SW1寄存器切换，在修改这里的引脚
+sbit    SPI_MISO = P2^4;    //PIN2
+sbit    SPI_MOSI = P2^3;    //PIN5
+sbit    SPI_SCK = P2^5;     //PIN6
 
-#define SS 		P54
-#define MISO	P14
-#define MOSI	P13
-#define SCLK	P15 
+#define SPI_MODE 3	//SPI_MODE==3;三线SPI  SPI==4; 四线SPI
 
 
-
-//------------------------------函数声明------------------------------
+/*------------------------------函数声明------------------------------*/
 void SPI_Init(void);						//初始化
 void SPI_WriteByte(unsigned char dat);					//写入一个字节
 unsigned char SPI_ReadByte(void);			//读取一个字节	

@@ -1,0 +1,604 @@
+C251 COMPILER V5.60.0,  change_units                                                       27/09/22  13:55:45  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE change_units
+OBJECT MODULE PLACED IN .\obj\change_units.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE Resource\change_units.c XSMALL ROM(HUGE) BROWSE INCDIR(.\Resource;.\wa
+                    -re;.\src;.\middle) DEBUG PRINT(.\obj\change_units.lst) OBJECT(.\obj\change_units.obj) 
+
+stmt  level    source
+
+    1          #include <stdio.h>
+    2          #include <math.h> 
+    3          #include "change_units.h"
+    4          #include "alg_atof.h"
+    5          #include "keyboard_device.h"
+    6          #include "keyboard_input.h"
+    7          #include "alg_caculate.h"
+    8          #include "middle.h"
+    9          
+   10          extern uchar num0;
+   11          extern double x;
+   12          extern uchar g_chCalcStatus;
+   13          
+   14          
+   15          //单位转化 
+   16          void change_units()
+   17          {
+   18   1              uchar temp_buff[26];//用来存一些式子 
+   19   1              uchar result_output[17];
+   20   1              double a_shuzhi=0;
+   21   1              double b_shuzhi=0;
+   22   1              
+   23   1              uchar judge=0xff;//判断值 
+   24   1              
+   25   1              uchar m;                        //用于菜单上下移屏 
+   26   1              uchar count1 = 1;
+   27   1              
+   28   1              //初始化 
+   29   1              uchar i=0;
+   30   1              for(i=0;i<26;i++)
+   31   1              {
+   32   2                      temp_buff[i]=' ';
+   33   2              }
+   34   1              for(i=0;i<16;i++)
+   35   1                      result_output[i]=' ';
+   36   1              result_output[16]=0;
+   37   1              
+   38   1              //进入主要步骤
+   39   1              g_chCalcStatus = CALC_NORMAL; 
+   40   1              num0=0xff;//初始化
+   41   1              
+   42   1              while(1) 
+   43   1              {
+   44   2                      judge=0xff;
+   45   2                      //初始化菜单显示
+   46   2                      lcd_clear();
+   47   2                      lcd_clear_pic();
+   48   2                      
+   49   2                      if(count1>3)
+   50   2                              count1=3;
+   51   2                      else if(count1<1)
+   52   2                              count1=1;
+   53   2                      for(m=0;m<4;m++)
+   54   2                      {
+   55   3                              lcd_set_pos(m,0);       
+   56   3                              switch ('0'+m+count1)
+   57   3                              {
+   58   4                                      case '1':
+C251 COMPILER V5.60.0,  change_units                                                       27/09/22  13:55:45  PAGE 2   
+
+   59   4                                              lcd_write_str("1.长度");break;
+   60   4                                      case '2':
+   61   4                                              lcd_write_str("2.温度");break;
+   62   4                                      case '3':
+   63   4                                              lcd_write_str("3.能量");break;
+   64   4                                      case '4':
+   65   4                                              lcd_write_str("4.速度");break;
+   66   4                                      case '5':
+   67   4                                              lcd_write_str("5.角度");break;
+   68   4                                      }
+   69   3                      }
+   70   2                      //按键选择菜单选项 
+   71   2                      num0=0xff;
+   72   2                      do
+   73   2                      {
+   74   3                              num0=keyboard_output();//读取键盘值, 直到按下1,2,3,4,5,6或者↑ ↓ 
+   75   3                      }while(num0!='1' && num0!='2' && num0!='3'&& num0!='4' && num0!='5' && num0!=3 &&num0!=6);
+   76   2                      
+   77   2                      //根据按键选择不同的功能 
+   78   2                      lcd_clear();
+   79   2                      lcd_clear_pic();
+   80   2                      
+   81   2                      switch(num0)
+   82   2                      {
+   83   3                              case 3:
+   84   3                                      count1--;//菜单显示上移 
+   85   3                                      break;
+   86   3                              case 6:
+   87   3                                      count1++;//菜单显示下移 
+   88   3                                      break;
+   89   3                              case '1'://1英寸=1.54cm 
+   90   3                                      a_shuzhi=0;
+   91   3                                      b_shuzhi=0;
+   92   3                                      do
+   93   3                                      {
+   94   4                                              lcd_set_pos(0,0); 
+   95   4                                                      lcd_write_str("1.厘米-");
+   96   4                                                      lcd_write_dat(0x1a);
+   97   4                                                      lcd_write_str("英寸");
+   98   4                                              lcd_set_pos(1,0); 
+   99   4                                                      lcd_write_str("2.英寸-");
+  100   4                                                      lcd_write_dat(0x1a);
+  101   4                                                      lcd_write_str("厘米");
+  102   4                                              lcd_set_pos(2,0); 
+  103   4                                                      lcd_write_str("3.转化结果");
+  104   4                                              do
+  105   4                                              {
+  106   5                                                      num0=keyboard_output();
+  107   5                                              } 
+  108   4                                              while(num0!='1' && num0!='2'&& num0!='3'&& num0!=19);
+  109   4                                              
+  110   4                                              lcd_clear();
+  111   4                                              lcd_clear_pic();
+  112   4                                              
+  113   4                                              switch(num0)
+  114   4                                              {
+  115   5                                                      case '1':
+  116   5                                                              lcd_set_pos(0,0); 
+  117   5                                                              lcd_write_str("厘米:");
+  118   5                                                      
+  119   5                                                              lcd_set_pos(1,0);
+  120   5                                                              sprintf( temp_buff,"%g",a_shuzhi ); 
+  121   5                                                              lcd_write_str(temp_buff);
+  122   5                                                              //读取a
+  123   5                              //look                  
+  124   5                                                              for(i=0;i<26;i++)
+C251 COMPILER V5.60.0,  change_units                                                       27/09/22  13:55:45  PAGE 3   
+
+  125   5                                                              {
+  126   6                                                                      temp_buff[i]=' '; 
+  127   6                                                              }
+  128   5                                                              do
+  129   5                                                              {
+  130   6                                                                      judge = input_to_str(3,temp_buff,0xff);
+  131   6                                                              }while(judge !=INPUT_EQ && judge !=INPUT_AC);
+  132   5                                                              if( judge ==INPUT_EQ )
+  133   5                                                              {
+  134   6                                                                      a_shuzhi = alg_atof(temp_buff); 
+  135   6                                                                      b_shuzhi=a_shuzhi/2.54;
+  136   6                                                              }
+  137   5                                                              
+  138   5                                                              break;
+  139   5                                                              
+  140   5                                                      case '2':
+  141   5                                                              lcd_set_pos(0,0); 
+  142   5                                                              lcd_write_str("英寸:");
+  143   5                                                      
+  144   5                                                              lcd_set_pos(1,0);
+  145   5                                                              sprintf( temp_buff,"%g",b_shuzhi ); 
+  146   5                                                              lcd_write_str(temp_buff);
+  147   5                                                              //读取a
+  148   5                              //look                  
+  149   5                                                              for(i=0;i<26;i++)
+  150   5                                                              {
+  151   6                                                                      temp_buff[i]=' '; 
+  152   6                                                              }
+  153   5                                                              do
+  154   5                                                              {
+  155   6                                                                      judge = input_to_str(3,temp_buff,0xff);
+  156   6                                                              }while(judge !=INPUT_EQ && judge !=INPUT_AC);
+  157   5                                                              if( judge ==INPUT_EQ )
+  158   5                                                              {
+  159   6                                                                      b_shuzhi = alg_atof(temp_buff); 
+  160   6                                                                      a_shuzhi=b_shuzhi*2.54;
+  161   6                                                              }
+  162   5                                                              
+  163   5                                                              break;
+  164   5                                                      case '3':
+  165   5                                                              lcd_set_pos(0,0); 
+  166   5                                                                      lcd_write_str("厘米:");
+  167   5                                                                      lcd_set_pos(1,0); 
+  168   5                                                                      sprintf(temp_buff,"%g",a_shuzhi);
+  169   5                                                                      lcd_write_str(temp_buff);
+  170   5                                                              lcd_set_pos(2,0); 
+  171   5                                                                      lcd_write_str("英寸:");
+  172   5                                                                      lcd_set_pos(3,0); 
+  173   5                                                                      sprintf(temp_buff,"%g",b_shuzhi);
+  174   5                                                                      lcd_write_str(temp_buff);
+  175   5                                                              break; 
+  176   5                                              } 
+  177   4                                              if(num0==19)
+  178   4                                                      break; 
+  179   4                                      }while(keyboard_output()!=19); 
+  180   3                                      
+  181   3                                      case '2'://华氏，摄氏 
+  182   3                                      a_shuzhi=0;
+  183   3                                      b_shuzhi=0;
+  184   3                                      do
+  185   3                                      {
+  186   4                                              lcd_set_pos(0,0); 
+  187   4                                                      lcd_write_str("1.华氏-");
+  188   4                                                      lcd_write_dat(0x1a);
+  189   4                                                      lcd_write_str("摄氏");
+  190   4                                              lcd_set_pos(1,0); 
+C251 COMPILER V5.60.0,  change_units                                                       27/09/22  13:55:45  PAGE 4   
+
+  191   4                                                      lcd_write_str("2.摄氏-");
+  192   4                                                      lcd_write_dat(0x1a);
+  193   4                                                      lcd_write_str("华氏");
+  194   4                                              lcd_set_pos(2,0); 
+  195   4                                                      lcd_write_str("3.转化结果");
+  196   4                                              do
+  197   4                                              {
+  198   5                                                      num0=keyboard_output();
+  199   5                                              } 
+  200   4                                              while(num0!='1' && num0!='2'&& num0!='3'&&num0!=19);
+  201   4                                              
+  202   4                                              lcd_clear();
+  203   4                                              lcd_clear_pic();
+  204   4                                              
+  205   4                                              switch(num0)
+  206   4                                              {
+  207   5                                                      case '1':
+  208   5                                                              lcd_set_pos(0,0); 
+  209   5                                                              lcd_write_str("华氏:");
+  210   5                                                      
+  211   5                                                              lcd_set_pos(1,0);
+  212   5                                                              sprintf( temp_buff,"%g",a_shuzhi ); 
+  213   5                                                              lcd_write_str(temp_buff);
+  214   5                                                              //读取a
+  215   5                              //look                  
+  216   5                                                              for(i=0;i<26;i++)
+  217   5                                                              {
+  218   6                                                                      temp_buff[i]=' '; 
+  219   6                                                              }
+  220   5                                                              do
+  221   5                                                              {
+  222   6                                                                      judge = input_to_str(3,temp_buff,0xff);
+  223   6                                                              }while(judge !=INPUT_EQ && judge !=INPUT_AC);
+  224   5                                                              if( judge ==INPUT_EQ )
+  225   5                                                              {
+  226   6                                                                      a_shuzhi = alg_atof(temp_buff); 
+  227   6                                                                      b_shuzhi=5/9*(a_shuzhi-32);
+  228   6                                                              }
+  229   5                                                              
+  230   5                                                              break;
+  231   5                                                              
+  232   5                                                      case '2':
+  233   5                                                              lcd_set_pos(0,0); 
+  234   5                                                              lcd_write_str("摄氏:");
+  235   5                                                      
+  236   5                                                              lcd_set_pos(1,0);
+  237   5                                                              sprintf( temp_buff,"%g",b_shuzhi ); 
+  238   5                                                              lcd_write_str(temp_buff);
+  239   5                                                              //读取a
+  240   5                              //look                  
+  241   5                                                              for(i=0;i<26;i++)
+  242   5                                                              {
+  243   6                                                                      temp_buff[i]=' '; 
+  244   6                                                              }
+  245   5                                                              do
+  246   5                                                              {
+  247   6                                                                      judge = input_to_str(3,temp_buff,0xff);
+  248   6                                                              }while(judge !=INPUT_EQ && judge !=INPUT_AC);
+  249   5                                                              if( judge ==INPUT_EQ )
+  250   5                                                              {
+  251   6                                                                      b_shuzhi = alg_atof(temp_buff); 
+  252   6                                                                      a_shuzhi=b_shuzhi*9/5+32;
+  253   6                                                              }
+  254   5                                                              
+  255   5                                                              break;
+  256   5                                                      case '3':
+C251 COMPILER V5.60.0,  change_units                                                       27/09/22  13:55:45  PAGE 5   
+
+  257   5                                                              lcd_set_pos(0,0); 
+  258   5                                                                      lcd_write_str("华氏:");
+  259   5                                                                      lcd_set_pos(1,0); 
+  260   5                                                                      sprintf(temp_buff,"%g",a_shuzhi);
+  261   5                                                                      lcd_write_str(temp_buff);
+  262   5                                                              lcd_set_pos(2,0); 
+  263   5                                                                      lcd_write_str("摄氏:");
+  264   5                                                                      lcd_set_pos(3,0); 
+  265   5                                                                      sprintf(temp_buff,"%g",b_shuzhi);
+  266   5                                                                      lcd_write_str(temp_buff);
+  267   5                                                              break; 
+  268   5                                              }
+  269   4                                              if(num0==19)
+  270   4                                                      break; 
+  271   4                                      }while(keyboard_output()!=19); 
+  272   3                                      
+  273   3                                      case '3'://1卡路里=4.184千焦
+  274   3                                      a_shuzhi=0;
+  275   3                                      b_shuzhi=0;
+  276   3                                      do
+  277   3                                      {
+  278   4                                              lcd_set_pos(0,0); 
+  279   4                                                      lcd_write_str("1.卡路里-");
+  280   4                                                      lcd_write_dat(0x1a);
+  281   4                                                      lcd_write_str("千焦");
+  282   4                                              lcd_set_pos(1,0); 
+  283   4                                                      lcd_write_str("2.千焦-");
+  284   4                                                      lcd_write_dat(0x1a);
+  285   4                                                      lcd_write_str("卡路里");
+  286   4                                              lcd_set_pos(2,0); 
+  287   4                                                      lcd_write_str("3.转化结果");
+  288   4                                              do
+  289   4                                              {
+  290   5                                                      num0=keyboard_output();
+  291   5                                              } 
+  292   4                                              while(num0!='1' && num0!='2'&& num0!='3'&& num0!=19);
+  293   4                                              
+  294   4                                              lcd_clear();
+  295   4                                              lcd_clear_pic();
+  296   4                                              
+  297   4                                              switch(num0)
+  298   4                                              {
+  299   5                                                      case '1':
+  300   5                                                              lcd_set_pos(0,0); 
+  301   5                                                              lcd_write_str("卡路里:");
+  302   5                                                      
+  303   5                                                              lcd_set_pos(1,0);
+  304   5                                                              sprintf( temp_buff,"%g",a_shuzhi ); 
+  305   5                                                              lcd_write_str(temp_buff);
+  306   5                                                              //读取a
+  307   5                              //look                  
+  308   5                                                              for(i=0;i<26;i++)
+  309   5                                                              {
+  310   6                                                                      temp_buff[i]=' '; 
+  311   6                                                              }
+  312   5                                                              do
+  313   5                                                              {
+  314   6                                                                      judge = input_to_str(3,temp_buff,0xff);
+  315   6                                                              }while(judge !=INPUT_EQ && judge !=INPUT_AC);
+  316   5                                                              if( judge ==INPUT_EQ )
+  317   5                                                              {
+  318   6                                                                      a_shuzhi = alg_atof(temp_buff); 
+  319   6                                                                      b_shuzhi=a_shuzhi*4.184;
+  320   6                                                              }
+  321   5                                                              
+  322   5                                                              break;
+C251 COMPILER V5.60.0,  change_units                                                       27/09/22  13:55:45  PAGE 6   
+
+  323   5                                                              
+  324   5                                                      case '2':
+  325   5                                                              lcd_set_pos(0,0); 
+  326   5                                                              lcd_write_str("千焦:");
+  327   5                                                      
+  328   5                                                              lcd_set_pos(1,0);
+  329   5                                                              sprintf( temp_buff,"%g",b_shuzhi ); 
+  330   5                                                              lcd_write_str(temp_buff);
+  331   5                                                              //读取a
+  332   5                              //look                  
+  333   5                                                              for(i=0;i<26;i++)
+  334   5                                                              {
+  335   6                                                                      temp_buff[i]=' '; 
+  336   6                                                              }
+  337   5                                                              do
+  338   5                                                              {
+  339   6                                                                      judge = input_to_str(3,temp_buff,0xff);
+  340   6                                                              }while(judge !=INPUT_EQ && judge !=INPUT_AC);
+  341   5                                                              if( judge ==INPUT_EQ )
+  342   5                                                              {
+  343   6                                                                      b_shuzhi = alg_atof(temp_buff); 
+  344   6                                                                      a_shuzhi=b_shuzhi/4.184;
+  345   6                                                              }
+  346   5                                                              
+  347   5                                                              break;
+  348   5                                                      case '3':
+  349   5                                                              lcd_set_pos(0,0); 
+  350   5                                                                      lcd_write_str("卡路里:");
+  351   5                                                                      lcd_set_pos(1,0); 
+  352   5                                                                      sprintf(temp_buff,"%g",a_shuzhi);
+  353   5                                                                      lcd_write_str(temp_buff);
+  354   5                                                              lcd_set_pos(2,0); 
+  355   5                                                                      lcd_write_str("千焦:");
+  356   5                                                                      lcd_set_pos(3,0); 
+  357   5                                                                      sprintf(temp_buff,"%g",b_shuzhi);
+  358   5                                                                      lcd_write_str(temp_buff);
+  359   5                                                              break; 
+  360   5                                              } 
+  361   4                                              if(num0==19)
+  362   4                                                      break; 
+  363   4                                      }while(keyboard_output()!=19); 
+  364   3                                      
+  365   3                                      case '4'://1英寸=1.54cm 
+  366   3                                      a_shuzhi=0;
+  367   3                                      b_shuzhi=0;
+  368   3                                      do
+  369   3                                      {
+  370   4                                              lcd_set_pos(0,0); 
+  371   4                                                      lcd_write_str("1.英里/h-");
+  372   4                                                      lcd_write_dat(0x1a);
+  373   4                                                      lcd_write_str("公里");
+  374   4                                              lcd_set_pos(1,0); 
+  375   4                                                      lcd_write_str("2.公里/h-");
+  376   4                                                      lcd_write_dat(0x1a);
+  377   4                                                      lcd_write_str("英里");
+  378   4                                              lcd_set_pos(2,0); 
+  379   4                                                      lcd_write_str("3.转化结果");
+  380   4                                              do
+  381   4                                              {
+  382   5                                                      num0=keyboard_output();
+  383   5                                              } 
+  384   4                                              while(num0!='1' && num0!='2'&& num0!='3'&& num0!=19);
+  385   4                                              
+  386   4                                              lcd_clear();
+  387   4                                              lcd_clear_pic();
+  388   4                                              
+C251 COMPILER V5.60.0,  change_units                                                       27/09/22  13:55:45  PAGE 7   
+
+  389   4                                              switch(num0)
+  390   4                                              {
+  391   5                                                      case '1':
+  392   5                                                              lcd_set_pos(0,0); 
+  393   5                                                              lcd_write_str("英里/h:");
+  394   5                                                      
+  395   5                                                              lcd_set_pos(1,0);
+  396   5                                                              sprintf( temp_buff,"%g",a_shuzhi ); 
+  397   5                                                              lcd_write_str(temp_buff);
+  398   5                                                              //读取a
+  399   5                              //look                  
+  400   5                                                              for(i=0;i<26;i++)
+  401   5                                                              {
+  402   6                                                                      temp_buff[i]=' '; 
+  403   6                                                              }
+  404   5                                                              do
+  405   5                                                              {
+  406   6                                                                      judge = input_to_str(3,temp_buff,0xff);
+  407   6                                                              }while(judge !=INPUT_EQ && judge !=INPUT_AC);
+  408   5                                                              if( judge ==INPUT_EQ )
+  409   5                                                              {
+  410   6                                                                      a_shuzhi = alg_atof(temp_buff); 
+  411   6                                                                      b_shuzhi=a_shuzhi*1.6092;
+  412   6                                                              }
+  413   5                                                              
+  414   5                                                              break;
+  415   5                                                              
+  416   5                                                      case '2':
+  417   5                                                              lcd_set_pos(0,0); 
+  418   5                                                              lcd_write_str("公里/h:");
+  419   5                                                      
+  420   5                                                              lcd_set_pos(1,0);
+  421   5                                                              sprintf( temp_buff,"%g",b_shuzhi ); 
+  422   5                                                              lcd_write_str(temp_buff);
+  423   5                                                              //读取a
+  424   5                              //look                  
+  425   5                                                              for(i=0;i<26;i++)
+  426   5                                                              {
+  427   6                                                                      temp_buff[i]=' '; 
+  428   6                                                              }
+  429   5                                                              do
+  430   5                                                              {
+  431   6                                                                      judge = input_to_str(3,temp_buff,0xff);
+  432   6                                                              }while(judge !=INPUT_EQ && judge !=INPUT_AC);
+  433   5                                                              if( judge ==INPUT_EQ )
+  434   5                                                              {
+  435   6                                                                      b_shuzhi = alg_atof(temp_buff); 
+  436   6                                                                      a_shuzhi=b_shuzhi*0.621427;
+  437   6                                                              }
+  438   5                                                              
+  439   5                                                              break;
+  440   5                                                      case '3':
+  441   5                                                              lcd_set_pos(0,0); 
+  442   5                                                                      lcd_write_str("英里/h:");
+  443   5                                                                      lcd_set_pos(1,0); 
+  444   5                                                                      sprintf(temp_buff,"%g",a_shuzhi);
+  445   5                                                                      lcd_write_str(temp_buff);
+  446   5                                                              lcd_set_pos(2,0); 
+  447   5                                                                      lcd_write_str("公里/h:");
+  448   5                                                                      lcd_set_pos(3,0); 
+  449   5                                                                      sprintf(temp_buff,"%g",b_shuzhi);
+  450   5                                                                      lcd_write_str(temp_buff);
+  451   5                                                              break; 
+  452   5                                              } 
+  453   4                                              if(num0==19)
+  454   4                                                      break; 
+C251 COMPILER V5.60.0,  change_units                                                       27/09/22  13:55:45  PAGE 8   
+
+  455   4                                      }while(keyboard_output()!=19); 
+  456   3                                      
+  457   3                                      case '5'://°，弧度 
+  458   3                                      a_shuzhi=0;
+  459   3                                      b_shuzhi=0;
+  460   3                                      do
+  461   3                                      {
+  462   4                                              lcd_set_pos(0,0); 
+  463   4                                                      lcd_write_str("1.角度-");
+  464   4                                                      lcd_write_dat(0x1a);
+  465   4                                                      lcd_write_str("弧度");
+  466   4                                              lcd_set_pos(1,0); 
+  467   4                                                      lcd_write_str("2.弧度-");
+  468   4                                                      lcd_write_dat(0x1a);
+  469   4                                                      lcd_write_str("角度");
+  470   4                                              lcd_set_pos(2,0); 
+  471   4                                                      lcd_write_str("3.转化结果");
+  472   4                                              do
+  473   4                                              {
+  474   5                                                      num0=keyboard_output();
+  475   5                                              } 
+  476   4                                              while(num0!='1' && num0!='2'&& num0!='3'&& num0!=19);
+  477   4                                              
+  478   4                                              lcd_clear();
+  479   4                                              lcd_clear_pic();
+  480   4                                              
+  481   4                                              switch(num0)
+  482   4                                              {
+  483   5                                                      case '1':
+  484   5                                                              lcd_set_pos(0,0); 
+  485   5                                                              lcd_write_str("角度:");
+  486   5                                                      
+  487   5                                                              lcd_set_pos(1,0);
+  488   5                                                              sprintf( temp_buff,"%g",a_shuzhi ); 
+  489   5                                                              lcd_write_str(temp_buff);
+  490   5                                                              //读取a
+  491   5                              //look                  
+  492   5                                                              for(i=0;i<26;i++)
+  493   5                                                              {
+  494   6                                                                      temp_buff[i]=' '; 
+  495   6                                                              }
+  496   5                                                              do
+  497   5                                                              {
+  498   6                                                                      judge = input_to_str(3,temp_buff,0xff);
+  499   6                                                              }while(judge !=INPUT_EQ && judge !=INPUT_AC);
+  500   5                                                              if( judge ==INPUT_EQ )
+  501   5                                                              {
+  502   6                                                                      a_shuzhi = alg_atof(temp_buff); 
+  503   6                                                                      b_shuzhi=a_shuzhi*0.017453;
+  504   6                                                              }
+  505   5                                                              
+  506   5                                                              break;
+  507   5                                                              
+  508   5                                                      case '2':
+  509   5                                                              lcd_set_pos(0,0); 
+  510   5                                                              lcd_write_str("弧度:");
+  511   5                                                      
+  512   5                                                              lcd_set_pos(1,0);
+  513   5                                                              sprintf( temp_buff,"%g",b_shuzhi ); 
+  514   5                                                              lcd_write_str(temp_buff);
+  515   5                                                              //读取a
+  516   5                              //look                  
+  517   5                                                              for(i=0;i<26;i++)
+  518   5                                                              {
+  519   6                                                                      temp_buff[i]=' '; 
+  520   6                                                              }
+C251 COMPILER V5.60.0,  change_units                                                       27/09/22  13:55:45  PAGE 9   
+
+  521   5                                                              do
+  522   5                                                              {
+  523   6                                                                      judge = input_to_str(3,temp_buff,0xff);
+  524   6                                                              }while(judge !=INPUT_EQ && judge !=INPUT_AC);
+  525   5                                                              if( judge ==INPUT_EQ )
+  526   5                                                              {
+  527   6                                                                      b_shuzhi = alg_atof(temp_buff); 
+  528   6                                                                      a_shuzhi=b_shuzhi*57.29578;
+  529   6                                                              }
+  530   5                                                              
+  531   5                                                              break;
+  532   5                                                      case '3':
+  533   5                                                              lcd_set_pos(0,0); 
+  534   5                                                                      lcd_write_str("角度:");
+  535   5                                                                      lcd_set_pos(1,0); 
+  536   5                                                                      sprintf(temp_buff,"%g",a_shuzhi);
+  537   5                                                                      lcd_write_str(temp_buff);
+  538   5                                                              lcd_set_pos(2,0); 
+  539   5                                                                      lcd_write_str("弧度:");
+  540   5                                                                      lcd_set_pos(3,0); 
+  541   5                                                                      sprintf(temp_buff,"%g",b_shuzhi);
+  542   5                                                                      lcd_write_str(temp_buff);
+  543   5                                                              break; 
+  544   5                                              } 
+  545   4                                              if(num0==19)
+  546   4                                                      break; 
+  547   4                                      }while(keyboard_output()!=19); 
+  548   3                      }
+  549   2              
+  550   2              }       
+  551   1      }
+  552                  
+  553          
+  554          
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =    ------     ------
+  ecode size           =      3343     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =    ------         51
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =       253     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

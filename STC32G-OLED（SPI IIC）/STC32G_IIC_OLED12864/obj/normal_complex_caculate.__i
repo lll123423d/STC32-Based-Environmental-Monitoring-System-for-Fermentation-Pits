@@ -1,0 +1,1 @@
+"Resource\normal_complex_caculate.c" XSMALL ROM(HUGE) BROWSE INCDIR(.\Resource;.\ware;.\src;.\middle) DEBUG PRINT(.\obj\normal_complex_caculate.lst) OBJECT(.\obj\normal_complex_caculate.obj)

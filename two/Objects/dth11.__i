@@ -1,0 +1,1 @@
+"dth11.c" XSMALL BROWSE INCDIR(.\sys;.\sys;.\Usr;.\Hardware) DEBUG PRINT(.\Listings\dth11.lst) OBJECT(.\Objects\dth11.obj)

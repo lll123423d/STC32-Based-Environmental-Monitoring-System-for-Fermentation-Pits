@@ -1,0 +1,392 @@
+C251 COMPILER V5.60.0,  set                                                                22/03/23  11:38:02  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE set
+OBJECT MODULE PLACED IN .\obj\set.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE user\set.c XSMALL INTR2 BROWSE INCDIR(.\Resource;.\ware;.\src;.\middle
+                    -;.\user) DEBUG PRINT(.\obj\set.lst) OBJECT(.\obj\set.obj) 
+
+stmt  level    source
+
+    1          #include "set.h"
+    2          #include "rtc.h"
+    3          #include "menu.h"
+    4          
+    5          u8 xdata Parma[10]={3,3,1,4,0,0,0,0,0,0};
+    6          
+    7          void SetParm_Write(void)
+    8          {
+    9   1          u8 xdata i;
+   10   1          IapErase(0x0000);
+   11   1          Parma[9] = 0xc8;
+   12   1          for(i=0;i<10;i++)
+   13   1          {
+   14   2              IapProgram(0x0000+i, Parma[i]);  
+   15   2          }        
+   16   1      }
+   17          
+   18          void SetParm_Read(void)
+   19          {
+   20   1          u8 xdata i;
+   21   1          for(i=0;i<10;i++)
+   22   1             Parma[i] = IapRead(0x0000+i); //P1=0x12
+   23   1          if( Parma[9]!=0xc8 )    //强制初始化
+   24   1          {
+   25   2              Parma[9] = 0xc8;
+   26   2              Parma[0]=3;
+   27   2              Parma[1]=3;
+   28   2              Parma[2]=1;
+   29   2              Parma[3]=4;
+   30   2              SetParm_Write();
+   31   2          }
+   32   1      }  
+   33          
+   34          void Set_Light(u8 keynum)
+   35          {
+   36   1          switch( state )
+   37   1          {
+   38   2              case 0://初始化
+   39   2                  Screen_Clear();
+   40   2                  Screen_ShowStr(0,2,"屏幕亮度");
+   41   2                  Screen_ShowAscOpp(80,2,(u8)(Parma[0]+'0'));
+   42   2                  Screen_ShowFreshen();
+   43   2                  state = 1;   
+   44   2                  //break;
+   45   2           
+   46   2              case 1://等待输入
+   47   2                  if( keynum>0 )
+   48   2                  {
+   49   3                      if(( keynum==4 )&&(Parma[0]>0))
+   50   3                      {
+   51   4                          Parma[0]--;
+   52   4                          SetParm_Write();
+   53   4                      }
+   54   3                      else if(( keynum==9 )&&(Parma[0]<5))
+   55   3                      {
+   56   4                          Parma[0]++;
+   57   4                          SetParm_Write();
+   58   4                      }  
+C251 COMPILER V5.60.0,  set                                                                22/03/23  11:38:02  PAGE 2   
+
+   59   3                      else if(( keynum==22 )||( keynum=='=' ))
+   60   3                      {
+   61   4                          P_Index.Menu_KeyFunc = 0;
+   62   4                      }
+   63   3                      Screen_Showlight(Parma[0]);
+   64   3                      Screen_ShowAscOpp(80,2,Parma[0]+'0');
+*** WARNING C188 IN LINE 64 OF user\set.c: 'parameter 3': value truncated
+   65   3                      Screen_ShowFreshen();      
+   66   3                  }
+   67   2                  break;   
+   68   2          }    
+   69   1      }
+   70          
+   71          void Set_LightShift(u8 keynum)
+   72          {
+   73   1          switch( state )
+   74   1          {
+   75   2              case 0://初始化
+   76   2                  Screen_Clear();
+   77   2                  Screen_ShowStr(0,2,"shift提示");
+   78   2                  Screen_ShowAscOpp(80,2,Parma[1]+'1');
+*** WARNING C188 IN LINE 78 OF user\set.c: 'parameter 3': value truncated
+   79   2                  Screen_ShowFreshen();
+   80   2                  state = 1;   
+   81   2                  //break;
+   82   2           
+   83   2              case 1://等待输入
+   84   2                  if( keynum>0 )
+   85   2                  {
+   86   3                      if(( keynum==4 )&&(Parma[1]>1))
+   87   3                      {
+   88   4                          Parma[1]--;
+   89   4                          SetParm_Write();
+   90   4                      }
+   91   3                      else if(( keynum==9 )&&(Parma[1]<5))
+   92   3                      {
+   93   4                          Parma[1]++;
+   94   4                          SetParm_Write();
+   95   4                      } 
+   96   3                      else if(( keynum==22 )||( keynum=='=' ))
+   97   3                      {
+   98   4                          P_Index.Menu_KeyFunc = 0;
+   99   4                      }                
+  100   3                      //Screen_Showlight(Parma[0]);
+  101   3                      Screen_ShowAscOpp(80,2,Parma[1]+'0');
+*** WARNING C188 IN LINE 101 OF user\set.c: 'parameter 3': value truncated
+  102   3                      Screen_ShowFreshen();      
+  103   3                  }
+  104   2                  break;   
+  105   2          }    
+  106   1      }
+  107          
+  108          void Set_Sleep(u8 keynum)
+  109          {
+  110   1          switch( state )
+  111   1          {
+  112   2              case 0://初始化
+  113   2                  Screen_Clear();
+  114   2                  Screen_ShowStr(0,0,"节电模式");
+  115   2                  
+  116   2                  Screen_ShowStr(8,4,"无操作  分钟后");
+  117   2              
+  118   2                  Screen_ShowAscOpp(56,4,Parma[2]+'1');
+*** WARNING C188 IN LINE 118 OF user\set.c: 'parameter 3': value truncated
+  119   2                  Screen_ShowAscOpp(64,4,' ');
+  120   2                  Screen_ShowFreshen();
+C251 COMPILER V5.60.0,  set                                                                22/03/23  11:38:02  PAGE 3   
+
+  121   2                  state = 1;   
+  122   2                  //break;
+  123   2           
+  124   2              case 1://等待输入
+  125   2                  if( keynum>0 )
+  126   2                  {
+  127   3                      if(( keynum==4 )&&(Parma[2]>1))
+  128   3                      {
+  129   4                          Parma[2]--;
+  130   4                          SetParm_Write();
+  131   4                      }
+  132   3                      else if(( keynum==9 )&&(Parma[2]<9))
+  133   3                      {
+  134   4                          Parma[2]++;
+  135   4                          SetParm_Write();
+  136   4                      } 
+  137   3                      else if(( keynum==22 )||( keynum=='=' ))
+  138   3                      {
+  139   4                          P_Index.Menu_KeyFunc = 0;
+  140   4                      }                
+  141   3                      Screen_Showlight(Parma[0]);
+  142   3                      Screen_ShowAscOpp(56,4,Parma[2]+'0');
+*** WARNING C188 IN LINE 142 OF user\set.c: 'parameter 3': value truncated
+  143   3                      Screen_ShowAscOpp(64,4,' ');
+  144   3                      Screen_ShowFreshen();      
+  145   3                  }
+  146   2                  break;   
+  147   2          }    
+  148   1      }
+  149          
+  150          u8 xdata saddr = 0;
+  151          u8 xdata sdata[6] ;
+  152          void Set_Data(u8 keynum)
+  153          {
+  154   1          u8 i;
+  155   1          switch( state )
+  156   1          {
+  157   2              case 0://初始化
+  158   2                  Screen_Clear();
+  159   2                  Screen_ShowStr(16,0,"20");
+  160   2                  Screen_ShowStr(48,0,"年");
+  161   2                  Screen_ShowStr(48,2,"月");
+  162   2                  Screen_ShowStr(48,4,"日");        
+  163   2                  Screen_ShowFreshen();
+  164   2                  state = 1; 
+  165   2                  keynum = 8;  
+  166   2                  saddr = 0;  
+  167   2                  sdata[0] = YEAR/10+'0';
+  168   2                  sdata[1] = YEAR%10+'0';
+  169   2              
+  170   2                  sdata[2] = MONTH/10+'0';
+  171   2                  sdata[3] = MONTH%10+'0'; 
+  172   2      
+  173   2                  sdata[4] = DAY/10+'0';
+  174   2                  sdata[5] = DAY%10+'0'; 
+  175   2              
+  176   2              
+  177   2              case 1://等待输入
+  178   2                  if( keynum>0 )
+  179   2                  {
+  180   3                      if(( keynum>='0' )&&( keynum<='9' ))
+  181   3                      {
+  182   4                          if( saddr<6 )
+  183   4                              sdata[saddr++] = keynum;
+  184   4                      }
+  185   3                      else if(( keynum==8 )&&(saddr>0))
+C251 COMPILER V5.60.0,  set                                                                22/03/23  11:38:02  PAGE 4   
+
+  186   3                      {
+  187   4                          saddr--;
+  188   4                      }
+  189   3                      else if(( keynum==10 )&&(saddr<6))
+  190   3                      {
+  191   4                          saddr++;
+  192   4                      } 
+  193   3                      else if( keynum=='=' )
+  194   3                      {
+  195   4                            INIYEAR = (u8)((sdata[0]-'0')*10+(sdata[1]-'0'));   //继承当前年月日
+  196   4                          INIMONTH = (u8)((sdata[2]-'0')*10+(sdata[3]-'0'));
+  197   4                          INIDAY = (u8)((sdata[4]-'0')*10+(sdata[5]-'0'));                       
+  198   4                           INIHOUR = HOUR;   //修改时分秒
+  199   4                          INIMIN = MIN;
+  200   4                          INISEC = SEC;   
+  201   4      RTCCFG |= 0x01;   //触发RTC寄存器初始化                   
+  202   4                          P_Index.Menu_KeyFunc = 0;
+  203   4                      }
+  204   3                      else if(( keynum==22 ))
+  205   3                      {
+  206   4                          P_Index.Menu_KeyFunc = 0;
+  207   4                      }                
+  208   3                      for( i=0;i<6;i++ )
+  209   3                      {
+  210   4                          if( i!=saddr )
+  211   4                          {
+  212   5                              Screen_ShowAsc(32+8*(i%2),2*(i/2),sdata[i]);
+*** WARNING C188 IN LINE 212 OF user\set.c: 'parameter 1': value truncated
+*** WARNING C188 IN LINE 212 OF user\set.c: 'parameter 2': value truncated
+  213   5                          }
+  214   4                          else
+  215   4                              Screen_ShowAscOpp(32+8*(i%2),2*(i/2),sdata[i]);
+*** WARNING C188 IN LINE 215 OF user\set.c: 'parameter 1': value truncated
+*** WARNING C188 IN LINE 215 OF user\set.c: 'parameter 2': value truncated
+  216   4                      }
+  217   3                    
+  218   3                      Screen_ShowFreshen();      
+  219   3                  }
+  220   2                  break;   
+  221   2          }    
+  222   1      }
+  223          
+  224          void Set_Time(u8 keynum)
+  225          {
+  226   1          u8 i;
+  227   1          switch( state )
+  228   1          {
+  229   2              case 0://初始化
+  230   2                  Screen_Clear();
+  231   2                  Screen_ShowStr(48,0,"时");
+  232   2                  Screen_ShowStr(48,2,"分");
+  233   2                  Screen_ShowStr(48,4,"秒");        
+  234   2                  Screen_ShowFreshen();
+  235   2                  state = 1; 
+  236   2                  keynum = 8;  
+  237   2                  saddr = 0;  
+  238   2                  sdata[0] = HOUR/10+'0';
+  239   2                  sdata[1] = HOUR%10+'0';
+  240   2              
+  241   2                  sdata[2] = MIN/10+'0';
+  242   2                  sdata[3] = MIN%10+'0'; 
+  243   2      
+  244   2                  sdata[4] = SEC/10+'0';
+  245   2                  sdata[5] = SEC%10+'0'; 
+  246   2              
+  247   2              
+C251 COMPILER V5.60.0,  set                                                                22/03/23  11:38:02  PAGE 5   
+
+  248   2              case 1://等待输入
+  249   2                  if( keynum>0 )
+  250   2                  {
+  251   3                      if(( keynum>='0' )&&( keynum<='9' ))
+  252   3                      {
+  253   4                          if( saddr<6 )
+  254   4                              sdata[saddr++] = keynum;
+  255   4                      }
+  256   3                      else if(( keynum==8 )&&(saddr>0))
+  257   3                      {
+  258   4                          saddr--;
+  259   4                      }
+  260   3                      else if(( keynum==10 )&&(saddr<6))
+  261   3                      {
+  262   4                          saddr++;
+  263   4                      } 
+  264   3                      else if( keynum=='=' )
+  265   3                      {
+  266   4                            INIYEAR = YEAR;   //继承当前年月日
+  267   4                          INIMONTH = MONTH;
+  268   4                          INIDAY = DAY;                       
+  269   4                           INIHOUR = (u8)((sdata[0]-'0')*10+(sdata[1]-'0'));   //修改时分秒
+  270   4                          INIMIN = (u8)((sdata[0]-'0')*10+(sdata[1]-'0'));
+  271   4                          INISEC = (u8)((sdata[0]-'0')*10+(sdata[1]-'0'));   
+  272   4      RTCCFG |= 0x01;   //触发RTC寄存器初始化                    
+  273   4                          P_Index.Menu_KeyFunc = 0;
+  274   4                      }
+  275   3                      else if(( keynum==22 ))
+  276   3                      {
+  277   4                          P_Index.Menu_KeyFunc = 0;
+  278   4                      }                
+  279   3                      for( i=0;i<6;i++ )
+  280   3                      {
+  281   4                          if( i!=saddr )
+  282   4                          {
+  283   5                              Screen_ShowAsc(32+8*(i%2),2*(i/2),sdata[i]);
+*** WARNING C188 IN LINE 283 OF user\set.c: 'parameter 1': value truncated
+*** WARNING C188 IN LINE 283 OF user\set.c: 'parameter 2': value truncated
+  284   5                          }
+  285   4                          else
+  286   4                              Screen_ShowAscOpp(32+8*(i%2),2*(i/2),sdata[i]);
+*** WARNING C188 IN LINE 286 OF user\set.c: 'parameter 1': value truncated
+*** WARNING C188 IN LINE 286 OF user\set.c: 'parameter 2': value truncated
+  287   4                      }
+  288   3                    
+  289   3                      Screen_ShowFreshen();      
+  290   3                  }
+  291   2                  break;   
+  292   2          }    
+  293   1      }
+  294          
+  295          
+  296          void Show_time(void)
+  297          {
+  298   1          char xdata showdat[16];
+  299   1              uchar xdata key = 0;
+  300   1              static bit shake=0;
+  301   1          if( B1S_Flag==1 )
+  302   1          {
+  303   2              B1S_Flag = 0;
+  304   2              sprintf(showdat,"20%02d-%02d-%02d",YEAR,MONTH,DAY);
+  305   2              Screen_ShowStr(0,0,showdat);        //显示年月日
+  306   2              
+  307   2              OLED_BuffShowAscll32(0,2,HOUR/10);
+*** WARNING C188 IN LINE 307 OF user\set.c: 'parameter 3': value truncated
+  308   2              OLED_BuffShowAscll32(16,2,HOUR%10);
+C251 COMPILER V5.60.0,  set                                                                22/03/23  11:38:02  PAGE 6   
+
+*** WARNING C188 IN LINE 308 OF user\set.c: 'parameter 3': value truncated
+  309   2              
+  310   2             
+  311   2              OLED_BuffShowAscll32(48,2,MIN/10);
+*** WARNING C188 IN LINE 311 OF user\set.c: 'parameter 3': value truncated
+  312   2              OLED_BuffShowAscll32(64,2,MIN%10);  
+*** WARNING C188 IN LINE 312 OF user\set.c: 'parameter 3': value truncated
+  313   2              
+  314   2              OLED_BuffShowAscll32(96,2,SEC/10);
+*** WARNING C188 IN LINE 314 OF user\set.c: 'parameter 3': value truncated
+  315   2              OLED_BuffShowAscll32(112,2,SEC%10);          
+*** WARNING C188 IN LINE 315 OF user\set.c: 'parameter 3': value truncated
+  316   2             if( shake==1 )
+  317   2             {
+  318   3                OLED_BuffShowAscll32(32,2,10);   
+  319   3                OLED_BuffShowAscll32(80,2,10);
+  320   3             }
+  321   2             else
+  322   2             {
+  323   3                OLED_BuffShowAscll32(32,2,11);   
+  324   3                OLED_BuffShowAscll32(80,2,11);
+  325   3             }           
+  326   2              shake = !shake;
+  327   2              Screen_ShowFreshen();
+  328   2          }
+  329   1      }
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =      2192     ------
+  ecode size           =    ------     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =        17         16
+  xdata-const size     =    ------     ------
+  edata size           =    ------     ------
+  bit size             =         1     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =       102     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  19 WARNING(S),  0 ERROR(S)

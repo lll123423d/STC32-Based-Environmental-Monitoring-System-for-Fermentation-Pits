@@ -1,0 +1,384 @@
+C251 COMPILER V5.60.0,  function_pic                                                       27/09/22  13:55:46  PAGE 1   
+
+
+C251 COMPILER V5.60.0, COMPILATION OF MODULE function_pic
+OBJECT MODULE PLACED IN .\obj\function_pic.obj
+COMPILER INVOKED BY: C:\Keil_v5\C251\BIN\C251.EXE Resource\function_pic.c XSMALL ROM(HUGE) BROWSE INCDIR(.\Resource;.\wa
+                    -re;.\src;.\middle) DEBUG PRINT(.\obj\function_pic.lst) OBJECT(.\obj\function_pic.obj) 
+
+stmt  level    source
+
+    1                  //#include "STC12C5A60S2.h"
+    2                  #include <math.h>
+    3                  #include <stdio.h>
+    4                  //#include "lcd_12864.h"
+    5                  #include "keyboard_input.h"
+    6                  #include "keyboard_device.h"
+    7                  #include "function_pic.h"
+    8                  #include "alg_caculate.h"
+    9                  #include "alg_linearlist.h"
+   10                  #include "middle.h"
+   11          
+   12                  
+   13                  extern  uchar g_chCalcStatus;
+   14                  extern  uchar num0;
+   15                  extern int count1;      
+   16                          
+   17                  double x0=0,y0=0;
+   18                  double ky=1;
+   19                  double kx=1;
+   20                  double x,y,z;
+   21                  
+   22                  void draw_pic_input_err(void)
+   23                  {
+   24   1                      lcd_clear();
+   25   1                      lcd_set_pos(1,2);
+   26   1                      lcd_write_str("输入错误");
+   27   1      
+   28   1                      delay_2s();
+   29   1                      lcd_clear();
+   30   1              }
+   31                  
+   32                  void display(char *temp1)    //显示函数图像函数
+   33                  {
+   34   1                      uchar i;
+   35   1                      int c;
+   36   1              
+   37   1                      lcd_clear_pic();
+   38   1                      if((x0<=127)&&(x0>=0)) 
+   39   1                      {
+   40   2                              lcd_yline(x0,0,63,1);
+   41   2                              if((x0<=63)&&(x0>=2))
+   42   2                              {
+   43   3                                      lcd_put_point(x0-1,1);
+   44   3                                      lcd_put_point(x0-2,2);
+   45   3                                      }
+   46   2                              if((x0<=61)&&(x0>=0))
+   47   2                              {
+   48   3                                      lcd_put_point(x0+1,1);
+   49   3                                      lcd_put_point(x0+2,2);
+   50   3                                      }
+   51   2                              for(i=0;i<=63;i++)
+   52   2                                      {
+   53   3                                                      c=i-y0;
+   54   3                                                      if(c<0) c=-c;
+   55   3                                                      if(c%10==0)
+   56   3                                                              {
+   57   4                                                                      if(x0==0)
+   58   4                                                                              lcd_xline(0,1,i);
+C251 COMPILER V5.60.0,  function_pic                                                       27/09/22  13:55:46  PAGE 2   
+
+   59   4                                                                      else if(x0==127)
+   60   4                                                                              lcd_xline(126,127,i);
+   61   4                                                                      else 
+   62   4                                                                              lcd_xline(x0-1,x0+1,i);
+   63   4                                                              }
+   64   3                                      }
+   65   2                      OLED_BuffShow();//新增
+   66   2                              }
+   67   1                      if((y0>=0)&&(y0<=63))
+   68   1                      {
+   69   2                              lcd_xline(0,127,y0);
+   70   2                                      if((y0<=63)&&(y0>=2))
+   71   2                                              {
+   72   3                                                      lcd_put_point(126,y0-1);             
+   73   3                                                      lcd_put_point(125,y0-2);
+   74   3                                                      }
+   75   2                                      if((y0<=61)&&(y0>=0))
+   76   2                                              {
+   77   3                                                      lcd_put_point(126,y0+1);
+   78   3                                                      lcd_put_point(125,y0+2);
+   79   3                                                      }
+   80   2                              for(i=0;i<=127;i++)
+   81   2                                      {
+   82   3                                      c=i-x0;
+   83   3                                      if(c<0) c=-c;
+   84   3                                      if(c%10==0)
+   85   3                                              {
+   86   4                                                      if(y0==0)
+   87   4                                                              lcd_yline(i,0,1,1);
+   88   4                                                      else if(y0==63)
+   89   4                                                              lcd_yline(i,62,63,1);
+   90   4                                                      else 
+   91   4                                                              lcd_yline(i,y0-1,y0+1,1);
+   92   4                                              }
+   93   3                      }
+   94   2                      OLED_BuffShow();
+   95   2              }
+   96   1                      for(i=0;i<=127;i++)
+   97   1                      {
+   98   2                              x=(i-x0)*kx;
+   99   2                              g_chCalcStatus = CALC_NORMAL;
+  100   2                              alg_calc_expression(temp1, &y, 0);
+  101   2                                   ////////////********************
+  102   2                              y *= ky;
+  103   2                              y=(y0-y);
+  104   2                              if((y<=63)&&(y>=0))
+  105   2                                      lcd_put_point(i,y);
+  106   2                              }
+  107   1              OLED_BuffShow();
+  108   1              }
+  109                  void pic_menu()    //显示函数图像的菜单
+  110                  {                       
+  111   1                      uchar m;
+  112   1                      lcd_clear();
+  113   1                      if(count1>4)
+  114   1                              count1=4;
+  115   1                      else if(count1<1)
+  116   1                              count1=1;
+  117   1                      for(m=0;m<4;m++)
+  118   1                              {
+  119   2                                      lcd_set_pos(m,0);       
+  120   2                                      switch (m+count1)
+  121   2                                              {
+  122   3                                                      case 1:
+  123   3                                                              lcd_write_str("1.原点坐标X0");break;
+  124   3                                                      case 2:
+C251 COMPILER V5.60.0,  function_pic                                                       27/09/22  13:55:46  PAGE 3   
+
+  125   3                                                              lcd_write_str("2.原点坐标y0");break;
+  126   3                                                      case 3:
+  127   3                                                              lcd_write_str("3.横坐标单位长度");break;
+  128   3                                                      case 4:
+  129   3                                                              lcd_write_str("4.纵坐标单位长度");break;
+  130   3                                                      case 5:
+  131   3                                                              lcd_write_str("5.图像表达式");break;
+  132   3                                                      case 6:
+  133   3                                                              lcd_write_str("6.显示图像");break;
+  134   3      //                                              case 7:
+  135   3      //                                                      lcd_write_str("0.返回");break;
+  136   3                                                      }
+  137   2                                      }       
+  138   1                      }
+  139                  void pic_num()    //函数图像的相关值的改变
+  140                  {       
+  141   1                      char temp[13];
+  142   1                      uchar i=0;
+  143   1                      uchar d=0;
+  144   1                      uchar num=num0;
+  145   1                      for(i=0;i<13;i++)
+  146   1                              temp[i]=' ';
+  147   1                      i=0;
+  148   1                      lcd_clear();
+  149   1                      switch(num)
+  150   1                      {
+  151   2                              case '1':       
+  152   2                                      sprintf(temp,"%g",x0);break;
+  153   2                              case '2':
+  154   2                                      sprintf(temp,"%g",y0);break;
+  155   2                              case '3':       
+  156   2                                      sprintf(temp,"%g",kx);break;
+  157   2                              case '4':       
+  158   2                                      sprintf(temp,"%g",ky);break;
+  159   2                              }
+  160   1                      lcd_write_cmd(0x80);
+  161   1                      switch(num)
+  162   1                      {
+  163   2                              case '1':       
+  164   2                                      lcd_write_str("Now x0 is");break;
+  165   2                              case '2':
+  166   2                                      lcd_write_str("Now y0 is");break;
+  167   2                              case '3':       
+  168   2                                      lcd_write_str("Now kx is");break;
+  169   2                              case '4':       
+  170   2                                      lcd_write_str("Now ky is");break;
+  171   2                      }
+  172   1                      lcd_write_cmd(0x90);
+  173   1                      lcd_write_str(temp);
+  174   1                      lcd_write_cmd(0x88);
+  175   1                      lcd_write_str("end with '='");
+  176   1                      lcd_write_cmd(0x98);
+  177   1                      lcd_write_str("new=");
+  178   1                      while(1)
+  179   1                      {       
+  180   2                              num0=0xff;
+  181   2                              num0=keyboard_output();
+  182   2                              if(((num0<=0x39)&&(num0>=0x30))||(num0=='.')||(num0=='-'))
+  183   2                              {
+  184   3                                      lcd_write_dat(num0);
+  185   3                                      temp[i]=num0;
+  186   3                                      i++;
+  187   3                                      }
+  188   2                              else if(num0=='=')
+  189   2                              {                       
+  190   3                                  temp[i]='\0';
+C251 COMPILER V5.60.0,  function_pic                                                       27/09/22  13:55:46  PAGE 4   
+
+  191   3                                      if((i<13)&&(i>0))
+  192   3                                              switch(num)
+  193   3                                              {
+  194   4                                                      case '1':       
+  195   4                                                              sscanf(temp,"%f",&x0);break;
+  196   4                                                      case '2':
+  197   4                                                              sscanf(temp,"%f",&y0);break;
+  198   4                                                      case '3':       
+  199   4                                                              sscanf(temp,"%f",&kx);break;
+  200   4                                                      case '4':       
+  201   4                                                              sscanf(temp,"%f",&ky);break;
+  202   4                                                              }
+  203   3                                              num0=0xff;
+  204   3                                              break;
+  205   3                                      }
+  206   2                              else if(num0==18)
+  207   2                              {
+  208   3                                      num0=0xff;
+  209   3                                      if(i>0)
+  210   3                                              i--;
+  211   3                                      temp[i]=0;
+  212   3                                      lcd_set_pos(3,2);
+  213   3                                      lcd_write_str("            ");
+  214   3                                      lcd_set_pos(3,2);
+  215   3                                      for(d=0;d<i;d++)
+  216   3                                              lcd_write_dat(temp[d]);
+  217   3                                      }
+  218   2                              else if(num0==19)
+  219   2                                      {
+  220   3                                              num0=0xff;
+  221   3                                              break;
+  222   3                                              }
+  223   2                      }               
+  224   1              }
+  225                  
+  226                  void draw_pic()
+  227                  {       
+  228   1                      
+  229   1                      uchar i,flag = 0;
+  230   1                      char temp1[26];
+  231   1                      for(i=0;i<26;i++)
+  232   1                              temp1[i]=0;
+  233   1                      temp1[0]='0';
+  234   1                      temp1[1]='\0';  
+  235   1                      x0=x0+63;
+  236   1                      y0=y0+31;
+  237   1                      count1=0;
+  238   1                      while(1)
+  239   1                      {
+  240   2                              lcd_clear_pic();
+  241   2                              num0=0xff;
+  242   2                              pic_menu();
+  243   2                              num0=keyboard_output();
+  244   2                              if((num0=='1')||(num0=='2')||(num0=='3')||(num0=='4'))
+  245   2                              {
+  246   3                                      pic_num();
+  247   3                                      num0=0xff;
+  248   3                                      }
+  249   2                              else if(num0==6)
+  250   2                              {
+  251   3                                      num0=0xff;
+  252   3                                      count1++;
+  253   3                                      if(count1>4) count1=4;
+  254   3                                      }
+  255   2                              else if(num0==3)
+  256   2                              {
+C251 COMPILER V5.60.0,  function_pic                                                       27/09/22  13:55:46  PAGE 5   
+
+  257   3                                      num0=0xff;
+  258   3                                      count1--;
+  259   3                                      if(count1<1) count1=1;
+  260   3                                      }
+  261   2                              else if(num0=='5')         //***********************************
+  262   2                              {
+  263   3                                      while(1)
+  264   3                                      {
+  265   4                                              num0=0xff;
+  266   4                                              lcd_clear();
+  267   4                                              lcd_write_cmd(0x80);
+  268   4                                              lcd_write_str("输入函数表达式");
+  269   4                                              lcd_write_cmd(0x90);
+  270   4                                              lcd_write_str("F(x)=");
+  271   4                                              
+  272   4                                              for(i=0;i<25;i++)
+  273   4                                                      temp1[i]=' ';           //清空串
+  274   4                                              flag = input_to_str(2, temp1, 0xff);
+  275   4                                              if(flag == INPUT_EQ)
+  276   4                                              {
+  277   5                                                      g_chCalcStatus = CALC_NORMAL;
+  278   5                                                      if(LArray_FALSE == alg_calc_expression(temp1, NULL, NULL))
+  279   5                                                      {       
+  280   6                                                              draw_pic_input_err();
+  281   6                                                      }
+  282   5                                                      else
+  283   5                                                      {
+  284   6                                                              break;
+  285   6                                                      }
+  286   5                                              }
+  287   4                                              else if(flag == INPUT_AC)
+  288   4                                              {
+  289   5                                                      break;
+  290   5                                              }
+  291   4                                      
+  292   4                                      }
+  293   3                                      
+  294   3                                      
+  295   3                              
+  296   3                              }
+  297   2                              
+  298   2                              else if(num0=='6')
+  299   2                              {
+  300   3                                      lcd_clear();
+  301   3                                      while(1)
+  302   3                                      {       
+  303   4                                              num0=0xff;
+  304   4                                              lcd_clear_pic();
+  305   4                                              display(temp1);
+  306   4                                              while((num0!='1')&&(num0!='2')&&(num0!='4')&&(num0!='5')&&(num0!=3)&&(num0!=5)&&(num0!=6)&&(num0!=7)
+             -&&(num0!=19))
+  307   4                                                      num0=keyboard_output();
+  308   4                                              if(num0=='1')
+  309   4                                                      ky=ky*2;
+  310   4                                              else if(num0=='2')
+  311   4                                                      ky=ky/2;
+  312   4                                              else if(num0==7)
+  313   4                                                      x0=x0-10;               
+  314   4                                              else if(num0==5)
+  315   4                                                      x0=x0+10;       
+  316   4                                              else if(num0==6)
+  317   4                                                      y0=y0-10;       
+  318   4                                              else if(num0==3)
+  319   4                                                      y0=y0+10;       
+  320   4                                              else if(num0=='4')
+  321   4                                                      kx=kx*2;        
+C251 COMPILER V5.60.0,  function_pic                                                       27/09/22  13:55:46  PAGE 6   
+
+  322   4                                              else if(num0=='5')
+  323   4                                                      kx=kx/2;
+  324   4                                              else if(num0==19)
+  325   4                                              {
+  326   5                                                      num0=0xff;
+  327   5                                                      break;
+  328   5                                                      }
+  329   4                                      }
+  330   3                              }
+  331   2      //                      else if(num0=='0' || num0==1)           //0或者mode退出
+  332   2      //                      {
+  333   2      //                              num0=0xff;
+  334   2      //                              break;
+  335   2      //                              }
+  336   2                      }
+  337   1              }
+  338                  
+  339                  
+
+
+Module Information          Static   Overlayable
+------------------------------------------------
+  code size            =    ------     ------
+  ecode size           =      2265     ------
+  data size            =    ------     ------
+  idata size           =    ------     ------
+  pdata size           =    ------     ------
+  xdata size           =    ------     ------
+  xdata-const size     =    ------     ------
+  edata size           =        28         42
+  bit size             =    ------     ------
+  ebit size            =    ------     ------
+  bitaddressable size  =    ------     ------
+  ebitaddressable size =    ------     ------
+  far data size        =    ------     ------
+  huge data size       =    ------     ------
+  const size           =    ------     ------
+  hconst size          =       222     ------
+End of Module Information.
+
+
+C251 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
